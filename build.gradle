@@ -2,11 +2,25 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    // Docker 이미지를 만들어서 (쉽게?) 서버에 올리기 위한 빌드업
+    // 구글에서 만든 'jib'이라 불리는 플러그인을 사용합니다. 빌드스크립트에 기능을 추가하는 플러그인이지요
+    id 'com.google.cloud.tools.jib' version '3.5.3'
 }
 
 group = 'team2.mse.ajou'
 version = '0.0.1-SNAPSHOT'
 description = 'ajou-mse-server'
+
+// jib 플러그인을 셋팅해봅시다
+jib {
+    to {
+        image = 'ajou-mse/server'
+    }
+
+    container {
+        ports = [ '8080/tcp' ];
+    }
+}
 
 java {
     toolchain {
