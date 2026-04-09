@@ -2,5 +2,6 @@ services:
   mse-server:
     image: ajou-mse/server
     tty: true
+    restart: always
     ports:
       - "8080:8080"

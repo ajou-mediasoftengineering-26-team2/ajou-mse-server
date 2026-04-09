@@ -37,7 +37,8 @@ jobs:
     - name: Gradle Wrapper로 프로젝트 빌드
       run: ./gradlew jibBuildTar
     
-    - name: 빌드한 Docker (.tar + docker-compose.yml) 파일 SCP로 EC2 머신에 넘기기
+    # Amazon EC2 머신 상의 ~/deploy 폴더속에 넘깁니다. ( ~/deploy -> /home/dolce/deploy 로 단축 )
+    - name: 빌드한 Docker (.tar 이미지 + docker-compose.yml) 파일 SCP로 EC2 머신에 넘기기
       uses: appleboy/scp-action@v1
       with:
         host: ${{ secrets.SERVER_HOST }}
@@ -46,28 +47,21 @@ jobs:
         source: build/jib-image.tar, docker-compose.yaml
         target: /home/dolce/deploys
     
-    # - name: EC2에 SSH로 접속해 실행하기
-    #   uses: appleboy/ssh-action@v1
-    #   with:
-    #     host: ${{ secrets.SERVER_HOST }}
-    #     username: "dolce"
-    #     key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
-    #     # ~/running 폴더 정리
-    #     # ~/deploy 폴더 -> ~/running 로 옮기기
-    #     # ~/deploy 폴더 내용 지우기
-    #     # fuser -k -n tcp <포트> 명령어로 tcp 프로토콜로 8080 포트를 쓰는 프로세스 찾아 죽이기
-    #     # java -jar 로 .jar 파일 실행.
-    #     #   -> nohup으로 CI/CD가 끝나 SSH 연결을 끊어도 계속 실행되게하고
-    #     #   -> ./output.log 2>&1 으로 stderr를 stdout으로 옮기고
-    #     #   -> & 으로 백그라운드에서 실행되게 설정
-    #     script: |
-    #       cd /home/dolce
-    #       rm /home/dolce/running/mse-server.jar
-    #       mv /home/dolce/deploys/mse-server.jar /home/dolce/running/mse-server.jar
-    #       rm -rf /home/dolce/deploys
-    #       cd /home/dolce/running
-    #       sudo fuser -k -n tcp 8080 || true
-    #       nohup java -jar project.jar > ./output.log 2>&1 &
+    - name: EC2에 SSH로 접속해 실행하기
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: "dolce"
+        key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
+        # ~/deploys 로 이동
+        # docker에 받아온 이미지 파일 로드
+        # docker-compose로 docker-compose.yml 내용대로 docker 실행
+        # 안쓰이는 이미지 파일 버리기
+        script: |
+          cd /home/dolce/deploys
+          docker load -i ./build/jib-image.tar
+          docker-compose up -d
+          docker image prune -f
 
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
     # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
