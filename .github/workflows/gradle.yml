@@ -71,12 +71,12 @@ jobs:
         key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
         # ~/deploys 로 이동
         # docker에 받아온 이미지 파일 로드
-        # docker-compose로 docker-compose.yml 내용대로 docker 실행
+        # docker compose로 docker-compose.yml 내용대로 docker 실행
         # 안쓰이는 이미지 파일 버리기
         script: |
           cd /home/dolce/deploys
           docker load -i ./build/jib-image.tar
-          docker-compose up -d
+          docker compose up -d
           docker image prune -f
 
     - name: Github Actions IP 제거 (원상복귀)
