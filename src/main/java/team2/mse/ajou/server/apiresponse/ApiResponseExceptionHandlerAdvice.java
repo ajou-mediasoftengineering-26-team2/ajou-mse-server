@@ -1,8 +1,10 @@
 package team2.mse.ajou.server.apiresponse;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.apiresponse.model.ApiResponse;
 import team2.mse.ajou.server.apiresponse.model.ErrorData;
@@ -29,8 +31,16 @@ public class ApiResponseExceptionHandlerAdvice {
 
         ErrorData data = new ErrorData(0, "알 수 없는 서버 에러: (%s)".formatted(err.toString()));
         ApiResponse<ErrorData> body = ApiResponse.error(data);
-        return ResponseEntity
-                .internalServerError()
-                .body(body);
+        ResponseEntity<ApiResponse<ErrorData>> res;
+
+        if ((err instanceof NoResourceFoundException) || (err instanceof HttpRequestMethodNotSupportedException)) {
+            res = ResponseEntity
+                    .notFound()
+                    .build();
+        } else {
+            res = ResponseEntity.internalServerError().body(body);
+        }
+
+        return res;
     }
 }
