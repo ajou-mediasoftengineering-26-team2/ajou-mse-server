@@ -1,6 +1,6 @@
 package team2.mse.ajou.server.domain.auth.model;
 
 public record DeletePlayerRequest(
-        String authToken
+        String playerToken
 ) {
 }
