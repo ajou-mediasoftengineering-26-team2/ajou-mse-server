@@ -1,5 +1,6 @@
 package team2.mse.ajou.server.domain.auth.repository;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 @Repository
+@Qualifier("Test")
 public class MatchmakingRepositoryTest implements MatchmakingRepository {
     private Map<String, String> playerTokenToLobby;
     private Map<String, List<String>> lobbyToPlayers;

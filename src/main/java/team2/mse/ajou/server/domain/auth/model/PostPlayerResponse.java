@@ -1,8 +1,10 @@
 package team2.mse.ajou.server.domain.auth.model;
 
+import java.util.UUID;
+
 public record PostPlayerResponse(
-        String playerToken,
-        String lobbyId,
+        UUID playerId,
+        UUID lobbyId,
         boolean isWaitNeeded
 ) {
 }

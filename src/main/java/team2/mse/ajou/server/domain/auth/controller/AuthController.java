@@ -1,12 +1,17 @@
 package team2.mse.ajou.server.domain.auth.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.auth.model.*;
 import team2.mse.ajou.server.domain.auth.repository.AuthRepository;
 import team2.mse.ajou.server.domain.auth.repository.MatchmakingRepository;
+import team2.mse.ajou.server.domain.auth.repository.PlayerInfoRepository;
+import team2.mse.ajou.server.domain.auth.service.AuthService;
+import team2.mse.ajou.server.domain.auth.service.LobbyService;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 사용자 로그인 / 인증 관련 API.
@@ -17,10 +22,20 @@ import team2.mse.ajou.server.domain.auth.repository.MatchmakingRepository;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    @Autowired
-    private AuthRepository authRepository;
-    @Autowired
-    private MatchmakingRepository matchmakingRepository;
+    private final AuthService authService;
+    private final LobbyService lobbyService;
+
+    private final AuthRepository authRepository;
+    private final MatchmakingRepository matchmakingRepository;
+    private final PlayerInfoRepository playerInfoRepository;
+
+    public AuthController(AuthService authService, LobbyService lobbyService, AuthRepository authRepository, MatchmakingRepository matchmakingRepository, PlayerInfoRepository playerInfoRepository) {
+        this.authService = authService;
+        this.lobbyService = lobbyService;
+        this.authRepository = authRepository;
+        this.matchmakingRepository = matchmakingRepository;
+        this.playerInfoRepository = playerInfoRepository;
+    }
 
     /**
      * 주어진 닉네임으로 로그인하고, 로비에 입장하거나 새로운 로비를 생성합니다.
@@ -43,41 +58,46 @@ public class AuthController {
             int wow = 10 / 0; // ArithmeticException throw됨
         }
 
-        String playerToken = authRepository.login(req.username());
+        String username = req.username();
+        UUID playerId = null;
 
-        if (playerToken == null) {
+        try {
+            playerId = authService.login(username);
+        } catch (IllegalArgumentException e) {
             throw new ApiError(4000, "중복되는 닉네임입니다.");
         }
 
-        String lobbyId = matchmakingRepository.getOpenLobby();
-        boolean isLobbyNew = false;
+        LobbyInfo lobby = null;
+        LobbyInfo previousLobby = lobbyService.getOpenLobby();
 
         // 참가 가능 로비가 없으니 새 로비 생성
-        if (lobbyId == null) {
-            lobbyId = matchmakingRepository.createLobby();
-            isLobbyNew = true;
+        if (previousLobby == null) {
+            lobby = lobbyService.createLobby();
+        } else {
+            lobby = previousLobby;
         }
 
         try {
             // createLobby() 도 실패하면 무슨 일이 생겨서 로비를 참가할수도 새로 생성할수도 없는 상황인 것... 이거는 버그일 가능성이 커요
-            if (lobbyId == null) {
+            if (lobby == null) {
                 throw new ApiError(5001, "로비 검색에 실패했습니다.");
             }
 
             // joinLobby()가 실패하는 것도 동일한 이치
-            boolean result = matchmakingRepository.joinLobby(playerToken, lobbyId);
+            boolean result = lobbyService.joinLobby(playerId, lobby.getId());
             if (!result) {
                 throw new ApiError(5002, "로비 참가에 실패했습니다.");
             }
-        } catch (ApiError _) {
+        } catch (ApiError err) {
             // 뭐가되었든 로비 참가에 실패하면 자동으로 로그아웃 시켜줍시다
-            authRepository.logout(playerToken);
+            authService.logout(playerId);
+            throw err;
         }
 
         PostPlayerResponse res = new PostPlayerResponse(
-                playerToken,
-                lobbyId,
-                isLobbyNew
+                playerId,
+                lobby.getId(),
+                previousLobby == null
         );
         return res;
     }
@@ -91,19 +111,23 @@ public class AuthController {
     public void deletePlayer(
             @RequestBody DeletePlayerRequest req
     ) {
-        String playerToken = req.playerToken();
-        String username = authRepository.getPlayerData(playerToken);
-        String lobbyId = matchmakingRepository.findPlayerLobby(playerToken);
-
-        if (lobbyId != null) {
-            matchmakingRepository.leaveLobby(playerToken, lobbyId);
+        UUID id = req.playerId();
+        if (id == null) {
+            throw ApiError.INVALID_PARAMETER;
         }
 
-        if (!authRepository.logout(playerToken)) {
+        LobbyInfo lobby = lobbyService.findPlayerLobby(id);
+
+        if (lobby != null) {
+            lobbyService.leaveLobby(id, lobby.getId());
+        }
+
+        if (!authService.isPlayerExists(id)) {
             throw new ApiError(4001, "로그인 되지 않은 플레이어입니다.");
         }
+        authService.logout(id);
 
-        System.out.printf("Player `%s` left the game!\n", username);
+        System.out.printf("Player `%s` left the game!\n", id);
     }
 
     /**
@@ -117,8 +141,25 @@ public class AuthController {
     public GetPlayerResponse getPlayer(
             @RequestBody GetPlayerRequest req
     ) {
-        boolean isUsernameAvailable = authRepository.isUsernameAvailable(req.username());
+        String username = req.username();
+        if (username == null) {
+            throw ApiError.INVALID_PARAMETER;
+        }
+
+        boolean isUsernameAvailable = authService.isUsernameAvailable(username);
         GetPlayerResponse res = new GetPlayerResponse(isUsernameAvailable);
+        return res;
+    }
+
+    /**
+     * 모든 플레이어 목록을 가져옵니다.
+     *
+     * @return Response body
+     */
+    @GetMapping("/all-players")
+    public GetAllPlayersResponse getAllPlayers() {
+        List<PlayerInfo> playerInfos = playerInfoRepository.findAll();
+        GetAllPlayersResponse res = new GetAllPlayersResponse(playerInfos);
         return res;
     }
 }

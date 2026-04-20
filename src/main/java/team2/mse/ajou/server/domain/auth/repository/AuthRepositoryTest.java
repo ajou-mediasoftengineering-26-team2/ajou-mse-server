@@ -1,11 +1,13 @@
 package team2.mse.ajou.server.domain.auth.repository;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Repository
+@Qualifier("Test")
 public class AuthRepositoryTest implements AuthRepository {
     private Map<String, String> usernameToPlayerToken;
     private Map<String, String> playerTokenToPlayerData;
