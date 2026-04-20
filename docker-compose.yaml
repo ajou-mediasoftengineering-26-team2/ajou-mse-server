@@ -1,5 +1,7 @@
 services:
   mse-server:
+    profiles:
+      - deploy
     image: ajou-mse/server
     tty: true
     restart: always
