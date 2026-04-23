@@ -9,6 +9,11 @@ import team2.mse.ajou.server.domain.auth.repository.PlayerInfoRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * 로비 (매치메이킹) 관리 서비스.
+ *
+ * @author yubin
+ */
 @Service
 public class LobbyService {
     private final LobbyInfoRepository lobbyInfoRepository;
@@ -26,22 +31,28 @@ public class LobbyService {
                 .findFirst()
                 .orElse(null);
     }
+
     public LobbyInfo createLobby() {
         LobbyInfo lobbyInfo = new LobbyInfo();
+
+        System.out.println("LOBBY CREATE: %s / %s".formatted(lobbyInfo.getId(), lobbyInfo.getPlayers()));
+
         return lobbyInfoRepository.save(lobbyInfo);
     }
-    public LobbyInfo findPlayerLobby(UUID playerId) {
+
+    public LobbyInfo findLobbyByPlayerId(UUID playerId) {
         return lobbyInfoRepository.findAll()
                 .stream()
                 .filter(lobby ->
                         lobby
-                            .getPlayers()
-                            .stream()
-                            .anyMatch(player -> player.getId().equals(playerId))
+                                .getPlayers()
+                                .stream()
+                                .anyMatch(player -> player.getId().equals(playerId))
                 )
                 .findFirst()
                 .orElse(null);
     }
+
     public boolean joinLobby(UUID playerId, UUID lobbyId) {
         Optional<LobbyInfo> lobbyInfo = lobbyInfoRepository.findById(lobbyId);
         Optional<PlayerInfo> playerInfo = playerInfoRepository.findById(playerId);
@@ -50,10 +61,14 @@ public class LobbyService {
         }
 
         LobbyInfo lobby = lobbyInfo.get();
+
+        System.out.println("LOBBY JOIN: %s / %s".formatted(lobby.getId(), lobby.getPlayers()));
+
         lobby.getPlayers().add(playerInfo.get());
         lobbyInfoRepository.save(lobby);
         return true;
     }
+
     public boolean leaveLobby(UUID playerId, UUID lobbyId) {
         Optional<LobbyInfo> lobbyInfo = lobbyInfoRepository.findById(lobbyId);
         Optional<PlayerInfo> playerInfo = playerInfoRepository.findById(playerId);

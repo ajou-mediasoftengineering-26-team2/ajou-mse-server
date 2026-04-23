@@ -4,7 +4,6 @@ import java.util.UUID;
 
 public record PostPlayerResponse(
         UUID playerId,
-        UUID lobbyId,
-        boolean isWaitNeeded
+        UUID lobbyId
 ) {
 }

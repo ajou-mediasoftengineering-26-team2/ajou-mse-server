@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,5 +16,5 @@ public class LobbyInfo {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @OneToMany
-    private List<PlayerInfo> players;
+    private List<PlayerInfo> players = new ArrayList<>();
 }
