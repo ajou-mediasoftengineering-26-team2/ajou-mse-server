@@ -91,22 +91,10 @@ tasks.register('generateDockerSecrets') {
         def mysql_username = "test"
         def mysql_password = "test"
 
-        if (project.hasProperty("IS_GITHUB_CI_CD")) {
-            println("CI CD MODE!!")
+        props.load(project.rootProject.file("src/main/resources/application-secrets.properties").newReader())
 
-            mysql_root_password = System.getenv("SECRET_MYSQL_ROOT_PASSWORD") ?: mysql_root_password
-            mysql_username = System.getenv("SECRET_MYSQL_USER") ?: mysql_username
-            mysql_password = System.getenv("SECRET_MYSQL_PASSWORD") ?: mysql_password
-        }
-        else {
-            println("LOCAL MODE!! GENERATING FROM SECRETS!!")
-
-            def props = new Properties()
-            props.load(project.rootProject.file("src/main/resources/application-secrets.properties").newReader())
-
-            mysql_username = props.getProperty("spring.datasource.username", mysql_username)
-            mysql_password = props.getProperty("spring.datasource.password", mysql_password)
-        }
+        mysql_username = props.getProperty("spring.datasource.username", mysql_username)
+        mysql_password = props.getProperty("spring.datasource.password", mysql_password)
 
         new File(dir, "mysql_root_password.txt").text = mysql_root_password
         new File(dir, "mysql_user.txt").text = mysql_username
