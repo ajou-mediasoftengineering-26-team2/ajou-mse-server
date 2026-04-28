@@ -1,4 +1,4 @@
-package team2.mse.ajou.server.domain.subway.service;
+package team2.mse.ajou.server.domain.subway.api;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -14,6 +14,7 @@ import team2.mse.ajou.server.domain.subway.model.realtimemetro.SubwayResponse;
 public class SubwayApiClient {
     private final RestClient restClient;
 
+    //Get private API key. You Should Add Environment Variable On Your PC or Server
     @Value("${external.api.key}")
     private String apiKey;
 
@@ -21,11 +22,14 @@ public class SubwayApiClient {
         restClient = RestClient.builder().baseUrl("http://swopenapi.seoul.go.kr/").build();
     }
 
+    //Get subway
     public SubwayResponse fetch() {
+        //if Pc or Server have not api key
         if (apiKey == null || apiKey.isBlank()) {
             throw new ApiError(1001, "Not Define API KEY", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        //Get subway response Data
         SubwayResponse response;
         try {
             response = restClient.get()
@@ -37,6 +41,8 @@ public class SubwayApiClient {
         } catch (RestClientException err) {
             throw new ApiError(1002, "subway api response fail " + err.getMessage(), HttpStatus.BAD_GATEWAY);
         }
+
+        //if response data is null
         if (response == null) {
             throw new ApiError(1003, "", HttpStatus.BAD_GATEWAY);
         }

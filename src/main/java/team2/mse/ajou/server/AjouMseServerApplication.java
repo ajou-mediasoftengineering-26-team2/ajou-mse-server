@@ -3,7 +3,7 @@ package team2.mse.ajou.server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import team2.mse.ajou.server.domain.subway.service.SubwayClass;
+import team2.mse.ajou.server.domain.subway.api.SubwayClass;
 import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication

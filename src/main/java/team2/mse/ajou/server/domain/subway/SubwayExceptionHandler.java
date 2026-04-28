@@ -6,7 +6,7 @@ import team2.mse.ajou.server.apiresponse.model.ApiError;
 
 
 //202322158 이준상
-//About if api response have some problem while I
+//About if api response have some problem while API Call is Failed.
 @RestControllerAdvice
 public class SubwayExceptionHandler {
 
