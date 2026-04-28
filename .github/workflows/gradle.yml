@@ -46,11 +46,22 @@ jobs:
         echo "spring.datasource.username=${{ secrets.SECRET_MYSQL_USER }}" >> ./src/main/resources/application-secrets.properties
         echo "spring.datasource.password=${{ secrets.SECRET_MYSQL_PASSWORD }}" >> ./src/main/resources/application-secrets.properties
 
+    - name: Firebase secret 생성
+      run: |
+        touch ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
+        echo ${{ secrets.SECRET_FIREBASE_SERVICE_ACCOUNT }} >> ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
+
     - name: application-secrets 파일 확인용 업로드
       uses: actions/upload-artifact@v4
       with:
         name: application-secrets
         path: ./src/main/resources/application-secrets.properties
+
+    - name: Firebase secret 파일 확인용 업로드
+      uses: actions/upload-artifact@v4
+      with:
+        name: firebase-secrets
+        path: ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
 
     - name: JDK 25 설정하기
       uses: actions/setup-java@v4
