@@ -1,0 +1,27 @@
+[
+  {
+    "startId": 235,
+    "endId": 243,
+    "representativeStation": "Hongik Univ."
+  },
+  {
+    "startId": 201,
+    "endId": 209,
+    "representativeStation": "City Hall"
+  },
+  {
+    "startId": 210,
+    "endId": 218,
+    "representativeStation": "Seongsu"
+  },
+  {
+    "startId": 219,
+    "endId": 226,
+    "representativeStation": "Gangnam"
+  },
+  {
+    "startId": 227,
+    "endId": 234,
+    "representativeStation": "Sillim"
+  }
+]

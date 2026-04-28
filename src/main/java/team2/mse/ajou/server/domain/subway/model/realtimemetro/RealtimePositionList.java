@@ -1,5 +1,5 @@
-package team2.mse.ajou.server.domain.subway.model;
-
+package team2.mse.ajou.server.domain.subway.model.realtimemetro;
+//202322158 이준상
 public record RealtimePositionList(
         String recptnDt,
         String updnLine,

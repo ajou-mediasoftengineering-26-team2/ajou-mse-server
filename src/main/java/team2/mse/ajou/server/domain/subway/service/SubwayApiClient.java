@@ -6,9 +6,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestClient;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
-import team2.mse.ajou.server.domain.subway.model.SubwayResponse;
+import team2.mse.ajou.server.domain.subway.model.realtimemetro.SubwayResponse;
 
 //202322158 이준상
+//About Subway Api Setting
 @Component
 public class SubwayApiClient {
     private final RestClient restClient;
