@@ -1,13 +1,12 @@
 package team2.mse.ajou.server.domain.auth.controller;
 
 import org.springframework.web.bind.annotation.*;
-import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.auth.model.*;
-import team2.mse.ajou.server.domain.auth.repository.PlayerInfoRepository;
+import team2.mse.ajou.server.domain.auth.repository.PlayerDataRepository;
 import team2.mse.ajou.server.domain.auth.service.AuthService;
+import team2.mse.ajou.server.domain.shared.PlayerData;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
  * 사용자 로그인 / 인증 관련 API.
@@ -19,11 +18,11 @@ import java.util.UUID;
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthService authService;
-    private final PlayerInfoRepository playerInfoRepository;
+    private final PlayerDataRepository playerDataRepository;
 
-    public AuthController(AuthService authService, PlayerInfoRepository playerInfoRepository) {
+    public AuthController(AuthService authService, PlayerDataRepository playerDataRepository) {
         this.authService = authService;
-        this.playerInfoRepository = playerInfoRepository;
+        this.playerDataRepository = playerDataRepository;
     }
 
     /**
@@ -79,7 +78,7 @@ public class AuthController {
      */
     @GetMapping("/all-players")
     public GetAllPlayersResponse getAllPlayers() {
-        List<PlayerInfo> playerInfos = playerInfoRepository.findAll();
-        return new GetAllPlayersResponse(playerInfos);
+        List<PlayerData> playerData = playerDataRepository.findAll();
+        return new GetAllPlayersResponse(playerData);
     }
 }

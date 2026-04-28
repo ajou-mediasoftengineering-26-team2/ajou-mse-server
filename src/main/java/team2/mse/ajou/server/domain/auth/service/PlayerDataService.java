@@ -2,8 +2,8 @@ package team2.mse.ajou.server.domain.auth.service;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.auth.model.PlayerInfo;
-import team2.mse.ajou.server.domain.auth.repository.PlayerInfoRepository;
+import team2.mse.ajou.server.domain.shared.PlayerData;
+import team2.mse.ajou.server.domain.auth.repository.PlayerDataRepository;
 
 import java.util.UUID;
 
@@ -13,18 +13,18 @@ import java.util.UUID;
  * @author yubin
  */
 @Service
-public class PlayerInfoService {
-    private final PlayerInfoRepository playerInfoRepository;
+public class PlayerDataService {
+    private final PlayerDataRepository playerDataRepository;
 
-    public PlayerInfoService(PlayerInfoRepository playerInfoRepository) {
-        this.playerInfoRepository = playerInfoRepository;
+    public PlayerDataService(PlayerDataRepository playerDataRepository) {
+        this.playerDataRepository = playerDataRepository;
     }
 
     public boolean isUsernameAvailable(String username) {
         if (!isUsernameValid(username)) {
             return false;
         }
-        return !playerInfoRepository.existsByUsername(username);
+        return !playerDataRepository.existsByUsername(username);
     }
 
     public UUID login(String username) {
@@ -32,22 +32,22 @@ public class PlayerInfoService {
             throw new IllegalArgumentException("사용 불가 닉네임.");
         }
 
-        PlayerInfo playerInfo = new PlayerInfo();
-        playerInfo.setUsername(username);
+        PlayerData playerData = new PlayerData();
+        playerData.setUsername(username);
 
-        PlayerInfo res = playerInfoRepository.save(playerInfo);
+        PlayerData res = playerDataRepository.save(playerData);
         // System.out.println("SAVING PLAYERINFO FOR `%s`".formatted(res.getId()));
 
         return res.getId();
     }
 
     public void logout(UUID playerId) {
-        playerInfoRepository.deleteById(playerId);
+        playerDataRepository.deleteById(playerId);
         System.out.println("LOGOUT FOR `%s`".formatted(playerId));
     }
 
     public boolean isPlayerExists(UUID playerId) {
-        return playerInfoRepository.existsById(playerId);
+        return playerDataRepository.existsById(playerId);
     }
 
     private boolean isUsernameValid(@NonNull String username) {

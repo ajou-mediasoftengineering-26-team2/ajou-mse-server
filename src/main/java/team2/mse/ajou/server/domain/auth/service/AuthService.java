@@ -3,7 +3,7 @@ package team2.mse.ajou.server.domain.auth.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
-import team2.mse.ajou.server.domain.auth.model.LobbyInfo;
+import team2.mse.ajou.server.domain.shared.LobbyData;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
 
 import java.util.UUID;
@@ -15,11 +15,11 @@ import java.util.UUID;
  */
 @Service
 public class AuthService {
-    private final PlayerInfoService playerInfoService;
+    private final PlayerDataService playerDataService;
     private final LobbyService lobbyService;
 
-    public AuthService(PlayerInfoService playerInfoService, LobbyService lobbyService) {
-        this.playerInfoService = playerInfoService;
+    public AuthService(PlayerDataService playerDataService, LobbyService lobbyService) {
+        this.playerDataService = playerDataService;
         this.lobbyService = lobbyService;
     }
 
@@ -34,17 +34,17 @@ public class AuthService {
             int wow = 10 / 0; // ArithmeticException throw됨
         }
 
-        LobbyInfo lobby = null;
+        LobbyData lobby = null;
         UUID playerId = null;
 
         try {
             try {
-                playerId = playerInfoService.login(playerName);
+                playerId = playerDataService.login(playerName);
             } catch (IllegalArgumentException e) {
                 throw new ApiError(4000, "중복되는 닉네임입니다.");
             }
 
-            LobbyInfo previousLobby = lobbyService.getOpenLobby();
+            LobbyData previousLobby = lobbyService.getOpenLobby();
 
             if (previousLobby != null) {
                 lobby = previousLobby;
@@ -66,7 +66,7 @@ public class AuthService {
         } catch (ApiError err) {
             // 뭐가되었든 로비 참가에 실패하면 자동으로 로그아웃 시켜줍시다
             if (playerId != null) {
-                playerInfoService.logout(playerId);
+                playerDataService.logout(playerId);
             }
             throw err;
         }
@@ -87,16 +87,16 @@ public class AuthService {
         }
 
         // 1] 플레이어가 로비에 입장해있는 경우 퇴장
-        LobbyInfo lobby = lobbyService.findLobbyByPlayerId(playerId);
+        LobbyData lobby = lobbyService.findLobbyByPlayerId(playerId);
         if (lobby != null) {
             lobbyService.leaveLobby(playerId, lobby.getId());
         }
 
         // 2] 그 뒤에서야 플레이어 로그인 여부 판단 & 로그아웃 진행
-        if (!playerInfoService.isPlayerExists(playerId)) {
+        if (!playerDataService.isPlayerExists(playerId)) {
             throw new ApiError(4001, "로그인 되지 않은 플레이어입니다.");
         }
-        playerInfoService.logout(playerId);
+        playerDataService.logout(playerId);
 
         System.out.printf("Player `%s` left the game!\n", playerId);
     }
@@ -106,6 +106,6 @@ public class AuthService {
             throw ApiError.INVALID_PARAMETER;
         }
 
-        return playerInfoService.isUsernameAvailable(playerName);
+        return playerDataService.isUsernameAvailable(playerName);
     }
 }

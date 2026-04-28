@@ -1,4 +1,4 @@
-package team2.mse.ajou.server.domain.auth.model;
+package team2.mse.ajou.server.domain.shared;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
-public class PlayerInfo {
+public class PlayerData {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

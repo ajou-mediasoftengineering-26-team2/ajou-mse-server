@@ -1,10 +1,11 @@
 package team2.mse.ajou.server.domain.auth.service;
 
+import com.google.firebase.database.FirebaseDatabase;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.auth.model.LobbyInfo;
-import team2.mse.ajou.server.domain.auth.model.PlayerInfo;
-import team2.mse.ajou.server.domain.auth.repository.LobbyInfoRepository;
-import team2.mse.ajou.server.domain.auth.repository.PlayerInfoRepository;
+import team2.mse.ajou.server.domain.shared.LobbyData;
+import team2.mse.ajou.server.domain.shared.PlayerData;
+import team2.mse.ajou.server.domain.auth.repository.LobbyDataRepository;
+import team2.mse.ajou.server.domain.auth.repository.PlayerDataRepository;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -16,32 +17,42 @@ import java.util.UUID;
  */
 @Service
 public class LobbyService {
-    private final LobbyInfoRepository lobbyInfoRepository;
-    private final PlayerInfoRepository playerInfoRepository;
+    private final FirebaseDatabase firebaseDatabase;
+    private final LobbyDataRepository lobbyDataRepository;
+    private final PlayerDataRepository playerDataRepository;
 
-    public LobbyService(LobbyInfoRepository lobbyInfoRepository, PlayerInfoRepository playerInfoRepository) {
-        this.lobbyInfoRepository = lobbyInfoRepository;
-        this.playerInfoRepository = playerInfoRepository;
+    public LobbyService(FirebaseDatabase firebaseDatabase, LobbyDataRepository lobbyDataRepository, PlayerDataRepository playerDataRepository) {
+        this.firebaseDatabase = firebaseDatabase;
+        this.lobbyDataRepository = lobbyDataRepository;
+        this.playerDataRepository = playerDataRepository;
     }
 
-    public LobbyInfo getOpenLobby() {
-        return lobbyInfoRepository.findAll()
+    public LobbyData getOpenLobby() {
+        return lobbyDataRepository.findAll()
                 .stream()
                 .filter(lobby -> lobby.getPlayers().size() < 2)
                 .findFirst()
                 .orElse(null);
     }
 
-    public LobbyInfo createLobby() {
-        LobbyInfo lobbyInfo = new LobbyInfo();
+    public LobbyData createLobby() {
+        // DB에 저장
+        LobbyData lobbyData = new LobbyData();
+        lobbyData = lobbyDataRepository.save(lobbyData);
 
-        System.out.println("LOBBY CREATE: %s / %s".formatted(lobbyInfo.getId(), lobbyInfo.getPlayers()));
+        System.out.println("LOBBY CREATE: %s / %s".formatted(lobbyData.getId(), lobbyData.getPlayers()));
 
-        return lobbyInfoRepository.save(lobbyInfo);
+        // Firebase RDB에 로비 생성
+        firebaseDatabase
+                .getReference("lobbies")
+                .child(lobbyData.getId().toString())
+                .push();
+
+        return lobbyData;
     }
 
-    public LobbyInfo findLobbyByPlayerId(UUID playerId) {
-        return lobbyInfoRepository.findAll()
+    public LobbyData findLobbyByPlayerId(UUID playerId) {
+        return lobbyDataRepository.findAll()
                 .stream()
                 .filter(lobby ->
                         lobby
@@ -54,34 +65,40 @@ public class LobbyService {
     }
 
     public boolean joinLobby(UUID playerId, UUID lobbyId) {
-        Optional<LobbyInfo> lobbyInfo = lobbyInfoRepository.findById(lobbyId);
-        Optional<PlayerInfo> playerInfo = playerInfoRepository.findById(playerId);
-        if (lobbyInfo.isEmpty() || playerInfo.isEmpty()) {
+        Optional<LobbyData> lobbyData = lobbyDataRepository.findById(lobbyId);
+        Optional<PlayerData> playerData = playerDataRepository.findById(playerId);
+        if (lobbyData.isEmpty() || playerData.isEmpty()) {
             return false;
         }
 
-        LobbyInfo lobby = lobbyInfo.get();
+        LobbyData lobby = lobbyData.get();
 
         System.out.println("LOBBY JOIN: %s / %s".formatted(lobby.getId(), lobby.getPlayers()));
 
-        lobby.getPlayers().add(playerInfo.get());
-        lobbyInfoRepository.save(lobby);
+        // Firebase RDB속 로비에 플레이어 추가
+        firebaseDatabase
+                .getReference("lobbies")
+                .child(lobbyId.toString())
+                .push();
+
+        lobby.getPlayers().add(playerData.get());
+        lobbyDataRepository.save(lobby);
         return true;
     }
 
     public boolean leaveLobby(UUID playerId, UUID lobbyId) {
-        Optional<LobbyInfo> lobbyInfo = lobbyInfoRepository.findById(lobbyId);
-        Optional<PlayerInfo> playerInfo = playerInfoRepository.findById(playerId);
-        if (lobbyInfo.isEmpty() || playerInfo.isEmpty()) {
+        Optional<LobbyData> lobbyData = lobbyDataRepository.findById(lobbyId);
+        Optional<PlayerData> playerData = playerDataRepository.findById(playerId);
+        if (lobbyData.isEmpty() || playerData.isEmpty()) {
             return false;
         }
 
-        LobbyInfo newLobbyInfo = lobbyInfo.get();
-        if (!newLobbyInfo.getPlayers().remove(playerInfo.get())) {
+        LobbyData newLobbyData = lobbyData.get();
+        if (!newLobbyData.getPlayers().remove(playerData.get())) {
             return false;
         }
 
-        lobbyInfoRepository.save(lobbyInfo.get());
+        lobbyDataRepository.save(lobbyData.get());
         return true;
     }
 }
