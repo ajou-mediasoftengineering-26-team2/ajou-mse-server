@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Github Actions이 돌아가는 IP 가져오기
       id: ip
       uses: haythem/public-ip@v1.2
@@ -39,6 +39,19 @@ jobs:
       run: |
         aws ec2 authorize-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
+    - name: Application secret 생성
+      run: |
+        touch ./src/main/resources/application-secrets.properties
+        echo 'spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:3306/ajou_mse_2026' >> ./src/main/resources/application-secrets.properties
+        echo "spring.datasource.username=${{ secrets.SECRET_MYSQL_USER }}" >> ./src/main/resources/application-secrets.properties
+        echo "spring.datasource.password=${{ secrets.SECRET_MYSQL_PASSWORD }}" >> ./src/main/resources/application-secrets.properties
+
+    - name: application-secrets 파일 확인용 업로드
+      uses: actions/upload-artifact@v4
+      with:
+        name: application-secrets
+        path: ./src/main/resources/application-secrets.properties
+
     - name: JDK 25 설정하기
       uses: actions/setup-java@v4
       with:
@@ -51,7 +64,7 @@ jobs:
       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
     - name: Gradle Wrapper로 프로젝트 빌드
-      run: ./gradlew jibBuildTar
+      run: ./gradlew jibBuildTar -PIS_GITHUB_CI_CD=true
     
     # Amazon EC2 머신 상의 ~/deploy 폴더속에 넘깁니다. ( ~/deploy -> /home/dolce/deploy 로 단축 )
     - name: 빌드한 Docker (.tar 이미지 + docker-compose.yml) 파일 SCP로 EC2 머신에 넘기기
@@ -60,7 +73,7 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: "dolce" # 이름이 돌쇠래요 껄껄껄
         key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
-        source: build/jib-image.tar, docker-compose.yaml
+        source: build/jib-image.tar, build/mysql_root_password.txt, build/mysql_user.txt, build/mysql_password.txt, docker-compose.yaml
         target: /home/dolce/deploys
     
     - name: EC2에 SSH로 접속해 실행하기
@@ -94,6 +107,12 @@ jobs:
     #
     # - name: Build with Gradle 8.9
     #   run: gradle build
+
+    - name: 빌드 파일 확인용 업로드
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output
+        path: ./build/jib-image.tar
 
   dependency-submission:
 

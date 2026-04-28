@@ -4,16 +4,20 @@ services:
     container_name: mse-2026-mysql-db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: mse2026rt
-      MYSQL_USER: mse2026
-      MYSQL_PASSWORD: mse2026
+      MYSQL_ROOT_PASSWORD: /run/secrets/SECRET_MYSQL_ROOT_PASSWORD
+      MYSQL_USER_FILE: /run/secrets/SECRET_MYSQL_USER
+      MYSQL_PASSWORD_FILE: /run/secrets/SECRET_MYSQL_PASSWORD
       MYSQL_DATABASE: ajou_mse_2026
+    secrets:
+      - SECRET_MYSQL_ROOT_PASSWORD
+      - SECRET_MYSQL_USER
+      - SECRET_MYSQL_PASSWORD
     ports:
       - "3306:3306"
 #    networks:
 #      - ajou-mse-2026-backend
     healthcheck: # MySQL이 정상적으로 실행될 때까지 기다리도록 설정
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-umse2026", "-pmse2026" ]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$(cat /run/secrets/SECRET_MYSQL_USER)", "-p$$(cat /run/secrets/SECRET_MYSQL_PASSWORD)" ]
       interval: 10s
       retries: 5
       start_period: 20s
@@ -30,5 +34,14 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    environment:
+      MYSQL_HOST: mse-2026-mysql-db
+secrets:
+  SECRET_MYSQL_ROOT_PASSWORD:
+    file: ./build/mysql_root_password.txt
+  SECRET_MYSQL_USER:
+    file: ./build/mysql_user.txt
+  SECRET_MYSQL_PASSWORD:
+    file: ./build/mysql_password.txt
 #    networks:
 #      - ajou-mse-2026-backend
