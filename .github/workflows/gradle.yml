@@ -76,7 +76,7 @@ jobs:
         script: |
           cd /home/dolce/deploys
           docker load -i ./build/jib-image.tar
-          docker compose up -d
+          docker compose --profile deploy up -d
           docker image prune -f
 
     - name: Github Actions IP 제거 (원상복귀)
