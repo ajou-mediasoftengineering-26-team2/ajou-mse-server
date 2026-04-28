@@ -15,4 +15,6 @@ public class PlayerData {
     private UUID id;
     @Column(unique = true)
     private String username;
+    private int hp = 10;
+    private boolean isReady = false;
 }

@@ -13,10 +13,10 @@ import java.util.UUID;
  * @author yubin
  */
 @Service
-public class PlayerDataService {
+public class PlayerAuthService {
     private final PlayerDataRepository playerDataRepository;
 
-    public PlayerDataService(PlayerDataRepository playerDataRepository) {
+    public PlayerAuthService(PlayerDataRepository playerDataRepository) {
         this.playerDataRepository = playerDataRepository;
     }
 

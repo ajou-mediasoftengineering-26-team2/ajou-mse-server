@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.shared.LobbyData;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
+import team2.mse.ajou.server.domain.shared.LobbyService;
 
 import java.util.UUID;
 
@@ -15,11 +16,11 @@ import java.util.UUID;
  */
 @Service
 public class AuthService {
-    private final PlayerDataService playerDataService;
+    private final PlayerAuthService playerAuthService;
     private final LobbyService lobbyService;
 
-    public AuthService(PlayerDataService playerDataService, LobbyService lobbyService) {
-        this.playerDataService = playerDataService;
+    public AuthService(PlayerAuthService playerAuthService, LobbyService lobbyService) {
+        this.playerAuthService = playerAuthService;
         this.lobbyService = lobbyService;
     }
 
@@ -39,7 +40,7 @@ public class AuthService {
 
         try {
             try {
-                playerId = playerDataService.login(playerName);
+                playerId = playerAuthService.login(playerName);
             } catch (IllegalArgumentException e) {
                 throw new ApiError(4000, "중복되는 닉네임입니다.");
             }
@@ -66,7 +67,7 @@ public class AuthService {
         } catch (ApiError err) {
             // 뭐가되었든 로비 참가에 실패하면 자동으로 로그아웃 시켜줍시다
             if (playerId != null) {
-                playerDataService.logout(playerId);
+                playerAuthService.logout(playerId);
             }
             throw err;
         }
@@ -93,10 +94,10 @@ public class AuthService {
         }
 
         // 2] 그 뒤에서야 플레이어 로그인 여부 판단 & 로그아웃 진행
-        if (!playerDataService.isPlayerExists(playerId)) {
+        if (!playerAuthService.isPlayerExists(playerId)) {
             throw new ApiError(4001, "로그인 되지 않은 플레이어입니다.");
         }
-        playerDataService.logout(playerId);
+        playerAuthService.logout(playerId);
 
         System.out.printf("Player `%s` left the game!\n", playerId);
     }
@@ -106,6 +107,6 @@ public class AuthService {
             throw ApiError.INVALID_PARAMETER;
         }
 
-        return playerDataService.isUsernameAvailable(playerName);
+        return playerAuthService.isUsernameAvailable(playerName);
     }
 }

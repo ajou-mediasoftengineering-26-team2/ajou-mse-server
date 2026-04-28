@@ -1,12 +1,12 @@
-package team2.mse.ajou.server.domain.auth.service;
+package team2.mse.ajou.server.domain.shared;
 
-import com.google.firebase.database.FirebaseDatabase;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.shared.LobbyData;
-import team2.mse.ajou.server.domain.shared.PlayerData;
 import team2.mse.ajou.server.domain.auth.repository.LobbyDataRepository;
 import team2.mse.ajou.server.domain.auth.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.firebase.lobby.FrdbLobbyService;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,12 +17,12 @@ import java.util.UUID;
  */
 @Service
 public class LobbyService {
-    private final FirebaseDatabase firebaseDatabase;
+    private final FrdbLobbyService frdbLobbyService;
     private final LobbyDataRepository lobbyDataRepository;
     private final PlayerDataRepository playerDataRepository;
 
-    public LobbyService(FirebaseDatabase firebaseDatabase, LobbyDataRepository lobbyDataRepository, PlayerDataRepository playerDataRepository) {
-        this.firebaseDatabase = firebaseDatabase;
+    public LobbyService(FrdbLobbyService frdbLobbyService, LobbyDataRepository lobbyDataRepository, PlayerDataRepository playerDataRepository) {
+        this.frdbLobbyService = frdbLobbyService;
         this.lobbyDataRepository = lobbyDataRepository;
         this.playerDataRepository = playerDataRepository;
     }
@@ -41,12 +41,6 @@ public class LobbyService {
         lobbyData = lobbyDataRepository.save(lobbyData);
 
         System.out.println("LOBBY CREATE: %s / %s".formatted(lobbyData.getId(), lobbyData.getPlayers()));
-
-        // Firebase RDB에 로비 생성
-        firebaseDatabase
-                .getReference("lobbies")
-                .child(lobbyData.getId().toString())
-                .push();
 
         return lobbyData;
     }
@@ -71,18 +65,21 @@ public class LobbyService {
             return false;
         }
 
-        LobbyData lobby = lobbyData.get();
+        LobbyData newLobbyData = lobbyData.get();
 
-        System.out.println("LOBBY JOIN: %s / %s".formatted(lobby.getId(), lobby.getPlayers()));
+        System.out.println("LOBBY JOIN: %s / %s".formatted(newLobbyData.getId(), newLobbyData.getPlayers()));
+
+        newLobbyData.getPlayers().add(playerData.get());
+        newLobbyData.setCountdownStartTime(ZonedDateTime.now());
+
+        if (newLobbyData.getPlayers().size() >= 2) {
+            newLobbyData.setCountdownSec(20);
+        }
+
+        newLobbyData = lobbyDataRepository.save(newLobbyData);
 
         // Firebase RDB속 로비에 플레이어 추가
-        firebaseDatabase
-                .getReference("lobbies")
-                .child(lobbyId.toString())
-                .push();
-
-        lobby.getPlayers().add(playerData.get());
-        lobbyDataRepository.save(lobby);
+        frdbLobbyService.setLobby(lobbyId, newLobbyData);
         return true;
     }
 
@@ -98,7 +95,17 @@ public class LobbyService {
             return false;
         }
 
-        lobbyDataRepository.save(lobbyData.get());
+        if (newLobbyData.getPlayers().isEmpty()) {
+            newLobbyData.setState(LobbyState.PLAYER_DISCONNECTED_ALL);
+        } else if (newLobbyData.getState() != LobbyState.WAITING && newLobbyData.getState() != LobbyState.PLAYER_DISCONNECTED_ALL) {
+            newLobbyData.setState(LobbyState.PLAYER_DISCONNECTED);
+        }
+        newLobbyData.setCountdownStartTime(ZonedDateTime.now());
+
+        newLobbyData = lobbyDataRepository.save(newLobbyData);
+
+        // Firebase RDB속 로비에 플레이어 제거
+        frdbLobbyService.setLobby(lobbyId, newLobbyData);
         return true;
     }
 }
