@@ -1,3 +1,10 @@
+// jib에서 spring boot + docker 플러그인 무시하게
+buildscript {
+    dependencies {
+        classpath('com.google.cloud.tools:jib-layer-filter-extension-gradle:0.3.0')
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.5'
@@ -19,6 +26,20 @@ jib {
 
     container {
         ports = [ '8080/tcp' ];
+    }
+
+    // docker compose 플러그인 무시. 어쩌피 docker에서 실행하니깐 spring boot 플러그인으로 별도로 실행해줄 필요가 없습니다
+    pluginExtensions {
+        pluginExtension {
+            implementation = 'com.google.cloud.tools.jib.gradle.extension.layerfilter.JibLayerFilterExtension'
+            configuration {
+                filters {
+                    filter {
+                        glob = '**/spring-boot-docker-compose-*.jar'
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -51,11 +72,47 @@ dependencies {
 //    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    runtimeOnly 'org.springframework.boot:spring-boot-docker-compose'
+    developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('generateDockerSecrets') {
+    doLast {
+        def dir = layout.buildDirectory.get().asFile
+        dir.mkdirs()
+
+        def mysql_root_password = "test"
+        def mysql_username = "test"
+        def mysql_password = "test"
+
+        if (project.hasProperty("IS_GITHUB_CI_CD")) {
+            println("CI CD MODE!!")
+
+            mysql_root_password = System.getenv("SECRET_MYSQL_ROOT_PASSWORD") ?: mysql_root_password
+            mysql_username = System.getenv("SECRET_MYSQL_USER") ?: mysql_username
+            mysql_password = System.getenv("SECRET_MYSQL_PASSWORD") ?: mysql_password
+        }
+        else {
+            println("LOCAL MODE!! GENERATING FROM SECRETS!!")
+
+            def props = new Properties()
+            props.load(project.rootProject.file("src/main/resources/application-secrets.properties").newReader())
+
+            mysql_username = props.getProperty("spring.datasource.username", mysql_username)
+            mysql_password = props.getProperty("spring.datasource.password", mysql_password)
+        }
+
+        new File(dir, "mysql_root_password.txt").text = mysql_root_password
+        new File(dir, "mysql_user.txt").text = mysql_username
+        new File(dir, "mysql_password.txt").text = mysql_password
+    }
+}
+
+tasks.named('classes').configure {
+    dependsOn 'generateDockerSecrets'
 }
