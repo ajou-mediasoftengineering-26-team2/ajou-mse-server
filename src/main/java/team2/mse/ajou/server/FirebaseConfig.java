@@ -4,6 +4,7 @@ package team2.mse.ajou.server;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.database.*;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,11 +17,11 @@ public class FirebaseConfig {
     public void init() throws Exception {
         if (FirebaseApp.getApps().isEmpty()) {
             FileInputStream serviceAccount =
-                    new FileInputStream("src/main/resources/데이터키 뭐시기뭐시기");
+                    new FileInputStream("src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f");
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("데이터베이스 url 머시기머시기")
+                    .setDatabaseUrl("https://ajou-mse-default-rtdb.asia-southeast1.firebasedatabase.app/")
                     .build();
 
             FirebaseApp.initializeApp(options);
