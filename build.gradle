@@ -81,6 +81,7 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+// Docker에 사용 가능한 secrets 파일 생성
 tasks.register('generateDockerSecrets') {
     doLast {
         def dir = layout.buildDirectory.get().asFile
