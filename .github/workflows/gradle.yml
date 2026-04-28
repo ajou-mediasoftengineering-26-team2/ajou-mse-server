@@ -51,7 +51,7 @@ jobs:
       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
     - name: Gradle Wrapper로 프로젝트 빌드
-      run: ./gradlew jibBuildTar
+      run: ./gradlew jibBuildTar -PIS_GITHUB_CI_CD=true
     
     # Amazon EC2 머신 상의 ~/deploy 폴더속에 넘깁니다. ( ~/deploy -> /home/dolce/deploy 로 단축 )
     - name: 빌드한 Docker (.tar 이미지 + docker-compose.yml) 파일 SCP로 EC2 머신에 넘기기
