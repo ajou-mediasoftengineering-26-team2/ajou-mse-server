@@ -60,7 +60,7 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: "dolce" # 이름이 돌쇠래요 껄껄껄
         key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
-        source: build/jib-image.tar, docker-compose.yaml
+        source: build/jib-image.tar, build/mysql_root_password.txt, build/mysql_user.txt, build/mysql_password.txt, docker-compose.yaml
         target: /home/dolce/deploys
     
     - name: EC2에 SSH로 접속해 실행하기
