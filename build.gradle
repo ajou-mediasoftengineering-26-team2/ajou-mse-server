@@ -91,6 +91,7 @@ tasks.register('generateDockerSecrets') {
         def mysql_username = "test"
         def mysql_password = "test"
 
+        def props = new Properties()
         props.load(project.rootProject.file("src/main/resources/application-secrets.properties").newReader())
 
         mysql_username = props.getProperty("spring.datasource.username", mysql_username)
