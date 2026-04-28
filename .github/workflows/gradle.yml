@@ -49,7 +49,7 @@ jobs:
     - name: Firebase secret 생성
       run: |
         touch ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
-        echo ${{ secrets.SECRET_FIREBASE_SERVICE_ACCOUNT }} >> ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
+        echo '${{ secrets.SECRET_FIREBASE_SERVICE_ACCOUNT }}' >> ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
 
     - name: application-secrets 파일 확인용 업로드
       uses: actions/upload-artifact@v4
