@@ -4,7 +4,9 @@ package team2.mse.ajou.server;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.database.*;
 import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.FileInputStream;
@@ -16,7 +18,7 @@ public class FirebaseConfig {
     public void init() throws Exception {
         if (FirebaseApp.getApps().isEmpty()) {
             FileInputStream serviceAccount =
-                    new FileInputStream("src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f");
+                    new FileInputStream("src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json");
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
@@ -25,5 +27,10 @@ public class FirebaseConfig {
 
             FirebaseApp.initializeApp(options);
         }
+    }
+
+    @Bean
+    public FirebaseDatabase firebaseDatabase() {
+        return FirebaseDatabase.getInstance();
     }
 }

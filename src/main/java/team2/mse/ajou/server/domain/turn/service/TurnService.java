@@ -1,12 +1,14 @@
 package team2.mse.ajou.server.domain.turn.service;
 
 import com.google.firebase.database.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class TurnService {
     private final FirebaseDatabase firebaseDatabase;
 
+    @Autowired
     public TurnService(FirebaseDatabase firebaseDatabase) {
         this.firebaseDatabase = firebaseDatabase;
     }
