@@ -35,3 +35,6 @@ out/
 
 ### VS Code ###
 .vscode/
+src/main/resources/secrets.properties
+src/main/resources/application-secrets.properties
+/src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json

@@ -1,6 +1,7 @@
 package team2.mse.ajou.server.apiresponse;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -21,6 +22,14 @@ public class ApiResponseExceptionHandlerAdvice {
         ApiResponse<ErrorData> body = ApiResponse.error(err.getErrorData());
         return ResponseEntity
                 .status(err.getHttpStatusOverride())
+                .body(body);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiResponse<ErrorData>> handleInputError(HttpMessageNotReadableException err) {
+        ApiResponse<ErrorData> body = ApiResponse.error(ApiError.INVALID_PARAMETER.getErrorData());
+        return ResponseEntity
+                .status(ApiError.INVALID_PARAMETER.getHttpStatusOverride())
                 .body(body);
     }
 
