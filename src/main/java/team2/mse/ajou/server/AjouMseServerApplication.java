@@ -2,14 +2,15 @@ package team2.mse.ajou.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import team2.mse.ajou.server.domain.subway.api.SubwayClass;
 import org.springframework.context.ConfigurableApplicationContext;
-import team2.mse.ajou.server.domain.auth.repository.LobbyInfoRepository;
-import team2.mse.ajou.server.domain.auth.repository.PlayerInfoRepository;
-import team2.mse.ajou.server.domain.auth.service.PlayerInfoService;
 
 @SpringBootApplication
+@EnableScheduling
 public class AjouMseServerApplication {
 
+    private SubwayClass subwayClass;
     public static void main(String[] args) {
         ConfigurableApplicationContext ctx = SpringApplication.run(AjouMseServerApplication.class, args);
 
