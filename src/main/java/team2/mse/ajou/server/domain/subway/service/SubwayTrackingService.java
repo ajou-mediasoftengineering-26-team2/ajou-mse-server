@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.subway.api.SubwayApiClient;
 import team2.mse.ajou.server.domain.subway.model.realtimemetro.RealtimePositionList;
 import team2.mse.ajou.server.domain.subway.model.realtimemetro.SubwayResponse;
+import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,8 @@ public class SubwayTrackingService {
     private final StationZoneResolver stationZoneResolver;
     private final SubwayService subwayService;
     private String trackedTrainNo;
+
+    private final StationRepository stationRepository;
 
 
     //This function identifies a specific inbound train from real-time API data, resolves its current location into a representative station name, and uploads the result to the subway service.
@@ -45,7 +48,7 @@ public class SubwayTrackingService {
 
         String representativeStation = stationZoneResolver.resolveRepresentativeStation(trackedTrain.statnId());
         subwayService.putResult(representativeStation);
-
+        stationRepository.setStation(representativeStation);
         System.out.println("[subway] trainNo: " + trackedTrainNo
                 + " / statnId: " + trackedTrain.statnId()
                 + " / representative: " + representativeStation);

@@ -22,6 +22,5 @@ public class SubwayService {
         ref.child("testGame")
                 .child("currentStation")
                 .setValueAsync(station);
-
     }
 }
