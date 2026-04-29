@@ -1,9 +1,9 @@
-package team2.mse.ajou.server.domain.firebase.lobby;
+package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import team2.mse.ajou.server.domain.shared.PlayerData;
+import team2.mse.ajou.server.domain.shared.player.model.PlayerData;
 
 /**
  * Firebase RDB에 저장할때 사용되는 플레이어 정보.

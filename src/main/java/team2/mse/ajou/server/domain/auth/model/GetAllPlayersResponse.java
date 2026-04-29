@@ -1,6 +1,6 @@
 package team2.mse.ajou.server.domain.auth.model;
 
-import team2.mse.ajou.server.domain.shared.PlayerData;
+import team2.mse.ajou.server.domain.shared.player.model.PlayerData;
 
 import java.util.List;
 

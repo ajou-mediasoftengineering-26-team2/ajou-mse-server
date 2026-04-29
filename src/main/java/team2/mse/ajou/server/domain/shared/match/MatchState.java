@@ -1,7 +1,7 @@
-package team2.mse.ajou.server.domain.shared;
+package team2.mse.ajou.server.domain.shared.match;
 
 
-public enum LobbyState {
+public enum MatchState {
     // 게임 시작 전
     WAITING,
     // 플레이어 빡종

@@ -2,9 +2,9 @@ package team2.mse.ajou.server.domain.auth.controller;
 
 import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.domain.auth.model.*;
-import team2.mse.ajou.server.domain.auth.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.shared.player.repository.PlayerDataRepository;
 import team2.mse.ajou.server.domain.auth.service.AuthService;
-import team2.mse.ajou.server.domain.shared.PlayerData;
+import team2.mse.ajou.server.domain.shared.player.model.PlayerData;
 
 import java.util.List;
 

@@ -2,8 +2,8 @@ package team2.mse.ajou.server.domain.auth.service;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.shared.PlayerData;
-import team2.mse.ajou.server.domain.auth.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.shared.player.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.player.repository.PlayerDataRepository;
 
 import java.util.UUID;
 

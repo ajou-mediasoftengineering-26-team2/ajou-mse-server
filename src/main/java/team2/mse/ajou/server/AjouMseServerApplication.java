@@ -1,16 +1,11 @@
 package team2.mse.ajou.server;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
-import team2.mse.ajou.server.domain.auth.repository.LobbyDataRepository;
-import team2.mse.ajou.server.domain.auth.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.firebase.lobby.FrdbLobbyService;
+import team2.mse.ajou.server.domain.auth.repository.MatchDataRepository;
+import team2.mse.ajou.server.domain.shared.player.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.firebase.service.FrdbMatchService;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
@@ -23,12 +18,12 @@ public class AjouMseServerApplication {
 
         // TEST
         PlayerDataRepository playerInfoRepository = ctx.getBean(PlayerDataRepository.class);
-        LobbyDataRepository lobbyInfoRepository = ctx.getBean(LobbyDataRepository.class);
+        MatchDataRepository lobbyInfoRepository = ctx.getBean(MatchDataRepository.class);
         lobbyInfoRepository.deleteAll();
         playerInfoRepository.deleteAll();
 
-        FrdbLobbyService frdbLobbyService = ctx.getBean(FrdbLobbyService.class);
-        frdbLobbyService.clearAllLobby();
+        // FrdbMatchService frdbMatchService = ctx.getBean(FrdbMatchService.class);
+        // frdbMatchService.clearAllMatch();
     }
 
     @PostConstruct

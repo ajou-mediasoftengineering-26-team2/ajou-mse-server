@@ -1,4 +1,4 @@
-package team2.mse.ajou.server.domain.shared;
+package team2.mse.ajou.server.domain.shared.player.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;

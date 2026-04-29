@@ -1,8 +1,8 @@
-package team2.mse.ajou.server.domain.auth.repository;
+package team2.mse.ajou.server.domain.shared.player.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import team2.mse.ajou.server.domain.shared.PlayerData;
+import team2.mse.ajou.server.domain.shared.player.model.PlayerData;
 
 import java.util.List;
 import java.util.UUID;
