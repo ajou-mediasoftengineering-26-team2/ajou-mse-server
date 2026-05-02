@@ -1,9 +1,6 @@
 package team2.mse.ajou.server.domain.firebase.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
@@ -15,6 +12,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 public class FrdbPlayerData {
     private String username;
     private boolean isReady;
+    private int wins;
     private int hp;
     private boolean isAttacking;
     private boolean isSelecting;
@@ -24,6 +22,7 @@ public class FrdbPlayerData {
 
         data.setUsername(playerData.getUsername());
         data.setReady(playerData.isReady());
+        data.setWins(playerData.getWins());
         data.setHp(playerData.getHp());
         data.setAttacking(playerData.isAttacking());
         data.setSelecting(playerData.isSelecting());

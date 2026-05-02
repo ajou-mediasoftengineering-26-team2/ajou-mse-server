@@ -14,6 +14,8 @@ public enum MATCH_STATE {
     GAME_DEF_CHOICE,
     /** 인게임: 한 라운드 끝. 플레이어 사망 */
     GAME_ROUND_END_PLAYER_KO,
+    /** 게임 끝: 정상. 결과화면 */
+    END_RESULT,
     /** 게임 끝: 플레이어 빡종 */
     END_PLAYER_DISCONNECTED;
 

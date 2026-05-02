@@ -14,6 +14,7 @@ public class PlayerData {
     private UUID joinedMatchId;
     @Column(unique = true)
     private String username;
+    private int wins = 0;
     private int hp = 10;
     private boolean isReady = false;
     private boolean isAttacking = false;

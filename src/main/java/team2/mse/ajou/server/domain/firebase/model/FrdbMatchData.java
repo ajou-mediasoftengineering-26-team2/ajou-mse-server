@@ -20,6 +20,7 @@ public class FrdbMatchData {
     private String countdownStartTime;
     private int countdownSec;
     private MATCH_STATE state;
+    private int winnerPlayerIdx;
     private int currentPlayerIdx;
     private int attackerPlayerIdx;
     private int currentTurn;
@@ -39,6 +40,7 @@ public class FrdbMatchData {
         data.setCountdownStartTime(matchData.getCountdownStartTime().format(TIME_FORMATTER));
         data.setCountdownSec(matchData.getCountdownSec());
         data.setState(matchData.getState());
+        data.setWinnerPlayerIdx(matchData.getWinnerPlayerIdx());
         data.setCurrentPlayerIdx(matchData.getCurrentPlayerIdx());
         data.setAttackerPlayerIdx(matchData.getAttackerPlayerIdx());
         data.setCurrentTurn(matchData.getCurrentTurn());

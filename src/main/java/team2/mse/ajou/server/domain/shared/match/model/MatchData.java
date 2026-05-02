@@ -40,6 +40,10 @@ public class MatchData {
      */
     private MATCH_STATE state = MATCH_STATE.LOBBY_WAITING;
     /**
+     * 승자 플레이어.
+     */
+    private int winnerPlayerIdx = -1;
+    /**
      * 현재 턴. (i.e. 플레이어끼리 티키타카한 횟수)
      */
     private int currentTurn = 0;
@@ -58,7 +62,7 @@ public class MatchData {
     /**
      * 현재 매치에 참가중인 플레이어 목록.
      */
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.REMOVE})
+    @OneToMany(fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
 
     @Transient
