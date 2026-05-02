@@ -209,6 +209,10 @@ public class MatchService {
         frdbService.setMatch(newMatchData.getId(), newMatchData);
     }
 
+    /**
+     * 플레이어 참가시 데이터 수정용 콜백. 충분한 인원이 참여했을 경우 매치 시작 타이머를 설정합니다.
+     * @param matchData 매치 데이터.
+     */
     private void onPlayerJoin(MatchData matchData) {
         List<PlayerData> players = matchData.getPlayers();
         MATCH_STATE state = matchData.getState();
@@ -226,15 +230,22 @@ public class MatchService {
         }
     }
 
+    /**
+     * 플레이어 퇴장시 데이터 수정용 콜백. 충분한 인원이 참여했을 경우 매치 시작 타이머를 설정합니다.
+     * @param matchData 매치 데이터.
+     */
     private void onPlayerLeave(MatchData matchData) {
         List<PlayerData> players = matchData.getPlayers();
         MATCH_STATE state = matchData.getState();
 
         if (state == MATCH_STATE.LOBBY_START_COUNTDOWN && !players.isEmpty()) {
+            System.out.println("LOBBY PLR LEFT: CANCEL START COUNTDOWN FOR `" + matchData.getId() + "`");
             matchData.setState(MATCH_STATE.LOBBY_WAITING);
             cancelCountdownForMatch(matchData);
         } else if (state.isIngame()) {
+            System.out.println("LOBBY PLR LEFT: FORCE END GAME FOR `" + matchData.getId() + "`");
             matchData.setState(MATCH_STATE.END_PLAYER_DISCONNECTED);
+            cancelCountdownForMatch(matchData);
         }
         //matchData.setCountdownStartTime(ZonedDateTime.now());
     }
@@ -251,7 +262,6 @@ public class MatchService {
 
         matchData.setState(MATCH_STATE.GAME_ATK_CHOICE);
 
-        // 내부 DB속 로비, 플레이어 데이터 갱신
         for (int i = 0; i < players.size(); i++) {
             PlayerData player = players.get(i);
 
@@ -269,6 +279,9 @@ public class MatchService {
         if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
             System.err.println("FAILED TO SCHEDULE INITIAL TURN COUNTDOWN FOR GAME `" + matchData.getId() + "`");
         }
+
+        // 내부 DB속 로비, 플레이어 데이터 갱신
+        matchDataRepository.save(matchData);
 
         // Firebase RDB에 수정사항 갱신
         frdbService.setMatch(matchData.getId(), matchData);
