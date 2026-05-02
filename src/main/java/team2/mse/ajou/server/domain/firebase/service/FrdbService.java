@@ -9,16 +9,16 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import java.util.UUID;
 
 /**
- * FRDB 로비 수정 서비스
+ * FRDB 데이터 수정 서비스
  *
  * @author yubin
  */
 @Service
-public class FrdbMatchService {
+public class FrdbService {
     private final DatabaseReference matchRootRef;
     private final FirebaseDatabase firebaseDatabase;
 
-    public FrdbMatchService(FirebaseDatabase firebaseDatabase) {
+    public FrdbService(FirebaseDatabase firebaseDatabase) {
         this.firebaseDatabase = firebaseDatabase;
 
         matchRootRef = firebaseDatabase

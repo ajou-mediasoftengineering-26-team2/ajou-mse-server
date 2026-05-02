@@ -1,20 +1,21 @@
-package team2.mse.ajou.server.domain.shared.player.model;
+package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.UUID;
 
 @Entity
-@Getter
-@Setter
+@Data
 public class PlayerData {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+    private UUID joinedMatchId;
     @Column(unique = true)
     private String username;
     private int hp = 10;
     private boolean isReady = false;
+    private boolean isAttacking = false;
+    private boolean isSelecting = false;
 }

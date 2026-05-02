@@ -3,11 +3,15 @@ package team2.mse.ajou.server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
-import team2.mse.ajou.server.domain.auth.repository.MatchDataRepository;
-import team2.mse.ajou.server.domain.shared.player.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.firebase.service.FrdbMatchService;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.firebase.service.FrdbService;
+import team2.mse.ajou.server.domain.shared.match.service.MatchService;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.TimeZone;
 
 @SpringBootApplication
@@ -17,13 +21,28 @@ public class AjouMseServerApplication {
         ConfigurableApplicationContext ctx = SpringApplication.run(AjouMseServerApplication.class, args);
 
         // TEST
+        MatchService matchService = ctx.getBean(MatchService.class);
         PlayerDataRepository playerInfoRepository = ctx.getBean(PlayerDataRepository.class);
         MatchDataRepository lobbyInfoRepository = ctx.getBean(MatchDataRepository.class);
+
+        List<MatchData> allMatches = lobbyInfoRepository.findAll();
+        List<PlayerData> allPlayers = playerInfoRepository.findAll();
+
+        System.out.println("player: " + allPlayers.size());
+        for (PlayerData player: allPlayers) {
+            System.out.println("\tdisconnect " + player.getUsername() + " / " + matchService.leaveMatch(player.getId(), player.getJoinedMatchId()));
+        }
+
+        System.out.println("lobbies: " + allMatches.size());
+        for (MatchData match: allMatches) {
+            System.out.println("\tlobby: " + match);
+        }
+
         lobbyInfoRepository.deleteAll();
         playerInfoRepository.deleteAll();
 
-        // FrdbMatchService frdbMatchService = ctx.getBean(FrdbMatchService.class);
-        // frdbMatchService.clearAllMatch();
+        FrdbService frdbService = ctx.getBean(FrdbService.class);
+        frdbService.clearAllMatch();
     }
 
     @PostConstruct

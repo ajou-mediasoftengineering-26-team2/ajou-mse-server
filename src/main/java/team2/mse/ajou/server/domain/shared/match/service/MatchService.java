@@ -1,65 +1,85 @@
 package team2.mse.ajou.server.domain.shared.match.service;
 
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.auth.repository.MatchDataRepository;
-import team2.mse.ajou.server.domain.shared.player.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.firebase.service.FrdbMatchService;
-import team2.mse.ajou.server.domain.shared.match.MatchState;
+import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.firebase.service.FrdbService;
+import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
-import team2.mse.ajou.server.domain.shared.player.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * 로비 (매치메이킹) 관리 서비스.
+ * 게임 매치 정보 관리 서비스.
  *
  * @author yubin
  */
 @Service
 public class MatchService {
-    private final FrdbMatchService frdbMatchService;
+    private final FrdbService frdbService;
     private final MatchDataRepository matchDataRepository;
     private final PlayerDataRepository playerDataRepository;
 
-    public MatchService(FrdbMatchService frdbMatchService, MatchDataRepository matchDataRepository, PlayerDataRepository playerDataRepository) {
-        this.frdbMatchService = frdbMatchService;
+    public MatchService(FrdbService frdbService, MatchDataRepository matchDataRepository, PlayerDataRepository playerDataRepository) {
+        this.frdbService = frdbService;
         this.matchDataRepository = matchDataRepository;
         this.playerDataRepository = playerDataRepository;
     }
 
+    /**
+     * 참가 가능한 아무 매치를 반환합니다.
+     * @return 참가 가능한 매치.
+     */
     public MatchData getOpenMatch() {
         return matchDataRepository.findAll()
                 .stream()
-                .filter(match -> match.getPlayers().size() < 2)
+                .filter(match -> match.getPlayers().size() < 2 && match.getState() == MATCH_STATE.LOBBY_WAITING)
                 .findFirst()
                 .orElse(null);
     }
 
+    /**
+     * 신규 매치를 생성합니다.
+     * @return 매치 정보.
+     */
     public MatchData createMatch() {
         // DB에 저장
         MatchData matchData = new MatchData();
+        // TODO: StationRepository에서 현재 역 가져오기
+        String station = "CITY_HALL";
+        matchData.setStation(station);
+
         matchData = matchDataRepository.save(matchData);
 
-        System.out.println("LOBBY CREATE: %s / %s".formatted(matchData.getId(), matchData.getPlayers()));
+        System.out.println("MATCH CREATE: %s / %s".formatted(matchData.getId(), matchData.getPlayers()));
 
         return matchData;
     }
 
+    /**
+     * 플레이어 UUID로 플레이어가 속한 매치 정보를 가져옵니다.
+     * @param playerId 플레이어 UUID.
+     * @return 매치 정보. 없을 경우 null.
+     */
     public MatchData findMatchByPlayerId(UUID playerId) {
-        return matchDataRepository.findAll()
-                .stream()
-                .filter(lobby ->
-                        lobby
-                                .getPlayers()
-                                .stream()
-                                .anyMatch(player -> player.getId().equals(playerId))
-                )
-                .findFirst()
-                .orElse(null);
+        PlayerData playerData = playerDataRepository.findById(playerId).orElse(null);
+        if (playerData == null) {
+            return null;
+        }
+
+        return matchDataRepository.findById(playerData.getJoinedMatchId()).orElse(null);
     }
 
+    /**
+     * 플레이어를 매치에 참가시킵니다.
+     * @param playerId 플레이어 UUID.
+     * @param matchId 매치 UUID.
+     * @return 참가 여부.
+     */
     public boolean joinMatch(UUID playerId, UUID matchId) {
         Optional<MatchData> matchData = matchDataRepository.findById(matchId);
         Optional<PlayerData> playerData = playerDataRepository.findById(playerId);
@@ -68,46 +88,140 @@ public class MatchService {
         }
 
         MatchData newMatchData = matchData.get();
+        PlayerData newPlayerData = playerData.get();
+
+        // 이미 게임이 진행중이면 참가 불가능
+        if (newMatchData.getState().isIngame()) {
+            return false;
+        }
 
         System.out.println("MATCH JOIN: %s / %s".formatted(newMatchData.getId(), newMatchData.getPlayers()));
 
-        newMatchData.getPlayers().add(playerData.get());
-        newMatchData.setCountdownStartTime(ZonedDateTime.now());
+        // 로비에 플레이어 추가, 플레이어에는 참가한 로비 값 갱신
+        newMatchData.updatePlayer(playerData.get());
+        newPlayerData.setJoinedMatchId(matchId);
 
-        if (newMatchData.getPlayers().size() >= 2) {
-            newMatchData.setCountdownSec(20);
-        }
+        // 로비 상태 변경
+        onPlayerJoin(newMatchData);
 
+        // 내부 DB속 로비, 플레이어 데이터 갱신
+        newPlayerData = playerDataRepository.save(newPlayerData);
         newMatchData = matchDataRepository.save(newMatchData);
 
-        // Firebase RDB속 로비에 플레이어 추가
-        frdbMatchService.setMatch(matchId, newMatchData);
+        // (TODO: 매치 시작시)
+        PlayerData first = newMatchData.getPlayers().getFirst();
+
+        first.setAttacking(true);
+        first.setSelecting(true);
+        playerDataRepository.save(first);
+
+        // Firebase RDB에 수정사항 갱신
+        frdbService.setMatch(matchId, newMatchData);
         return true;
     }
 
+    /**
+     * 플레이어를 매치에서 퇴장시킵니다.
+     * @param playerId 플레이어 UUID.
+     * @param matchId 매치 UUID.
+     * @return 퇴장 여부.
+     */
     public boolean leaveMatch(UUID playerId, UUID matchId) {
-        Optional<MatchData> lobbyData = matchDataRepository.findById(matchId);
+        if (playerId == null || matchId == null) {
+            return false;
+        }
+
+        Optional<MatchData> matchData = matchDataRepository.findById(matchId);
         Optional<PlayerData> playerData = playerDataRepository.findById(playerId);
-        if (lobbyData.isEmpty() || playerData.isEmpty()) {
+        if (matchData.isEmpty() || playerData.isEmpty()) {
             return false;
         }
 
-        MatchData newMatchData = lobbyData.get();
-        if (!newMatchData.getPlayers().remove(playerData.get())) {
+        MatchData newMatchData = matchData.get();
+        PlayerData newPlayerData = playerData.get();
+
+        // 로비로부터 플레이어 제거
+        newPlayerData.setJoinedMatchId(null);
+        newPlayerData.setReady(false);
+        newMatchData.removePlayer(playerData.get().getId());
+        /*if (!newMatchData.removePlayer(playerData.get().getId())) {
             return false;
-        }
+        }*/
 
-        if (newMatchData.getPlayers().isEmpty()) {
-            newMatchData.setState(MatchState.PLAYER_DISCONNECTED_ALL);
-        } else if (newMatchData.getState() != MatchState.WAITING && newMatchData.getState() != MatchState.PLAYER_DISCONNECTED_ALL) {
-            newMatchData.setState(MatchState.PLAYER_DISCONNECTED);
-        }
-        newMatchData.setCountdownStartTime(ZonedDateTime.now());
+        // 로비 상태 변경
+        onPlayerLeave(newMatchData);
 
+        // 내부 DB속 로비, 플레이어 데이터 갱신
+        newPlayerData = playerDataRepository.save(newPlayerData);
         newMatchData = matchDataRepository.save(newMatchData);
 
-        // Firebase RDB속 로비에 플레이어 제거
-        frdbMatchService.setMatch(matchId, newMatchData);
+        // Firebase RDB에 수정사항 갱신
+        frdbService.setMatch(matchId, newMatchData);
         return true;
+    }
+
+    /**
+     * 플레이어 정보 수정을 위해 값을 가져옵니다.
+     * @param id UUID.
+     * @return 플레이어 정보. 찾지 못할 경우 null.
+     */
+    public PlayerData getPlayerById(UUID id) {
+        return playerDataRepository
+                .findById(id)
+                .orElse(null);
+    }
+
+    /**
+     * 수정한 플레이어 정보를 Firebase + 내부 DB에 저장합니다.
+     * @param playerData 플레이어 정보.
+     */
+    public void savePlayer(PlayerData playerData) {
+        Optional<MatchData> matchData = matchDataRepository.findById(playerData.getJoinedMatchId());
+        PlayerData newPlayerData = playerDataRepository.save(playerData);
+
+        // 로비상의 플레이어 정보도 갱신
+        if (matchData.isEmpty()) {
+            return;
+        }
+
+        MatchData newMatchData = matchData.get();
+
+        // 내부 DB속 로비, 플레이어 데이터 갱신
+        newMatchData.updatePlayer(playerData);
+        newMatchData = matchDataRepository.save(newMatchData);
+
+        // Firebase RDB에 수정사항 갱신
+        frdbService.setMatch(newMatchData.getId(), newMatchData);
+    }
+
+    private void onPlayerJoin(MatchData matchData) {
+        List<PlayerData> players = matchData.getPlayers();
+        MATCH_STATE state = matchData.getState();
+        boolean isAllReady = players.stream().allMatch(PlayerData::isReady);
+        int playerSize = players.size();
+
+        // 2인 이상 플레이어가 접속했는지 + 모두 ready 상태인지 확인
+        if (playerSize >= 2 && isAllReady && state == MATCH_STATE.LOBBY_WAITING) {
+            // 게임 시작!!
+            matchData.setState(MATCH_STATE.LOBBY_START_COUNTDOWN);
+            matchData.setCountdownStartTime(ZonedDateTime.now());
+            matchData.setCountdownSec(5);
+        } else {
+            //matchData.setState(MATCH_STATE.LOBBY_START_COUNTDOWN);
+            // NO-OP
+        }
+    }
+
+    private void onPlayerLeave(MatchData matchData) {
+        List<PlayerData> players = matchData.getPlayers();
+        MATCH_STATE state = matchData.getState();
+
+        if (state == MATCH_STATE.LOBBY_START_COUNTDOWN && !players.isEmpty()) {
+            matchData.setState(MATCH_STATE.LOBBY_WAITING);
+        } else if (state.isIngame()) {
+            matchData.setState(MATCH_STATE.END_PLAYER_DISCONNECTED);
+        }
+
+        matchData.setCountdownStartTime(ZonedDateTime.now());
     }
 }

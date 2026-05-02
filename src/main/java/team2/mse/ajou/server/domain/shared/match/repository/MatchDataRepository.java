@@ -1,4 +1,4 @@
-package team2.mse.ajou.server.domain.auth.repository;
+package team2.mse.ajou.server.domain.shared.match.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

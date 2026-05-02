@@ -2,8 +2,8 @@ package team2.mse.ajou.server.domain.auth.service;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.shared.player.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.player.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
 
 import java.util.UUID;
 
@@ -34,6 +34,8 @@ public class PlayerAuthService {
 
         PlayerData playerData = new PlayerData();
         playerData.setUsername(username);
+        // TODO: 나중에 레디 API 뚫어서 false -> true 로 바꾸는 플로우 추가
+        playerData.setReady(true);
 
         PlayerData res = playerDataRepository.save(playerData);
         // System.out.println("SAVING PLAYERINFO FOR `%s`".formatted(res.getId()));

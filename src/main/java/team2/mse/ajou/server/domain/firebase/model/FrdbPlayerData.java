@@ -1,29 +1,33 @@
 package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import team2.mse.ajou.server.domain.shared.player.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- * Firebase RDB에 저장할때 사용되는 플레이어 정보.
+ * Firebase RDB에 저장할때 사용되는 플레이어 정보. 실제로는 PlayerData 클래스를 사용하니 해당 클래스를 참고바랍니다.
  *
- * @author yubin
+ * @author Ahn yubin / 202021088
  */
-@AllArgsConstructor
-@Getter
-@Setter
+@Data
 public class FrdbPlayerData {
     private String username;
     private boolean isReady;
-    // 인게임
     private int hp;
+    private boolean isAttacking;
+    private boolean isSelecting;
 
     public static FrdbPlayerData from(PlayerData playerData) {
-        return new FrdbPlayerData(
-                playerData.getUsername(),
-                playerData.isReady(),
-                playerData.getHp()
-        );
+        FrdbPlayerData data = new FrdbPlayerData();
+
+        data.setUsername(playerData.getUsername());
+        data.setReady(playerData.isReady());
+        data.setHp(playerData.getHp());
+        data.setAttacking(playerData.isAttacking());
+        data.setSelecting(playerData.isSelecting());
+
+        return data;
     }
 }
