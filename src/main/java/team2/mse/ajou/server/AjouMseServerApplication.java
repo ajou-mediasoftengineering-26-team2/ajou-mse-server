@@ -44,9 +44,10 @@ public class AjouMseServerApplication {
 
         lobbyInfoRepository.deleteAll();
         playerInfoRepository.deleteAll();
-
+        /*
         FrdbService frdbService = ctx.getBean(FrdbService.class);
         frdbService.clearAllMatch();
+        */
     }
 
     @PostConstruct
