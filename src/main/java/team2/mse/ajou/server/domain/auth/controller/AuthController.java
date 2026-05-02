@@ -12,7 +12,7 @@ import java.util.List;
  * 사용자 로그인 / 인증 관련 API.
  * 베이스 URL: `<서버 주소>/auth`
  *
- * @author yubin
+ * @author Ahn yubin / 202021088
  */
 @RestController
 @RequestMapping("/auth")

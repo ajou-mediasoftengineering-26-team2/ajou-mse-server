@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * 유저 로그인 관리 서비스.
  *
- * @author yubin
+ * @author Ahn yubin / 202021088
  */
 @Service
 public class PlayerAuthService {

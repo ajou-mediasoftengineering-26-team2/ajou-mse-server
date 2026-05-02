@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter;
 /**
  * FRDB에 사용되는 상수들. (e.g. 시간 포맷)
  *
- * @author  yubin
+ * @author Ahn yubin / 202021088
  */
 public final class FrdbConstants {
     public static final String TIME_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";

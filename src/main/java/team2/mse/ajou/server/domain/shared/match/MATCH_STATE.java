@@ -3,6 +3,11 @@ package team2.mse.ajou.server.domain.shared.match;
 
 import java.util.List;
 
+/**
+ * 매치 상태.
+ *
+ * @author Ahn yubin / 202021088
+ */
 public enum MATCH_STATE {
     /** 대기 화면: 게임 시작 전 */
     LOBBY_WAITING,

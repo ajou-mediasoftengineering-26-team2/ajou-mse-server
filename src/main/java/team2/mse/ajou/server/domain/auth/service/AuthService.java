@@ -12,7 +12,7 @@ import java.util.UUID;
 /**
  * 플레이어 로그인 & 로비 접속 인터랙션 관련 기능들 담당 서비스.
  *
- * @author yubin
+ * @author Ahn yubin / 202021088
  */
 @Service
 public class AuthService {

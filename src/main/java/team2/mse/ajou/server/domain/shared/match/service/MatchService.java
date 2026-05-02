@@ -250,6 +250,10 @@ public class MatchService {
         //matchData.setCountdownStartTime(ZonedDateTime.now());
     }
 
+    /**
+     * 매치 턴 시작시 콜백. 공격수를 정하고 첫 턴 입력을 받도록 타이머를 설정합니다.
+     * @param matchId 매치 ID.
+     */
     private void onMatchStart(UUID matchId) {
         MatchData matchData = matchDataRepository.findById(matchId).orElse(null);
         if (matchData == null) {
@@ -287,6 +291,10 @@ public class MatchService {
         frdbService.setMatch(matchData.getId(), matchData);
     }
 
+    /**
+     * 매치 턴 진행시 콜백. 여기서 (미리 API로 받은) 플레이어 입력 처리 및 로직을 처리하면 되겠습니다.
+     * @param matchId 매치 ID.
+     */
     private void onMatchTurn(UUID matchId) {
         MatchData matchData = matchDataRepository.findById(matchId).orElse(null);
         if (matchData == null) {
@@ -381,6 +389,15 @@ public class MatchService {
         frdbService.setMatch(matchData.getId(), matchData);
     }
 
+    /**
+     * 주어진 매치에 대해 카운트다운 설정. 현재 시각 기준 주어진 초가 지나면 Runnable 형의 콜백 함수가 실행됩니다.
+     * 또, 주어진 MatchData 인스턴스의 타이머 관련 필드 값을 수정해 FRDB 반영에도 사용할 수 있게 해줍니다.
+     *
+     * @param matchData 매치 정보. 해당 인스턴스의 값이 수정됩니다.
+     * @param callback 콜백 함수.
+     * @param seconds 초.
+     * @return 성공 여부. 이미 해당 매치에 타이머가 설정되고 실행이 아직 되지 않은 경우.
+     */
     private boolean setCountdownForMatch(MatchData matchData, Runnable callback, int seconds) {
         ScheduledFuture<?> handlePrev = countdownSchedulers.getOrDefault(matchData.getId(), null);
 
@@ -401,6 +418,15 @@ public class MatchService {
         return true;
     }
 
+    /**
+     * 주어진 매치에 대해 카운트다운 설정. 주어진 시각에 도달하면 Runnable 형의 콜백 함수가 실행됩니다.
+     * 또, 주어진 MatchData 인스턴스의 타이머 관련 필드 값을 수정해 FRDB 반영에도 사용할 수 있게 해줍니다.
+     *
+     * @param matchData 매치 정보. 해당 인스턴스의 값이 수정됩니다.
+     * @param callback 콜백 함수.
+     * @param when 콜백 함수 실행 시각.
+     * @return 성공 여부. 이미 해당 매치에 타이머가 설정되고 실행이 아직 되지 않은 경우.
+     */
     private boolean setCountdownForMatch(MatchData matchData, Runnable callback, ZonedDateTime when) {
         ScheduledFuture<?> handlePrev = countdownSchedulers.getOrDefault(matchData.getId(), null);
 
@@ -421,11 +447,17 @@ public class MatchService {
         return true;
     }
 
+    /**
+     * 주어진 매치의 타이머를 취소시킵니다.
+     * @param matchData
+     * @return
+     */
     private boolean cancelCountdownForMatch(MatchData matchData) {
         ScheduledFuture<?> handle = countdownSchedulers.getOrDefault(matchData.getId(), null);
 
         if (handle != null) {
             handle.cancel(false);
+            countdownSchedulers.remove(matchData.getId());
             return true;
         }
 

@@ -9,9 +9,9 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import java.util.UUID;
 
 /**
- * FRDB 데이터 수정 서비스
+ * FRDB 데이터 수정 서비스.
  *
- * @author yubin
+ * @author Ahn yubin / 202021088
  */
 @Service
 public class FrdbService {
