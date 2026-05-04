@@ -47,6 +47,10 @@ public class PlayerData {
      */
     private boolean isSelecting = false;
     /**
+     * 최종 승리자 여부.
+     */
+    private boolean isFinalWinner = false;
+    /**
      * 선택한 행동
      */
     private HAND_CHOICE choice;

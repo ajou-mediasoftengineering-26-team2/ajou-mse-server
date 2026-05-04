@@ -25,6 +25,7 @@ public class FrdbMatchData {
     private int attackerPlayerIdx;
     private int currentTurn;
     private int currentRound;
+    private boolean isAttackSuccess;
     private Map<String, FrdbPlayerData> players;
 
     // 내부적인 LobbyData -> FRDB 로비 정보 변환
@@ -45,6 +46,7 @@ public class FrdbMatchData {
         data.setAttackerPlayerIdx(matchData.getAttackerPlayerIdx());
         data.setCurrentTurn(matchData.getCurrentTurn());
         data.setCurrentRound(matchData.getCurrentRound());
+        data.setAttackSuccess(matchData.isAttackSuccess());
         data.setPlayers(players);
 
         return data;

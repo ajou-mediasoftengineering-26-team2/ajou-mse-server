@@ -16,6 +16,7 @@ public class FrdbPlayerData {
     private int hp;
     private boolean isAttacking;
     private boolean isSelecting;
+    private boolean isFinalWinner;
 
     public static FrdbPlayerData from(PlayerData playerData) {
         FrdbPlayerData data = new FrdbPlayerData();
@@ -26,6 +27,7 @@ public class FrdbPlayerData {
         data.setHp(playerData.getHp());
         data.setAttacking(playerData.isAttacking());
         data.setSelecting(playerData.isSelecting());
+        data.setFinalWinner(playerData.isFinalWinner());
 
         return data;
     }

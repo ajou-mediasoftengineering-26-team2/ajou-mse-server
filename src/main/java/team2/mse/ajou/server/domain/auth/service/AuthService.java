@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.auth.service;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
@@ -24,6 +25,7 @@ public class AuthService {
         this.matchService = matchService;
     }
 
+    @Transactional
     public LoginAndJoinResult loginAndJoin(String playerName) {
         if (playerName == null || playerName.isBlank()) { // 이상한 입력값
             throw ApiError.INVALID_PARAMETER; // 자주 쓰이는 에러는 미리 정의된 상수 ApiError로 준비해봤습니다.
@@ -82,6 +84,7 @@ public class AuthService {
         );
     }
 
+    @Transactional
     public void logout(UUID playerId) {
         if (playerId == null) {
             throw ApiError.INVALID_PARAMETER;
@@ -102,6 +105,7 @@ public class AuthService {
         System.out.printf("Player `%s` left the game!\n", playerId);
     }
 
+    @Transactional
     public boolean checkPlayerNameAvailable(String playerName) {
         if (playerName == null) {
             throw ApiError.INVALID_PARAMETER;
