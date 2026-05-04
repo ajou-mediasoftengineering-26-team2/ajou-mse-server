@@ -26,8 +26,8 @@ public class ApiError extends RuntimeException {
     // 자주 쓰이는 종류는 미리 생성해둬서 바로 참조 가능하게...
     // 여기서의 에러 코드는 음수입니다. 왜냐면... 그래야 사용자 지정 API 에러랑 뭔가 분간이 되지 않을깝쇼
     // public static final ApiError UNKNOWN = new ApiError(0, "올바르지 못한 파라미터 값"); // 다른 곳에서 사용
-    public static final ApiError INVALID_PARAMETER = new ApiError(-1, "올바르지 못한 파라미터 값", HttpStatus.BAD_REQUEST);
-    public static final ApiError VALUE_DOES_NOT_EXIST = new ApiError(-2, "값이 존재하지 않음");
+    public static final ApiError INVALID_PARAMETER = new ApiError(-1, "Invalid parameter", HttpStatus.BAD_REQUEST);
+    public static final ApiError VALUE_DOES_NOT_EXIST = new ApiError(-2, "Value does not exist");
 
     /**
      * 사용자 지정 API 에러를 처리할 때 사용합니다.
