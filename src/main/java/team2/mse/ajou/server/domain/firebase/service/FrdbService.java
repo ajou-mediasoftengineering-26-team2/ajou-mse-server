@@ -22,7 +22,7 @@ public class FrdbService {
         this.firebaseDatabase = firebaseDatabase;
 
         matchRootRef = firebaseDatabase
-                .getReference("lobbies");
+                .getReference("matches");
     }
 
     public DatabaseReference getMatchRef(UUID id) {
