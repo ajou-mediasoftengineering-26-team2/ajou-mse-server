@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 
 import java.util.UUID;
 
@@ -45,4 +46,8 @@ public class PlayerData {
      * (현재 턴) 손(?) 선택 여부.
      */
     private boolean isSelecting = false;
+    /**
+     * 선택한 행동
+     */
+    private HAND_CHOICE choice;
 }
