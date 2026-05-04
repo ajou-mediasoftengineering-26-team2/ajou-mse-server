@@ -19,6 +19,10 @@ public class TurnController
 
     @PutMapping("/choice")
     public void putHandChoice(@RequestBody PutChoiceRequest req){
+        System.out.println("id = " + req.id());
+        System.out.println("choice = " + req.choice());
+
+        turnService.updateDB(req.id(), req.choice());
 
         try {
             turnService.updateFireBase(req.id(), req.choice());
