@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public record PostPlayerResponse(
         UUID playerId,
-        UUID lobbyId
+        UUID matchId
 ) {
 }

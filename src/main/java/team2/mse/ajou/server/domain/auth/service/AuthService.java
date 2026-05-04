@@ -3,24 +3,25 @@ package team2.mse.ajou.server.domain.auth.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
-import team2.mse.ajou.server.domain.auth.model.LobbyInfo;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
+import team2.mse.ajou.server.domain.shared.match.service.MatchService;
 
 import java.util.UUID;
 
 /**
  * 플레이어 로그인 & 로비 접속 인터랙션 관련 기능들 담당 서비스.
  *
- * @author yubin
+ * @author Ahn yubin / 202021088
  */
 @Service
 public class AuthService {
-    private final PlayerInfoService playerInfoService;
-    private final LobbyService lobbyService;
+    private final PlayerAuthService playerAuthService;
+    private final MatchService matchService;
 
-    public AuthService(PlayerInfoService playerInfoService, LobbyService lobbyService) {
-        this.playerInfoService = playerInfoService;
-        this.lobbyService = lobbyService;
+    public AuthService(PlayerAuthService playerAuthService, MatchService matchService) {
+        this.playerAuthService = playerAuthService;
+        this.matchService = matchService;
     }
 
     public LoginAndJoinResult loginAndJoin(String playerName) {
@@ -34,23 +35,23 @@ public class AuthService {
             int wow = 10 / 0; // ArithmeticException throw됨
         }
 
-        LobbyInfo lobby = null;
+        MatchData lobby = null;
         UUID playerId = null;
 
         try {
             try {
-                playerId = playerInfoService.login(playerName);
+                playerId = playerAuthService.login(playerName);
             } catch (IllegalArgumentException e) {
                 throw new ApiError(4000, "중복되는 닉네임입니다.");
             }
 
-            LobbyInfo previousLobby = lobbyService.getOpenLobby();
+            MatchData previousLobby = matchService.getOpenMatch();
 
             if (previousLobby != null) {
                 lobby = previousLobby;
             } else {
                 // 참가 가능 로비가 없으니 새 로비 생성
-                lobby = lobbyService.createLobby();
+                lobby = matchService.createMatch();
             }
 
             // createLobby() 도 실패하면 무슨 일이 생겨서 로비를 참가할수도 새로 생성할수도 없는 상황인 것... 이거는 버그일 가능성이 커요
@@ -59,14 +60,14 @@ public class AuthService {
             }
 
             // joinLobby()가 실패하는 것도 동일한 이치
-            boolean result = lobbyService.joinLobby(playerId, lobby.getId());
+            boolean result = matchService.joinMatch(playerId, lobby.getId());
             if (!result) {
                 throw new ApiError(5002, "로비 참가에 실패했습니다.");
             }
         } catch (ApiError err) {
             // 뭐가되었든 로비 참가에 실패하면 자동으로 로그아웃 시켜줍시다
             if (playerId != null) {
-                playerInfoService.logout(playerId);
+                playerAuthService.logout(playerId);
             }
             throw err;
         }
@@ -87,16 +88,16 @@ public class AuthService {
         }
 
         // 1] 플레이어가 로비에 입장해있는 경우 퇴장
-        LobbyInfo lobby = lobbyService.findLobbyByPlayerId(playerId);
+        MatchData lobby = matchService.findMatchByPlayerId(playerId);
         if (lobby != null) {
-            lobbyService.leaveLobby(playerId, lobby.getId());
+            matchService.leaveMatch(playerId, lobby.getId());
         }
 
         // 2] 그 뒤에서야 플레이어 로그인 여부 판단 & 로그아웃 진행
-        if (!playerInfoService.isPlayerExists(playerId)) {
+        if (!playerAuthService.isPlayerExists(playerId)) {
             throw new ApiError(4001, "로그인 되지 않은 플레이어입니다.");
         }
-        playerInfoService.logout(playerId);
+        playerAuthService.logout(playerId);
 
         System.out.printf("Player `%s` left the game!\n", playerId);
     }
@@ -106,6 +107,6 @@ public class AuthService {
             throw ApiError.INVALID_PARAMETER;
         }
 
-        return playerInfoService.isUsernameAvailable(playerName);
+        return playerAuthService.isUsernameAvailable(playerName);
     }
 }
