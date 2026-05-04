@@ -1,10 +1,10 @@
-package team2.mse.ajou.server.domain.turn.controller;
+package team2.mse.ajou.server.test.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.turn.model.TestResponse;
+import team2.mse.ajou.server.test.model.TestResponse;
 
 
 import java.util.UUID;
