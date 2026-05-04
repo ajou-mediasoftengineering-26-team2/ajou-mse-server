@@ -9,7 +9,8 @@ import team2.mse.ajou.server.domain.turn.model.TestResponse;
 
 import java.util.UUID;
 
-/**
+/** 테스트를 위한 임시 Controller
+ *
  * @author Junseo Hwang
  */
 

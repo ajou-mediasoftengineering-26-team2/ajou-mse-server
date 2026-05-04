@@ -8,6 +8,10 @@ import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository
 import team2.mse.ajou.server.domain.turn.model.PutChoiceRequest;
 import team2.mse.ajou.server.domain.turn.service.TurnService;
 
+/** 매 턴마다 플레이어의 행동 선택을 입력받습니다.
+ *
+ * @author Junseo Hwang
+ */
 
 @RestController
 @RequestMapping("/turn")
