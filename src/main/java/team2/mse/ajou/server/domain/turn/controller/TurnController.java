@@ -6,6 +6,9 @@ import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.turn.model.PutChoiceRequest;
 import team2.mse.ajou.server.domain.turn.service.TurnService;
 
+/**
+ * @author Junseo Hwang
+ */
 
 @RestController
 @RequestMapping("/turn")
@@ -15,11 +18,10 @@ public class TurnController
     private TurnService turnService;
 
     @PutMapping("/choice")
-    public void putHandChoice(
-            @RequestBody PutChoiceRequest req
-            ){
+    public void putHandChoice(@RequestBody PutChoiceRequest req){
+
         try {
-            turnService.putResult(req.id(), req.choice());
+            turnService.updateFireBase(req.id(), req.choice());
             return;
         } catch (Exception e){
             throw new ApiError(5000, "firebase error");
