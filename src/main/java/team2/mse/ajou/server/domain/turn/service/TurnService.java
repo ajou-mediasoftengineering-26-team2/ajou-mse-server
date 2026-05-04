@@ -46,7 +46,9 @@ public class TurnService {
         player.setSelected(true);
         playerRepository.save(player);
 
-//        GameMatch gameMatch = gameMatchRepository.findById(player.getGameMatchId())
-//                .orElseThrow(() -> new IllegalArgumentException("No exist Match"));
+        GameMatch gameMatch = gameMatchRepository.findById(player.getGameMatchId())
+                .orElseThrow(() -> new IllegalArgumentException("No exist Match"));
+
+        
     }
 }
