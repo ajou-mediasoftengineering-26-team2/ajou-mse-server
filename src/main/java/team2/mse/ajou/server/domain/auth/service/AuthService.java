@@ -1,11 +1,14 @@
 package team2.mse.ajou.server.domain.auth.service;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
 import team2.mse.ajou.server.domain.shared.match.service.MatchService;
 
 import java.util.UUID;
@@ -17,11 +20,11 @@ import java.util.UUID;
  */
 @Service
 public class AuthService {
-    private final PlayerAuthService playerAuthService;
+    private final PlayerDataRepository playerDataRepository;
     private final MatchService matchService;
 
-    public AuthService(PlayerAuthService playerAuthService, MatchService matchService) {
-        this.playerAuthService = playerAuthService;
+    public AuthService(PlayerDataRepository playerDataRepository, MatchService matchService) {
+        this.playerDataRepository = playerDataRepository;
         this.matchService = matchService;
     }
 
@@ -42,7 +45,7 @@ public class AuthService {
 
         try {
             try {
-                playerId = playerAuthService.login(playerName);
+                playerId = forceLogin(playerName);
             } catch (IllegalArgumentException e) {
                 throw new ApiError(4000, "중복되는 닉네임입니다.");
             }
@@ -69,7 +72,7 @@ public class AuthService {
         } catch (ApiError err) {
             // 뭐가되었든 로비 참가에 실패하면 자동으로 로그아웃 시켜줍시다
             if (playerId != null) {
-                playerAuthService.logout(playerId);
+                forceLogout(playerId);
             }
             throw err;
         }
@@ -97,20 +100,52 @@ public class AuthService {
         }
 
         // 2] 그 뒤에서야 플레이어 로그인 여부 판단 & 로그아웃 진행
-        if (!playerAuthService.isPlayerExists(playerId)) {
+        if (!isPlayerLoggedIn(playerId)) {
             throw new ApiError(4001, "로그인 되지 않은 플레이어입니다.");
         }
-        playerAuthService.logout(playerId);
+        forceLogout(playerId);
 
         System.out.printf("Player `%s` left the game!\n", playerId);
     }
 
-    @Transactional
     public boolean checkPlayerNameAvailable(String playerName) {
         if (playerName == null) {
             throw ApiError.INVALID_PARAMETER;
         }
 
-        return playerAuthService.isUsernameAvailable(playerName);
+        if (!isUsernameValid(playerName)) {
+            return false;
+        }
+        return !playerDataRepository.existsByUsername(playerName);
+    }
+
+    private void forceLogout(UUID playerId) {
+        playerDataRepository.deleteById(playerId);
+        System.out.println("LOGOUT FOR `%s`".formatted(playerId));
+    }
+
+    private UUID forceLogin(String username) {
+        if (!checkPlayerNameAvailable(username)) {
+            throw new IllegalArgumentException("사용 불가 닉네임.");
+        }
+
+        PlayerData playerData = new PlayerData();
+        // FIXME: Ready 플로우 추가
+        playerData.setReady(true);
+
+        playerData.setUsername(username);
+
+        PlayerData res = playerDataRepository.save(playerData);
+        // System.out.println("SAVING PLAYERINFO FOR `%s`".formatted(res.getId()));
+
+        return res.getId();
+    }
+
+    private boolean isUsernameValid(@NonNull String username) {
+        return !username.isEmpty();
+    }
+
+    private boolean isPlayerLoggedIn(UUID playerId) {
+        return playerDataRepository.existsById(playerId);
     }
 }
