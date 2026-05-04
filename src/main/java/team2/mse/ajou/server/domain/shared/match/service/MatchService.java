@@ -317,6 +317,18 @@ public class MatchService {
     }
 
     /**
+     * 모든 매치를 닫고 정리합니다.
+     */
+    public void deleteAllMatch() {
+        for (ScheduledFuture<?> handler: countdownSchedulers.values()) {
+            handler.cancel(false);
+        }
+        countdownSchedulers.clear();
+        matchDataRepository.deleteAll();
+        frdbService.clearAllMatch();
+    }
+
+    /**
      * 주어진 매치에 대해 카운트다운 설정. 현재 시각 기준 주어진 초가 지나면 Runnable 형의 콜백 함수가 실행됩니다.
      * 또, 주어진 MatchData 인스턴스의 타이머 관련 필드 값을 수정해 FRDB 반영에도 사용할 수 있게 해줍니다.
      *
