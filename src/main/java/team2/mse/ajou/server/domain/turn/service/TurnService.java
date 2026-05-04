@@ -3,22 +3,29 @@ package team2.mse.ajou.server.domain.turn.service;
 import com.google.firebase.database.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
+
+import java.util.UUID;
 
 @Service
 public class TurnService {
-    private final FirebaseDatabase firebaseDatabase;
+    private final PlayerDataRepository playerDataRepository;
 
     @Autowired
-    public TurnService(FirebaseDatabase firebaseDatabase) {
-        this.firebaseDatabase = firebaseDatabase;
+    public TurnService(PlayerDataRepository playerDataRepository) {
+        this.playerDataRepository = playerDataRepository;
     }
 
-    public void putResult(String id, String choice) throws Exception {
-        // As an admin, the app has access to read and write all data, regardless of Security Rules
-        DatabaseReference ref = firebaseDatabase.getReference();
-        ref.child(id)
-           .child("choice")
-           .setValueAsync(choice);
+    public void putPlayerInput(String id, String choice) throws Exception {
+        UUID uuid = UUID.fromString(id);
+        PlayerData playerData = playerDataRepository.findById(uuid)
+                .orElseThrow(()-> new IllegalArgumentException("Not Found: "+id));
 
+        HAND_CHOICE handChoice = HAND_CHOICE.valueOf(choice);
+        playerData.setChoice(handChoice);
+
+        playerDataRepository.save(playerData);
     }
 }
