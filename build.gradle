@@ -25,7 +25,9 @@ jib {
     }
 
     container {
-        ports = [ '8080/tcp' ];
+        ports = [ '8080/tcp' ]
+        jvmFlags = ['-Duser.timezone=Asia/Seoul']
+        environment = [TZ: 'Asia/Seoul']
     }
 
     // docker compose 플러그인 무시. 어쩌피 docker에서 실행하니깐 spring boot 플러그인으로 별도로 실행해줄 필요가 없습니다
