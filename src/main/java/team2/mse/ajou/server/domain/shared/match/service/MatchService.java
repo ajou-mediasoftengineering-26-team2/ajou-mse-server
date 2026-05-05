@@ -345,7 +345,7 @@ public class MatchService {
             return false;
         }
 
-        ZonedDateTime   currentTime = ZonedDateTime.now(ZoneId.systemDefault()),
+        ZonedDateTime   currentTime = ZonedDateTime.now(TimeZone.getTimeZone("KST").toZoneId()),
                         when = currentTime.plusSeconds(seconds);
 
         System.out.println("COUNTDOWN MATCH " + matchData.getId() + " @ " + currentTime);
@@ -374,7 +374,7 @@ public class MatchService {
             return false;
         }
 
-        ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
+        ZonedDateTime currentTime = ZonedDateTime.now(TimeZone.getTimeZone("KST").toZoneId());
         int seconds = (int) currentTime.until(when, ChronoUnit.SECONDS);
 
         System.out.println("COUNTDOWN MATCH " + matchData.getId() + " @ " + currentTime);
