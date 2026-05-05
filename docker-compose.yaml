@@ -14,6 +14,9 @@ services:
       - SECRET_MYSQL_PASSWORD
     ports:
       - "3306:3306"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
 #    networks:
 #      - ajou-mse-2026-backend
     healthcheck: # MySQL이 정상적으로 실행될 때까지 기다리도록 설정
@@ -34,6 +37,9 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
     environment:
       MYSQL_HOST: mse-2026-mysql-db
 secrets:

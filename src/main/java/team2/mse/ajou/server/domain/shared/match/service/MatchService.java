@@ -13,6 +13,7 @@ import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -344,7 +345,7 @@ public class MatchService {
             return false;
         }
 
-        ZonedDateTime   currentTime = ZonedDateTime.now(),
+        ZonedDateTime   currentTime = ZonedDateTime.now(ZoneId.systemDefault()),
                         when = currentTime.plusSeconds(seconds);
 
         System.out.println("COUNTDOWN MATCH " + matchData.getId() + " @ " + currentTime);
@@ -373,7 +374,7 @@ public class MatchService {
             return false;
         }
 
-        ZonedDateTime currentTime = ZonedDateTime.now();
+        ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.systemDefault());
         int seconds = (int) currentTime.until(when, ChronoUnit.SECONDS);
 
         System.out.println("COUNTDOWN MATCH " + matchData.getId() + " @ " + currentTime);
