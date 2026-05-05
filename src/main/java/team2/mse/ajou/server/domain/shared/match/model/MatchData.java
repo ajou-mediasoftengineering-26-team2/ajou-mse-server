@@ -60,6 +60,10 @@ public class MatchData {
      */
     private int attackerPlayerIdx = 0;
     /**
+     * 공격수의 최근 공격이 성공했는지 여부.
+     */
+    private boolean isAttackSuccess = false;
+    /**
      * 현재 매치에 참가중인 플레이어 목록.
      */
     @OneToMany(fetch = FetchType.EAGER)

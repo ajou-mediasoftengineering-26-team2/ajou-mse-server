@@ -29,6 +29,10 @@ public class TurnService {
         PlayerData playerData = playerDataRepository.findById(uuid)
                 .orElseThrow(()-> new IllegalArgumentException("Not Found: "+id));
 
+        if (!playerData.isSelecting()) {
+            throw new IllegalStateException("Player is not selecting!");
+        }
+
         HAND_CHOICE handChoice = HAND_CHOICE.valueOf(choice);
         playerData.setChoice(handChoice);
 

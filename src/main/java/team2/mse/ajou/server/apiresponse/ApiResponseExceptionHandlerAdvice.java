@@ -38,7 +38,7 @@ public class ApiResponseExceptionHandlerAdvice {
         // TODO: Logger 사용
         err.printStackTrace();
 
-        ErrorData data = new ErrorData(0, "알 수 없는 서버 에러: (%s)".formatted(err.toString()));
+        ErrorData data = new ErrorData(0, "UNKNOWN SERVER ERROR: (%s)".formatted(err.toString()));
         ApiResponse<ErrorData> body = ApiResponse.error(data);
         ResponseEntity<ApiResponse<ErrorData>> res;
 

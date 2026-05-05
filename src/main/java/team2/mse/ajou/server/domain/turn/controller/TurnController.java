@@ -27,6 +27,8 @@ public class TurnController
         try {
             turnService.putPlayerInput(req.id(), req.choice());
             return;
+        } catch (IllegalStateException e){
+            throw new ApiError(4000, e.getMessage());
         } catch (Exception e){
             throw new ApiError(5000, "firebase error");
         }
