@@ -9,7 +9,7 @@ public class WebCorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:6767", "https://ajou-mediasoftengineering-26-team2.github.io/ajou-mse-backend-page") // 테스트페이지
+                .allowedOrigins("http://localhost:6767", "https://ajou-mse-backend-page.zik-proffy.workers.dev") // 테스트페이지
                 .allowedMethods("GET", "POST", "DELETE", "PUT", "PATCH", "DELETE")
                 .allowedHeaders("*")
                 .allowCredentials(true);
