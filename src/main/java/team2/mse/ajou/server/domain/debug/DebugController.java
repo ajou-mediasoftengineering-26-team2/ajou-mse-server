@@ -7,8 +7,8 @@ import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository
 import team2.mse.ajou.server.domain.shared.match.service.MatchService;
 
 /**
- * 디버그용!!!
- * 디버그용 데이터 조종 컨트롤러
+ * DEBUG ONLY!!!
+ * Debug database modification API endpoints.
  *
  * @author Ahn Yubin / 202021088
  */
@@ -24,7 +24,7 @@ public class DebugController {
     }
 
     /**
-     * 서버 DB의 모든 데이터를 지우고 리셋시킵니다. 아마도
+     * Try to delete all internal data and FRDB.
      */
     @DeleteMapping("/data")
     public void deleteData() {

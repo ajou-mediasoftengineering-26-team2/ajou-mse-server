@@ -1,3 +1,6 @@
+# GitHub Actions for CI/CD.
+# Ahn Yubin / 202021088
+
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
 # separate terms of service, privacy policy, and support
@@ -24,21 +27,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # Allow this CI/CD runner to access Amazon EC2 instance (get IP of this CI/CD runner)
     - name: Github Actions이 돌아가는 IP 가져오기
       id: ip
       uses: haythem/public-ip@v1.2
 
+    # Allow this CI/CD runner to access Amazon EC2 instance (setup credentials)
     - name: Amazon EC2 접근 가능하게 AWS Credentials 설정
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-southeast-2
-    
+
+    # Allow this CI/CD runner to access Amazon EC2 instance
     - name: Amazon EC2에 Github Actions이 돌아가는 IP 넣기
       run: |
         aws ec2 authorize-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
+    # Generate secret files
     - name: Application secret 생성
       run: |
         touch ./src/main/resources/application-secrets.properties
@@ -52,6 +59,7 @@ jobs:
         touch ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
         echo '${{ secrets.SECRET_FIREBASE_SERVICE_ACCOUNT }}' >> ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
 
+    # Upload debug artifacts
     - name: application-secrets 파일 확인용 업로드
       uses: actions/upload-artifact@v4
       with:
@@ -64,6 +72,7 @@ jobs:
         name: firebase-secrets
         path: ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
 
+    # Set up JDK for build
     - name: JDK 25 설정하기
       uses: actions/setup-java@v4
       with:
@@ -78,7 +87,7 @@ jobs:
     - name: Gradle Wrapper로 프로젝트 빌드
       run: ./gradlew jibBuildTar -PIS_GITHUB_CI_CD=true
     
-    # Amazon EC2 머신 상의 ~/deploy 폴더속에 넘깁니다. ( ~/deploy -> /home/dolce/deploy 로 단축 )
+    # SCP the built image to Amazon EC2, in `~/deploy` directory. ( `~/deploy` -> `/home/dolce/deploy` )
     - name: 빌드한 Docker (.tar 이미지 + docker-compose.yml) 파일 SCP로 EC2 머신에 넘기기
       uses: appleboy/scp-action@v1
       with:
@@ -87,7 +96,8 @@ jobs:
         key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
         source: build/jib-image.tar, build/mysql_root_password.txt, build/mysql_user.txt, build/mysql_password.txt, docker-compose.yaml
         target: /home/dolce/deploys
-    
+
+    # Use SSH to "manually" load & run Docker images
     - name: EC2에 SSH로 접속해 실행하기
       uses: appleboy/ssh-action@v1
       with:
@@ -104,6 +114,7 @@ jobs:
           docker compose --profile deploy up -d
           docker image prune -f
 
+    # Un-allow this CI/CD runner to access Amazon EC2 instance
     - name: Github Actions IP 제거 (원상복귀)
       # (중간에 빌드 삑사리나서 actions가 캔슬되어도 원상복귀는 계속되야합니다!!)
       if: ${{ always() }}
@@ -120,6 +131,7 @@ jobs:
     # - name: Build with Gradle 8.9
     #   run: gradle build
 
+    # Upload debug build artifacts
     - name: 빌드 파일 확인용 업로드
       uses: actions/upload-artifact@v4
       with:

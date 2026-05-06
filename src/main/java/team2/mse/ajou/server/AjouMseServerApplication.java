@@ -52,7 +52,7 @@ public class AjouMseServerApplication {
 
     @PostConstruct
     public void initTime() {
-        // 서버 시간대 한국(KST)으로 설정
+        // Set server timezone to KST.
         TimeZone.setDefault(TimeZone.getTimeZone("KST"));
     }
 }

@@ -4,9 +4,9 @@ import lombok.Data;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- * Firebase RDB에 저장할때 사용되는 플레이어 정보. 실제로는 PlayerData 클래스를 사용하니 해당 클래스를 참고바랍니다.
+ * Player data used to set FRDB (Firebase Realtime DB). Internally converted from `PlayerData`.
  *
- * @author Ahn yubin / 202021088
+ * @author Ahn Yubin / 202021088
  */
 @Data
 public class FrdbPlayerData {

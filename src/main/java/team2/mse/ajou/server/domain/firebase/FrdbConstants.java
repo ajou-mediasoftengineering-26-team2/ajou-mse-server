@@ -3,9 +3,9 @@ package team2.mse.ajou.server.domain.firebase;
 import java.time.format.DateTimeFormatter;
 
 /**
- * FRDB에 사용되는 상수들. (e.g. 시간 포맷)
+ * FRDB (Firebase Realtime DB) related constants. (e.g. Timestamp pattern/formats)
  *
- * @author Ahn yubin / 202021088
+ * @author Ahn Yubin / 202021088
  */
 public final class FrdbConstants {
     public static final String TIME_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";

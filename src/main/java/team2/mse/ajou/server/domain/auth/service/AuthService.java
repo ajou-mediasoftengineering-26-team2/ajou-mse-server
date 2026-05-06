@@ -14,9 +14,9 @@ import team2.mse.ajou.server.domain.shared.match.service.MatchService;
 import java.util.UUID;
 
 /**
- * 플레이어 로그인 & 로비 접속 인터랙션 관련 기능들 담당 서비스.
+ * Player login & matchmaking related service.
  *
- * @author Ahn yubin / 202021088
+ * @author Ahn Yubin / 202021088
  */
 @Service
 public class AuthService {
@@ -28,16 +28,23 @@ public class AuthService {
         this.matchService = matchService;
     }
 
+    /**
+     * Login with given username then joins (and creates if needed) a match.
+     * Returns player and match (UU)ID.
+     *
+     * @param playerName Player username.
+     * @return Result data.
+     */
     @Transactional
     public LoginAndJoinResult loginAndJoin(String playerName) {
-        if (playerName == null || playerName.isBlank()) { // 이상한 입력값
-            throw ApiError.INVALID_PARAMETER; // 자주 쓰이는 에러는 미리 정의된 상수 ApiError로 준비해봤습니다.
-        } else if ("error".equalsIgnoreCase(playerName)) { // 그 외 에러
+        if (playerName == null || playerName.isBlank()) { // Invalid parameter
+            throw ApiError.INVALID_PARAMETER; // Use constant/pre-made ApiError for common errors
+        } else if ("error".equalsIgnoreCase(playerName)) { // Misc. error scenario
             throw new ApiError(67676767, "ERROR TEST", HttpStatus.BAD_REQUEST);
-        } else if ("error_unexpected".equalsIgnoreCase(playerName)) { // 예상치 못한 에러 (500)
+        } else if ("error_unexpected".equalsIgnoreCase(playerName)) { // Artificial (?) unexpected error (500) test scenario
             // throw new ArithmeticException();
-            // 혹은
-            int wow = 10 / 0; // ArithmeticException throw됨
+            // OR
+            int wow = 10 / 0; // ArithmeticException is thrown here
         }
 
         MatchData lobby = null;
@@ -55,29 +62,29 @@ public class AuthService {
             if (previousLobby != null) {
                 lobby = previousLobby;
             } else {
-                // 참가 가능 로비가 없으니 새 로비 생성
+                // Create a new lobby/match if there's no lobby to join
                 lobby = matchService.createMatch();
             }
 
-            // createLobby() 도 실패하면 무슨 일이 생겨서 로비를 참가할수도 새로 생성할수도 없는 상황인 것... 이거는 버그일 가능성이 커요
+            // If `createMatch()` fails, then we have problem finding lobbies to join. Mostly a bug.
             if (lobby == null) {
                 throw new ApiError(5001, "Failed to search for lobby.");
             }
 
-            // joinLobby()가 실패하는 것도 동일한 이치
+            // Same thing goes for `joinMatch()` failing.
             boolean result = matchService.joinMatch(playerId, lobby.getId());
             if (!result) {
                 throw new ApiError(5002, "Failed to enter lobby.");
             }
         } catch (ApiError err) {
-            // 뭐가되었든 로비 참가에 실패하면 자동으로 로그아웃 시켜줍시다
+            // If (creating &) joining lobbies have failed on both end, log the player out to make it available to be used so players may try again.
             if (playerId != null) {
                 forceLogout(playerId);
             }
             throw err;
         }
 
-        if (lobby == null) { // 이미 위에서 throw로 가드를 해줘서 사실상 진입 불가능합니다. 그래도 혹시나..
+        if (lobby == null) { // This is theoretically un-reachable condition. But just in case.
             throw new ApiError(5000, "Lobby error. (FATAL ERROR!! CALL YUBIN)");
         }
 
@@ -87,19 +94,24 @@ public class AuthService {
         );
     }
 
+    /**
+     * Logs out player from given player UUID. Leaves ongoing match if the player is currently joining one.
+     *
+     * @param playerId Player UUID.
+     */
     @Transactional
     public void logout(UUID playerId) {
         if (playerId == null) {
             throw ApiError.INVALID_PARAMETER;
         }
 
-        // 1] 플레이어가 로비에 입장해있는 경우 퇴장
+        // 1] Log out player if they are currently in match first.
         MatchData lobby = matchService.findMatchByPlayerId(playerId);
         if (lobby != null) {
             matchService.leaveMatch(playerId, lobby.getId());
         }
 
-        // 2] 그 뒤에서야 플레이어 로그인 여부 판단 & 로그아웃 진행
+        // 2] Log out player if they are currently are.
         if (!isPlayerLoggedIn(playerId)) {
             throw new ApiError(4001, "User not logged in.");
         }
@@ -108,6 +120,12 @@ public class AuthService {
         System.out.printf("Player `%s` left the game!\n", playerId);
     }
 
+    /**
+     * Checks whether given username is available.
+     *
+     * @param playerName Username.
+     * @return Whether given username is available.
+     */
     public boolean checkPlayerNameAvailable(String playerName) {
         if (playerName == null) {
             throw ApiError.INVALID_PARAMETER;
@@ -130,7 +148,7 @@ public class AuthService {
         }
 
         PlayerData playerData = new PlayerData();
-        // FIXME: Ready 플로우 추가
+        // FIXME: Add player ready button in the lobby / waiting screen
         playerData.setReady(true);
 
         playerData.setUsername(username);
@@ -141,10 +159,22 @@ public class AuthService {
         return res.getId();
     }
 
+    /**
+     * Checks whether given username is in valid format.
+     *
+     * @param username Username.
+     * @return Whether given username is valid.
+     */
     private boolean isUsernameValid(@NonNull String username) {
         return !username.isEmpty();
     }
 
+    /**
+     * Checks whether player with given ID is currently logged in.
+     *
+     * @param playerId Player UUID.
+     * @return Whether given player is logged in.
+     */
     private boolean isPlayerLoggedIn(UUID playerId) {
         return playerDataRepository.existsById(playerId);
     }

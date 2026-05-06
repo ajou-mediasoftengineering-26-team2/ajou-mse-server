@@ -1,11 +1,11 @@
 package team2.mse.ajou.server.apiresponse.model;
 
 /**
- * API Response에 넣어질 에러 데이터.
+ * Error data. Part of `ApiResponse<>`.
  *
- * @param code    에러 코드. HTTP 코드/Status와 다릅니다!
- * @param message 에러 메시지.
- * @author yubin
+ * @param code    Error code. Different from HTTP Status!
+ * @param message Error message.
+ * @author Ahn Yubin / 202021088
  */
 public record ErrorData(
         int code,
