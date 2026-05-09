@@ -14,6 +14,7 @@ import java.util.UUID;
  * @author Junseo Hwang
  */
 
+@Deprecated(forRemoval = true)
 @RestController
 @RequestMapping("/test")
 @AllArgsConstructor
