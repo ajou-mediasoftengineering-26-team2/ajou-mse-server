@@ -10,9 +10,9 @@ import java.util.stream.Collectors;
 import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_FORMATTER;
 
 /**
- * Firebase RDB에 저장할 때 사용되는 로비 정보. 실제로는 MatchData 클래스를 사용하니 해당 클래스를 참고바랍니다.
+ * Lobby data used to set FRDB (Firebase Realtime DB). Internally converted from `MatchData`.
  *
- * @author Ahn yubin / 202021088
+ * @author Ahn Yubin / 202021088
  */
 @Data
 public class FrdbMatchData {

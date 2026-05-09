@@ -20,9 +20,9 @@ import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 
 /**
- * 게임 매치 정보 관리 서비스.
+ * Match data management service.
  *
- * @author yubin
+ * @author Ahn Yubin / 202021088
  */
 @Service
 public class MatchService {
@@ -33,7 +33,7 @@ public class MatchService {
 
     private final MatchTurnCalcService matchTurnCalcService;
 
-    // 각 로비마다 카운트다운 핸들(?)을 담는 map
+    // Handles of scheduled tasks for each match so that we can cancel any tasks. Mostly for countdown timers.
     private final TaskScheduler scheduler;
     private final Map<UUID, ScheduledFuture<?>> countdownSchedulers;
 
@@ -49,9 +49,9 @@ public class MatchService {
     }
 
     /**
-     * 참가 가능한 아무 매치를 반환합니다.
+     * Returns any match/lobbies available for joining.
      *
-     * @return 참가 가능한 매치.
+     * @return Match. null if not found.
      */
     @Transactional
     public MatchData getOpenMatch() {
@@ -63,9 +63,9 @@ public class MatchService {
     }
 
     /**
-     * 신규 매치를 생성합니다.
+     * Creates a new match.
      *
-     * @return 매치 정보.
+     * @return Match data.
      */
     @Transactional
     public MatchData createMatch() {
@@ -83,10 +83,10 @@ public class MatchService {
     }
 
     /**
-     * 플레이어 UUID로 플레이어가 속한 매치 정보를 가져옵니다.
+     * Fetches match data of given player UUID.
      *
-     * @param playerId 플레이어 UUID.
-     * @return 매치 정보. 없을 경우 null.
+     * @param playerId Player UUID.
+     * @return Match data. null if not found.
      */
     @Transactional
     public MatchData findMatchByPlayerId(UUID playerId) {
@@ -99,11 +99,11 @@ public class MatchService {
     }
 
     /**
-     * 플레이어를 매치에 참가시킵니다.
+     * Joins player in match.
      *
-     * @param playerId 플레이어 UUID.
-     * @param matchId  매치 UUID.
-     * @return 참가 여부.
+     * @param playerId Player UUID.
+     * @param matchId  Match UUID.
+     * @return Whether if joining was successful.
      */
     @Transactional
     public boolean joinMatch(UUID playerId, UUID matchId) {
@@ -116,25 +116,25 @@ public class MatchService {
         MatchData newMatchData = matchData.get();
         PlayerData newPlayerData = playerData.get();
 
-        // 이미 게임이 진행중이면 참가 불가능
+        // If game has already started, abort.
         if (newMatchData.getState().isIngame()) {
             return false;
         }
 
         System.out.println("MATCH JOIN: %s / %s".formatted(newMatchData.getId(), newMatchData.getPlayers()));
 
-        // 로비에 플레이어 추가, 플레이어에는 참가한 로비 값 갱신
+        // Add player to the list of joined player for match, and set joined match for player.
         newPlayerData.setJoinedMatchId(matchId);
         newMatchData.updatePlayer(newPlayerData);
 
-        // 로비 상태 변경
+        // Handle match join event.
         onPlayerJoin(newMatchData);
 
-        // 내부 DB속 로비, 플레이어 데이터 갱신
+        // Update internal DB to reflect this change.
         // newPlayerData = playerDataRepository.save(newPlayerData);
         newMatchData = matchDataRepository.save(newMatchData);
 
-        // Firebase RDB에 수정사항 갱신
+        // Apply to Firebase RDB aswell.
         frdbService.setMatch(matchId, newMatchData);
         return true;
     }
@@ -161,7 +161,7 @@ public class MatchService {
         MatchData newMatchData = matchData.get();
         PlayerData newPlayerData = playerData.get();
 
-        // 로비로부터 플레이어 제거
+        // Remove player from match.
         newPlayerData.setJoinedMatchId(null);
         newPlayerData.setReady(false);
         newMatchData.removePlayer(playerData.get().getId());
@@ -169,23 +169,23 @@ public class MatchService {
             return false;
         }*/
 
-        // 로비 상태 변경
+        // Handle match leave event.
         onPlayerLeave(newMatchData);
 
-        // 내부 DB속 로비, 플레이어 데이터 갱신
+        // Update internal DB to reflect this change.
         newPlayerData = playerDataRepository.save(newPlayerData);
         newMatchData = matchDataRepository.save(newMatchData);
 
-        // Firebase RDB에 수정사항 갱신
+        // Apply to Firebase RDB aswell.
         frdbService.setMatch(matchId, newMatchData);
         return true;
     }
 
     /**
-     * 플레이어 정보 수정을 위해 값을 가져옵니다.
+     * Fetches player data by UUID.
      *
      * @param id UUID.
-     * @return 플레이어 정보. 찾지 못할 경우 null.
+     * @return Player data. null if not found.
      */
     public PlayerData getPlayerById(UUID id) {
         return playerDataRepository
@@ -194,33 +194,33 @@ public class MatchService {
     }
 
     /**
-     * 수정한 플레이어 정보를 Firebase + 내부 DB에 저장합니다.
+     * Saves player data to Firebase Realtime DB.
      *
-     * @param playerData 플레이어 정보.
+     * @param playerData Player data.
      */
     @Transactional
     public void savePlayer(PlayerData playerData) {
         Optional<MatchData> matchData = matchDataRepository.findById(playerData.getJoinedMatchId());
         PlayerData newPlayerData = playerDataRepository.save(playerData);
 
-        // 로비상의 플레이어 정보도 갱신
+        // We need match data because we have to update player information inside the match.
         if (matchData.isEmpty()) {
             return;
         }
 
         MatchData newMatchData = matchData.get();
 
-        // 내부 DB속 로비, 플레이어 데이터 갱신
+        // Update internal DB to reflect this change.
         newMatchData.updatePlayer(playerData);
         newMatchData = matchDataRepository.save(newMatchData);
 
-        // Firebase RDB에 수정사항 갱신
+        // Apply to Firebase RDB aswell.
         frdbService.setMatch(newMatchData.getId(), newMatchData);
     }
 
     /**
-     * 플레이어 참가시 데이터 수정용 콜백. 충분한 인원이 참여했을 경우 매치 시작 타이머를 설정합니다.
-     * @param matchData 매치 데이터.
+     * Callback called when player joins the match. Sets up timer to start a match if sufficient players have joined and are ready.
+     * @param matchData Match data to be modified.
      */
     @Transactional
     public void onPlayerJoin(MatchData matchData) {
@@ -241,8 +241,8 @@ public class MatchService {
     }
 
     /**
-     * 플레이어 퇴장시 데이터 수정용 콜백. 충분한 인원이 참여했을 경우 매치 시작 타이머를 설정합니다.
-     * @param matchData 매치 데이터.
+     * Callback called when player leaves the match. Cancels timer if there's one.
+     * @param matchData Match data to be modified.
      */
     @Transactional
     public void onPlayerLeave(MatchData matchData) {
@@ -262,8 +262,8 @@ public class MatchService {
     }
 
     /**
-     * 매치 턴 시작시 콜백. 공격수를 정하고 첫 턴 입력을 받도록 타이머를 설정합니다.
-     * @param matchId 매치 ID.
+     * Callback called when match is started. Determines the initial attacker, and sets the timer to get the inputs for the first turn.
+     * @param matchId Match ID.
      */
     @Transactional
     public void onMatchStart(UUID matchId) {
@@ -275,22 +275,22 @@ public class MatchService {
 
         matchTurnCalcService.initializeMatch(matchData);
 
-        // 다음 턴 제한시간 설정
+        // Schedule turn handling task in 5 seconds from now.
         if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
             System.err.println("FAILED TO SCHEDULE INITIAL TURN COUNTDOWN FOR GAME `" + matchData.getId() + "`");
         }
 
-        // 내부 DB속 로비, 플레이어 데이터 갱신
+        // Update internal DB to reflect this change.
         List<PlayerData> newPlayerDatas = playerDataRepository.saveAll(matchData.getPlayers());
         matchDataRepository.save(matchData);
 
-        // Firebase RDB에 수정사항 갱신
+        // Apply to Firebase RDB aswell.
         frdbService.setMatch(matchData.getId(), matchData);
     }
 
     /**
-     * 매치 턴 진행시 콜백. 여기서 (미리 API로 받은) 플레이어 입력 처리 및 로직을 처리하면 되겠습니다.
-     * @param matchId 매치 ID.
+     * Callback called when a turn of match needs to be processed. Handles player input and attack/defence and its outcomes.
+     * @param matchId Match ID.
      */
     @Transactional
     public void onMatchTurn(UUID matchId) {
@@ -302,23 +302,23 @@ public class MatchService {
 
         matchTurnCalcService.calculateTurn(matchData);
 
-        // 다음 턴 제한시간 설정
+        // Schedule turn handling task in 5 seconds from now.
         if (matchData.getState().isIngame()) {
             if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
                 System.err.println("FAILED TO SCHEDULE MATCH TURN COUNTDOWN FOR GAME `" + matchData.getId() + "`");
             }
         }
 
-        // 내부 DB속 로비, 플레이어 데이터 갱신
+        // Update internal DB to reflect this change.
         List<PlayerData> newPlayerDatas = playerDataRepository.saveAll(matchData.getPlayers());
         MatchData newMatchData = matchDataRepository.save(matchData);
 
-        // Firebase RDB에 수정사항 갱신
+        // Apply to Firebase RDB aswell.
         frdbService.setMatch(newMatchData.getId(), newMatchData);
     }
 
     /**
-     * 모든 매치를 닫고 정리합니다.
+     * Closes all match and removes all data.
      */
     public void deleteAllMatch() {
         for (ScheduledFuture<?> handler: countdownSchedulers.values()) {
@@ -330,13 +330,13 @@ public class MatchService {
     }
 
     /**
-     * 주어진 매치에 대해 카운트다운 설정. 현재 시각 기준 주어진 초가 지나면 Runnable 형의 콜백 함수가 실행됩니다.
-     * 또, 주어진 MatchData 인스턴스의 타이머 관련 필드 값을 수정해 FRDB 반영에도 사용할 수 있게 해줍니다.
+     * Sets up countdown timer, running `Runnable` callback once the countdown reaches zero.
+     * Also modifies given `MatchData` to be used for DB updates and such.
      *
-     * @param matchData 매치 정보. 해당 인스턴스의 값이 수정됩니다.
-     * @param callback 콜백 함수.
-     * @param seconds 초.
-     * @return 성공 여부. 이미 해당 매치에 타이머가 설정되고 실행이 아직 되지 않은 경우.
+     * @param matchData Match data to be modified.
+     * @param callback Callback on countdown end.
+     * @param seconds Countdown seconds.
+     * @return Whether it was successful.
      */
     private boolean setCountdownForMatch(MatchData matchData, Runnable callback, int seconds) {
         ScheduledFuture<?> handlePrev = countdownSchedulers.getOrDefault(matchData.getId(), null);
@@ -359,13 +359,13 @@ public class MatchService {
     }
 
     /**
-     * 주어진 매치에 대해 카운트다운 설정. 주어진 시각에 도달하면 Runnable 형의 콜백 함수가 실행됩니다.
-     * 또, 주어진 MatchData 인스턴스의 타이머 관련 필드 값을 수정해 FRDB 반영에도 사용할 수 있게 해줍니다.
+     * Sets up countdown timer, running `Runnable` callback once the countdown reaches zero.
+     * Also modifies given `MatchData` to be used for DB updates and such.
      *
-     * @param matchData 매치 정보. 해당 인스턴스의 값이 수정됩니다.
-     * @param callback 콜백 함수.
-     * @param when 콜백 함수 실행 시각.
-     * @return 성공 여부. 이미 해당 매치에 타이머가 설정되고 실행이 아직 되지 않은 경우.
+     * @param matchData Match data to be modified.
+     * @param callback Callback on countdown end.
+     * @param when Countdown end time.
+     * @return Whether it was successful.
      */
     private boolean setCountdownForMatch(MatchData matchData, Runnable callback, ZonedDateTime when) {
         ScheduledFuture<?> handlePrev = countdownSchedulers.getOrDefault(matchData.getId(), null);
@@ -388,9 +388,9 @@ public class MatchService {
     }
 
     /**
-     * 주어진 매치의 타이머를 취소시킵니다.
-     * @param matchData
-     * @return
+     * Cancels given match's timer.
+     * @param matchData Match data to be modified.
+     * @return Whether it was successful.
      */
     private boolean cancelCountdownForMatch(MatchData matchData) {
         ScheduledFuture<?> handle = countdownSchedulers.getOrDefault(matchData.getId(), null);

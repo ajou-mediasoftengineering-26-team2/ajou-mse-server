@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * 매치 데이터. 내부 DB에 저장되는 Entity.
+ * Match data. Entity saved to internal DB.
  *
  * @author Ahn Yubin / 202021088
  */
@@ -23,52 +23,59 @@ public class MatchData {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     /**
-     * 게임 시작 기준 역 ID.
-     * TODO: String -> Enum 마이그레이션 고려
+     * Subway station ID at the time of the start of the match.
+     * TODO: String -> Enum migration
      */
     private String station = "<UNKNOWN>";
     /**
-     * 선택 마감 시간 (시작).
+     * Countdown timer. (start timestamp)
      */
     private ZonedDateTime countdownStartTime = ZonedDateTime.now();
     /**
-     * 선택 마감 시간 (초). 실제 마감 시간은 `countdownStartTime + countdownSec`
+     * Countdown timer. (seconds from `countDownStartTime`)
+     * Therefore, end time is calculated as `countDownStartTime + countdownSec`.
      */
     private int countdownSec = 0;
     /**
-     * 매치 상태. (e.g. 플레이어 대기, 공/수 손 선택, 플레이어 KO 등)
+     * Match state. (e.g. Player waiting, Attack/defence selection, Player KO)
      */
     private MATCH_STATE state = MATCH_STATE.LOBBY_WAITING;
     /**
-     * 승자 플레이어.
+     * Winning player index.
      */
     private int winnerPlayerIdx = -1;
     /**
-     * 현재 턴. (i.e. 플레이어끼리 티키타카한 횟수)
+     * Current turn. (i.e. Number of attack -> defence selections)
      */
     private int currentTurn = 0;
     /**
-     * 현재 라운드. (i.e. 플레이어끼리 죽고 죽인 횟수)
+     * Current round. (i.e. Number of players KO'd in total)
      */
     private int currentRound = 0;
     /**
-     * 현재 "고르는/행동하는" 플레이어 인덱스.
+     * Current player index. (i.e. player who are selecting moves)
      */
     private int currentPlayerIdx = 0;
     /**
-     * 현재 공격수 플레이어 인덱스.
+     * Attacking player index.
      */
     private int attackerPlayerIdx = 0;
     /**
-     * 공격수의 최근 공격이 성공했는지 여부.
+     * Whether the last attacking players attack have landed.
      */
     private boolean isAttackSuccess = false;
     /**
-     * 현재 매치에 참가중인 플레이어 목록.
+     * List of players joined in this match.
      */
     @OneToMany(fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
 
+    /**
+     * Find player by UUID.
+     *
+     * @param id UUID.
+     * @return Player data. null if not found.
+     */
     @Transient
     public PlayerData findPlayerById(UUID id) {
         return players.stream()
@@ -77,6 +84,12 @@ public class MatchData {
                 .orElse(null);
     }
 
+    /**
+     * Find player INDEX by UUID.
+     *
+     * @param id UUID.
+     * @return Player index. -1 if not found.
+     */
     @Transient
     public int findPlayerIndexById(UUID id) {
         for (int i = 0; i < players.size(); i++) {
@@ -89,10 +102,10 @@ public class MatchData {
     }
 
     /**
-     * 플레이어를 해당 매치에 추가하거나 수정합니다.
+     * Adds or modifies player data to this match.
      *
-     * @param player 추가 혹은 수정할 플레이어 데이터.
-     * @return 플레이어 인덱스.
+     * @param player Player data to add/modify.
+     * @return Index of added/modified player.
      */
     @Transient
     public int updatePlayer(PlayerData player) {
@@ -107,10 +120,10 @@ public class MatchData {
     }
 
     /**
-     * UUID에 대응하는 플레이어를 해당 매치로부터 제거합니다.
+     * Remove player by UUID.
      *
-     * @param id 제거할 플레이어 UUID.
-     * @return 정상 제거 여부.
+     * @param id Player UUID.
+     * @return Whether player was successfully removed.
      */
     @Transient
     public boolean removePlayer(UUID id) {

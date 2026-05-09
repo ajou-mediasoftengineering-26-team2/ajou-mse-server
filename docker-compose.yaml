@@ -1,3 +1,5 @@
+# Docker compose setup file.
+# Ahn Yubin / 202021088
 services:
   mysql-db:
     image: mysql
@@ -19,7 +21,7 @@ services:
       - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
 #    networks:
 #      - ajou-mse-2026-backend
-    healthcheck: # MySQL이 정상적으로 실행될 때까지 기다리도록 설정
+    healthcheck: # Wait for MySQL to run
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$(cat /run/secrets/SECRET_MYSQL_USER)", "-p$$(cat /run/secrets/SECRET_MYSQL_PASSWORD)" ]
       interval: 10s
       retries: 5

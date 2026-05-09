@@ -7,7 +7,7 @@ import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import java.util.UUID;
 
 /**
- * 플레이어 데이터. 내부 DB에 저장되는 Entity.
+ * Player data. Entity saved to internal DB.
  *
  * @author Ahn Yubin / 202021088
  */
@@ -18,40 +18,40 @@ public class PlayerData {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     /**
-     * 현재 참여중인 매치 ID.
+     * Currently joining / playing match ID.
      */
     private UUID joinedMatchId;
     /**
-     * 사용자 이름.
+     * Player username.
      */
     @Column(unique = true)
     private String username;
     /**
-     * 승리 (킬) 횟수.
+     * Points. (kills/wins)
      */
     private int wins = 0;
     /**
-     * 체력.
+     * Health.
      */
     private int hp = 10;
     /**
-     * (대기방) 준비 여부.
+     * (Lobby) Whether this player ready for start of the match.
      */
     private boolean isReady = false;
     /**
-     * (현재 턴) 공격 여부.
+     * (Turn) Whether this player has the 'attacker' role.
      */
     private boolean isAttacking = false;
     /**
-     * (현재 턴) 손(?) 선택 여부.
+     * (Turn) Whether this player must select their moves. (in time)
      */
     private boolean isSelecting = false;
     /**
-     * 최종 승리자 여부.
+     * (End of the round) Whether this player has won this match.
      */
     private boolean isFinalWinner = false;
     /**
-     * 선택한 행동
+     * Selected move.
      */
     private HAND_CHOICE choice;
 }

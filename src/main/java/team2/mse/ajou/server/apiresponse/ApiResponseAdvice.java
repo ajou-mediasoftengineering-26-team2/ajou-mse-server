@@ -14,9 +14,9 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 import team2.mse.ajou.server.apiresponse.model.ApiResponse;
 
 /**
- * `@RestController`에서 반환하는 DTO 클래스를 이쁘게 `ApiResponse<>` 클래스로 감싸줍니다.
+ * Automatically wraps returning DTO / data class returned from `@RestController` into `ApiResponse<>` class.
  *
- * @author yubin
+ * @author Ahn Yubin / 202021088
  */
 @RestControllerAdvice
 public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
@@ -25,7 +25,8 @@ public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
         boolean isWrappingNeeded = !(returnType.getParameterType().equals(ApiResponse.class) || returnType.getParameterType().equals(ResponseEntity.class));
 
         if (isWrappingNeeded && converterType.isAssignableFrom(StringHttpMessageConverter.class)) {
-            System.err.println("[!!!] Controller 클래스에서 String을 그대로 반환하는겁니까..? 큰일납니다. 별도의 Response 클래스를 정의해서 사용해주시길 권장드려요...");
+            //System.err.println("[!!!] Controller 클래스에서 String을 그대로 반환하는겁니까..? 큰일납니다. 별도의 Response 클래스를 정의해서 사용해주시길 권장드려요...");
+            System.err.println("[!!!] IT IS NOT RECOMMENDED TO RETURN STRING DIRECTLY FROM @RestConctroller. DEFINING A DEDICATED RESPONSE CLASS IS RECOMMENDED!");
         }
 
         return isWrappingNeeded && !converterType.isAssignableFrom(StringHttpMessageConverter.class);

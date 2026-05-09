@@ -4,9 +4,9 @@ package team2.mse.ajou.server.apiresponse.model;
 import jakarta.annotation.Nullable;
 
 /**
- * 공통으로 상속받을 API 응답입니다.
+ * Base API response structure to have a consistent formatting in API response.
  *
- * @author yubin
+ * @author Ahn Yubin / 202021088
  */
 public record ApiResponse<T>(
         boolean isSuccess,
