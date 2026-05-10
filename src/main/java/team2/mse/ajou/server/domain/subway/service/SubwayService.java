@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 //202322158 이준상
+
+//Class that put the station data
 @Service
 public class SubwayService {
     //define FirebaseData
@@ -19,6 +21,7 @@ public class SubwayService {
     public void putResult(String station) throws Exception {
         // As an admin, the app has access to read and write all data, regardless of Security Rules
         DatabaseReference ref = firebaseDatabase.getReference();
+        System.out.println(station);
         ref.child("testGame")
                 .child("currentStation")
                 .setValueAsync(station);
