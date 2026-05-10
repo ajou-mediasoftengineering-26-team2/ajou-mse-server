@@ -9,9 +9,11 @@ import team2.mse.ajou.server.test.model.TestResponse;
 
 import java.util.UUID;
 
-/** 테스트를 위한 임시 Controller
+/**
+ * Debug Only
+ * DB Debug Controller
  *
- * @author Junseo Hwang
+ * @author Junseo Hwang 202322128
  */
 
 @Deprecated(forRemoval = true)
