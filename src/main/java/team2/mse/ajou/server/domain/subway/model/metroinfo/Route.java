@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.IOException;
 
 //202322158 이준상
+
+//DTO
 public enum Route {
     THE_2("2호선");
 

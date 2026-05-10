@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
+import team2.mse.ajou.server.domain.subway.Util;
 import team2.mse.ajou.server.domain.subway.model.zonemap.StationZoneRule;
 
 import java.io.IOException;
@@ -35,14 +36,14 @@ public class StationZoneResolver {
     public String resolveRepresentativeStation(String statnId) {
         String key = extractLast4(statnId);
         if (key == null) {
-            return "UNKNOWN";
+            return Util.UNKNOWN;
         }
 
         int stationCode;
         try {
             stationCode = Integer.parseInt(key);
         } catch (NumberFormatException e) {
-            return "UNKNOWN";
+            return Util.UNKNOWN;
         }
 
         for (StationZoneRule rule : stationZoneRules) {
@@ -51,7 +52,7 @@ public class StationZoneResolver {
             }
         }
 
-        return "UNKNOWN";
+        return Util.UNKNOWN;
     }
 
     //return Last 4 String
