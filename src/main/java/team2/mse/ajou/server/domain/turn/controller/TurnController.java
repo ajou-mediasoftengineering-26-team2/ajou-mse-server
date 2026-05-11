@@ -8,9 +8,11 @@ import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository
 import team2.mse.ajou.server.domain.turn.model.PutChoiceRequest;
 import team2.mse.ajou.server.domain.turn.service.TurnService;
 
-/** 매 턴마다 플레이어의 행동 선택을 입력받습니다.
+/**
+ * Each turn receives a player's choices.
+ * Base URL: `<SERVER URL>/turn`
  *
- * @author Junseo Hwang
+ * @author Junseo Hwang 202322128
  */
 
 @RestController
@@ -20,6 +22,10 @@ public class TurnController
     @Autowired
     private TurnService turnService;
 
+    /**
+     * Each turn receives a player's handChoice.
+     * @param req Request body
+     */
     @PutMapping("/choice")
     public void putHandChoice(
             @RequestBody PutChoiceRequest req
@@ -27,9 +33,13 @@ public class TurnController
         try {
             turnService.putPlayerInput(req.id(), req.choice());
             return;
-        } catch (IllegalStateException e){
+        }
+        // When a request is received while it is not the player’s turn.
+        catch (IllegalStateException e){
             throw new ApiError(4000, e.getMessage());
-        } catch (Exception e){
+        }
+        // When Firebase cannot be used.
+        catch (Exception e){
             throw new ApiError(5000, "firebase error");
         }
     }

@@ -9,12 +9,12 @@ import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository
 
 import java.util.UUID;
 
-/** 턴마다 DB를 변경합니다.
- * 플레이어의 선택을 DB에 저장합니다.
+/**
+ * Update the DB on each turn
+ * Save the player's selection to the DB.
  *
- * @author Junseo Hwang
+ * @author Junseo Hwang 202322128
  */
-
 @Service
 public class TurnService {
     private final PlayerDataRepository playerDataRepository;
@@ -29,6 +29,7 @@ public class TurnService {
         PlayerData playerData = playerDataRepository.findById(uuid)
                 .orElseThrow(()-> new IllegalArgumentException("Not Found: "+id));
 
+        // When a request is received while it is not the player’s turn.
         if (!playerData.isSelecting()) {
             throw new IllegalStateException("Player is not selecting!");
         }

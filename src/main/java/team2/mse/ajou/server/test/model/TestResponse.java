@@ -1,9 +1,13 @@
 package team2.mse.ajou.server.test.model;
 
-/** DBTestController에서 테스트를 위한 ResponseBody
+/**
+ * Debug Only
+ * Test Response Body
  *
- * @author Junseo Hwang
+ * @author Junseo Hwang 202322128
  */
+
+@Deprecated(forRemoval = true)
 public record TestResponse(
         String result
 ) {

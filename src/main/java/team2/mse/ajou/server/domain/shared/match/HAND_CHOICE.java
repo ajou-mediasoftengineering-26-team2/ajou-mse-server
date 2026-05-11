@@ -1,18 +1,24 @@
 package team2.mse.ajou.server.domain.shared.match;
 
-/** 플레이어가 선택한 행동
+/**
+ * Hand Choice
  *
- * @author Junseo Hwang
+ * @author Junseo Hwang 202322128
  */
 public enum HAND_CHOICE {
-    /** 왼손 뒤집기 */
+    /**Flip Left hand
+     * 왼손 뒤집기 */
     SINGLE_HAND_FLIP_LEFT,
-    /** 오른손 뒤집기 */
+    /**Flip right hand
+     * 오른손 뒤집기 */
     SINGLE_HAND_FLIP_RIGHT,
-    /** 양손 뒤집기 */
+    /**Flip both hand
+     * 양손 뒤집기 */
     BOTH_HANDS_FLIP,
-    /** 찌르기 */
+    /**Insert
+     * 찌르기 */
     INSERT_BETWEEN_HANDS,
-    /** 가만히 */
+    /**Shake
+     * 가만히 */
     SHAKE_OVER_HANDS;
 }
