@@ -1,4 +1,4 @@
-package team2.mse.ajou.server.domain.ack;
+package team2.mse.ajou.server.domain.shared.ack;
 
 /**
  * Ack Type
@@ -8,6 +8,13 @@ package team2.mse.ajou.server.domain.ack;
  * @author Junseo Hwang 202322128
  */
 public enum ACK_TYPE {
+    /**
+     * Ack를 수신하기 전 상태
+     * 서버가 클라이언트의 Ack를 받기 전에는 플레이어 ack 상태가 DEFAULT입니다.
+     * DEFAULT는 클라이언트가 보내는 Ack가 아닙니다.
+     */
+    DEFAULT,
+
     /**
      * 클라이언트가 match시작 컷신이 끝나면 보내는 Ack
      * CUT_SCENE_END를 받았다면 turn로직을 작동해야 합니다.
