@@ -22,6 +22,11 @@ import team2.mse.ajou.server.apiresponse.model.ApiResponse;
 public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
     @Override
     public boolean supports(@NonNull MethodParameter returnType, @NonNull Class<? extends HttpMessageConverter<?>> converterType) {
+        boolean isSpringdocController = returnType.getContainingClass().getPackageName().startsWith("org.springdoc");
+        if (isSpringdocController) {
+            return false;
+        }
+
         boolean isWrappingNeeded = !(returnType.getParameterType().equals(ApiResponse.class) || returnType.getParameterType().equals(ResponseEntity.class));
 
         if (isWrappingNeeded && converterType.isAssignableFrom(StringHttpMessageConverter.class)) {
