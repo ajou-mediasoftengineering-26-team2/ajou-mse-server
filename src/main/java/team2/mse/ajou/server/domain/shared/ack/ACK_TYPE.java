@@ -10,10 +10,10 @@ package team2.mse.ajou.server.domain.shared.ack;
 public enum ACK_TYPE {
     /**
      * Ack를 수신하기 전 상태
-     * 서버가 클라이언트의 Ack를 받기 전에는 플레이어 ack 상태가 DEFAULT입니다.
-     * DEFAULT는 클라이언트가 보내는 Ack가 아닙니다.
+     * 서버가 클라이언트의 Ack를 받기 전에는 플레이어 ack 상태가 NO_ACK입니다.
+     * NO_ACK는 클라이언트가 보내는 Ack가 아닙니다.
      */
-    DEFAULT,
+    NO_ACK,
 
     /**
      * 클라이언트가 match시작 컷신이 끝나면 보내는 Ack
