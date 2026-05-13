@@ -44,6 +44,7 @@ services:
       - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
     environment:
       MYSQL_HOST: mse-2026-mysql-db
+      SPRING_PROFILES_ACTIVE: docker
 secrets:
   SECRET_MYSQL_ROOT_PASSWORD:
     file: ./build/mysql_root_password.txt
