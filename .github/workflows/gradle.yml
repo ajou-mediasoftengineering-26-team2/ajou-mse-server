@@ -10,6 +10,7 @@
 
 name: Build with Gradle & Deploy to development environment
 
+# Only run deploy on `deploy-dev` branch
 on:
   push:
     branches: [ "deploy-dev" ]
@@ -59,19 +60,6 @@ jobs:
         touch ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
         echo '${{ secrets.SECRET_FIREBASE_SERVICE_ACCOUNT }}' >> ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
 
-    # Upload debug artifacts
-    - name: application-secrets 파일 확인용 업로드
-      uses: actions/upload-artifact@v4
-      with:
-        name: application-secrets
-        path: ./src/main/resources/application-secrets.properties
-
-    - name: Firebase secret 파일 확인용 업로드
-      uses: actions/upload-artifact@v4
-      with:
-        name: firebase-secrets
-        path: ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
-
     # Set up JDK for build
     - name: JDK 25 설정하기
       uses: actions/setup-java@v4
@@ -120,23 +108,6 @@ jobs:
       if: ${{ always() }}
       run: |
         aws ec2 revoke-security-group-ingress --group-id ${{ secrets.AWS_SG_ID }} --protocol tcp --port 22 --cidr ${{ steps.ip.outputs.ipv4 }}/32
-    # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
-    # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
-    #
-    # - name: Setup Gradle
-    #   uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
-    #   with:
-    #     gradle-version: '8.9'
-    #
-    # - name: Build with Gradle 8.9
-    #   run: gradle build
-
-    # Upload debug build artifacts
-    - name: 빌드 파일 확인용 업로드
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-output
-        path: ./build/jib-image.tar
 
   dependency-submission:
 
