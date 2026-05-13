@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.shared.match.service;
 
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
+import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
@@ -12,6 +13,7 @@ import java.util.List;
 /**
  * Match turn/game logic calculation handling service.
  *
+ * @author Junseo Hwang 202322128
  * @author Ahn Yubin / 202021088
  */
 @Service
@@ -21,51 +23,55 @@ public class MatchTurnCalcService {
      * @param matchData Match data to be modified.
      */
     public void initializeMatch(MatchData matchData) {
-        int playerIdx = matchData.getCurrentPlayerIdx();
         int attackerIdx = matchData.getAttackerPlayerIdx();
 
         List<PlayerData> players = matchData.getPlayers();
-        // System.out.println("Players: " + players);
         if (players.size() < 2) {
             throw new ApiError(5005, "Insufficient players in the match!");
         }
 
-        // Attacking player setup.
-        PlayerData attackerPlayer = players.get(attackerIdx);
-        attackerPlayer.setAttacking(true);
-        attackerPlayer.setSelecting(true);
-
-        // Defending player setup.
-        PlayerData defencePlayer = players.get((attackerIdx + 1) % players.size());
-        defencePlayer.setAttacking(false);
-        defencePlayer.setSelecting(false);
-
-        // Reset HP to full, moves to "Shake over hands" etc.
-        for (PlayerData player : players) {
+        // Reset HP and turn state. (Both players!!)
+        for (int i = 0; i < players.size(); i++) {
+            PlayerData player = players.get(i);
             player.setHp(10);
             player.setWins(0);
+            player.setFinalWinner(false);
             player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
+            player.setAckState(team2.mse.ajou.server.domain.shared.ack.ACK_TYPE.NO_ACK);
+            player.setSelecting(true);
+            player.setAttacking(i == attackerIdx);
         }
 
-        // First turn goes for attacking player.
-        matchData.setState(MATCH_STATE.GAME_ATK_CHOICE);
+        matchData.setAttackSuccess(false);
+        // DemageList를 초기에 설정해야할지도 모르겠습니다.
+        matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
     }
 
     /**
      * Calculates a single turn from given `MatchData`.
+     * choice 상태에서 5초가 끝나면 finished 상태로 전환합니다.
+     * 데미지 계산은 두 클라이언트의 /turn/choice 요청이 모두 들어온 뒤 실행합니다.
      * @param matchData Match data to be modified.
      */
     public void calculateTurn(MatchData matchData) {
+
         MATCH_STATE state = matchData.getState();
         List<PlayerData> players = matchData.getPlayers();
-
-        int playerIdx = matchData.getCurrentPlayerIdx();
-        int attackerIdx = matchData.getAttackerPlayerIdx();
-        int defenceIdx = (attackerIdx + 1) % players.size();
 
         if (players.size() < 2) {
             throw new ApiError(5005, "Insufficient players in the match!");
         }
+
+        if (state == MATCH_STATE.GAME_PLAYER_CHOICE) {
+            // 이 if문으로 들어왔다는 것은 5초가 지나서 choice가 끝났다는 것을 의미합니다.
+            // finished가 되면 클라이언트는 choice결과를 /turn/choice로 보내게 됩니다.
+            matchData.setState(MATCH_STATE.GAME_CHOICE_FINISHED);
+            //Damage 초기화
+            return;
+        }
+
+        int attackerIdx = matchData.getAttackerPlayerIdx();
+        int defenceIdx = (attackerIdx + 1) % players.size();
 
         // Attacking player reference.
         PlayerData attackerPlayer = players.get(attackerIdx);
@@ -74,90 +80,51 @@ public class MatchTurnCalcService {
         PlayerData defencePlayer = players.get(defenceIdx);
         HAND_CHOICE defenceChoice = defencePlayer.getChoice();
 
-        boolean isAttackSuccess = false;
+        boolean isAttackSuccess = attackerChoice != defenceChoice;
         // Has attacking player KO'd the defending player?
         boolean isPlayerKO = false;
 
         // BEGIN DAMAGE CALCULATION LOGIC --------------------------
-        switch (state) {
-            // GAME_ATK_CHOICE -> GAME_DEF_CHOICE
-            case GAME_ATK_CHOICE:
-                // Time over. Switch to defending players turn...
-                matchData.setState(MATCH_STATE.GAME_DEF_CHOICE);
-                break;
-            // GAME_DEF_CHOICE -> GAME_ATK_CHOICE
-            case GAME_DEF_CHOICE:
-                // Time over. Calculate outcome...
-                // For now whe criteria for attacks to land is whether two player has chosen different moves
-                isAttackSuccess = attackerChoice != defenceChoice;
-
-                // TODO: ADD ON-DAMAGE PERK EFFECTS ETC
-                if (isAttackSuccess) {
-                    // Deal damage to defending player.
-                    // FIXME: CONSTANT DAMAGE (2) FOR NOW.
-                    int damageAmount = 2;
-
-                    defencePlayer.setHp(Math.max(0, defencePlayer.getHp() - damageAmount));
-                    isPlayerKO = (defencePlayer.getHp() <= 0);
-                } else {
-                    // Defending success! Switch the roles around.
-                    attackerIdx = (attackerIdx + players.size() + 1) % players.size();
-                    isPlayerKO = false;
-                }
-
-                // Switch to attacking players turn and increment turns counter...
-                matchData.setState(MATCH_STATE.GAME_ATK_CHOICE);
-                matchData.setCurrentTurn(matchData.getCurrentTurn() + 1);
-                break;
-        }
-
-        // If player is defeated, then grant one point to the attacker.
-        if (isPlayerKO) {
-            attackerPlayer.setWins(attackerPlayer.getWins() + 1);
-            matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
-        }
-
-        // Select appropriate player index to let them choose their moves.
-        if (matchData.getState() == MATCH_STATE.GAME_ATK_CHOICE) {
-            playerIdx = attackerIdx;
+        // TODO: ADD ON-DAMAGE PERK EFFECTS ETC
+        if (isAttackSuccess) {
+            // Deal damage to defending player.
+            // FIXME: CONSTANT DAMAGE (2) FOR NOW.
+            int damageAmount = 2;
+            defencePlayer.setHp(Math.max(0, defencePlayer.getHp() - damageAmount));
+            isPlayerKO = (defencePlayer.getHp() <= 0);
         } else {
-            playerIdx = defenceIdx;
+            // Defending success! Switch the roles around.
+            // switch attackerIdx and defenceIdx
+            defenceIdx ^= 1;
+            attackerIdx ^= 1;
+            attackerPlayer = players.get(attackerIdx);
+            defencePlayer = players.get(defenceIdx);
+            isPlayerKO = false;
         }
         // END DAMAGE CALCULATION LOGIC --------------------------
 
-        // Update match data.
-        matchData.setAttackSuccess(isAttackSuccess);
-        matchData.setCurrentPlayerIdx(playerIdx);
-        matchData.setAttackerPlayerIdx(attackerIdx);
-
-        // Update player data.
-        for (int i = 0; i < players.size(); i++) {
-            PlayerData player = players.get(i);
-
-            // Is this player selecting?
-            if (i == playerIdx) {
-                System.out.println("PLAYER " + player.getUsername() + " SELECTS!");
-                player.setSelecting(true);
-
-                // Reset player movement so that no selection = force select "shake over hands".
-                player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
-            } else {
-                player.setSelecting(false);
-            }
-
-            // Is this player attacker?
-            if (i == attackerIdx) {
-                System.out.println("PLAYER " + player.getUsername() + " ATTACKS!");
-                player.setAttacking(true);
-            } else {
-                player.setAttacking(false);
-            }
+        // 다시 turn을 시작할 준비를 합니다.
+        //Update player datas
+        for(PlayerData player: players) {
+            player.setSelecting(false);
+            player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
+            player.setAckState(ACK_TYPE.NO_ACK);
         }
+        attackerPlayer.setAttacking(true);
+        defencePlayer.setAttacking(false);
+
+        // Update match data.
+        matchData.setCurrentTurn(matchData.getCurrentTurn() + 1);
+        matchData.setAttackSuccess(isAttackSuccess);
+        matchData.setAttackerPlayerIdx(attackerIdx);
+        matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
 
         // (FIXME) End game as soon as player downs another.
         if (isPlayerKO) {
-            int winnerPlayerIdx = -1,
-                winsMax = -1;
+            attackerPlayer.setWins(attackerPlayer.getWins() + 1);
+
+            int winnerPlayerIdx = -1;
+            int winsMax = -1;
 
             for (int i = 0; i < players.size(); i++) {
                 PlayerData player = players.get(i);
@@ -171,8 +138,8 @@ public class MatchTurnCalcService {
             if (winnerPlayerIdx != -1) {
                 players.get(winnerPlayerIdx).setFinalWinner(true);
             }
-            matchData.setWinnerPlayerIdx(winnerPlayerIdx);
 
+            matchData.setWinnerPlayerIdx(winnerPlayerIdx);
             matchData.setCurrentRound(matchData.getCurrentRound() + 1);
             matchData.setCurrentTurn(0);
             matchData.setState(MATCH_STATE.END_RESULT);
