@@ -2,9 +2,8 @@ package team2.mse.ajou.server.domain.turn.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import team2.mse.ajou.server.TestResponse;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.shared.ack.model.PutAckRequest;
 import team2.mse.ajou.server.domain.turn.model.PutChoiceRequest;
 import team2.mse.ajou.server.domain.turn.service.TurnService;
 
@@ -41,6 +40,17 @@ public class TurnController
         // When Firebase cannot be used.
         catch (Exception e){
             throw new ApiError(5000, "firebase error");
+        }
+    }
+
+    @PutMapping("/ack")
+    public void ackTurnAnimationEnd(
+            @RequestBody PutAckRequest req
+    ){
+        try {
+            turnService.receiveTurnAnimationEndAck(req.playerId());
+        } catch (Exception e){
+            throw new ApiError(4000, e.getMessage());
         }
     }
 }

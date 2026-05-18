@@ -5,6 +5,7 @@ import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.firebase.service.FrdbService;
+import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
@@ -300,20 +301,64 @@ public class MatchService {
             return;
         }
 
-        matchTurnCalcService.calculateTurn(matchData);
-
+        // 5초 타이머는 choice -> finished로 갈때만 사용합니다.
+        // 나중에 ack 오류 처리를 위해 finished -> choice 타이머를 가동할 수 도 있습니다.
+        if(matchData.getState() != MATCH_STATE.GAME_PLAYER_CHOICE) return;
         // Schedule turn handling task in 5 seconds from now.
-        if (matchData.getState().isIngame()) {
-            if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
-                System.err.println("FAILED TO SCHEDULE MATCH TURN COUNTDOWN FOR GAME `" + matchData.getId() + "`");
-            }
-        }
+//        if (matchData.getState().isIngame()) {
+//            if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
+//                System.err.println("FAILED TO SCHEDULE MATCH TURN COUNTDOWN FOR GAME `" + matchData.getId() + "`");
+//            }
+//        }
+
+        matchTurnCalcService.calculateTurn(matchData);
 
         // Update internal DB to reflect this change.
         List<PlayerData> newPlayerDatas = playerDataRepository.saveAll(matchData.getPlayers());
         MatchData newMatchData = matchDataRepository.save(matchData);
 
         // Apply to Firebase RDB aswell.
+        frdbService.setMatch(newMatchData.getId(), newMatchData);
+    }
+
+    /**
+     * Starts the next 5-sec choice after both clients finish animation and send Ack.
+     * @param matchId Match ID.
+     */
+    @Transactional
+    public void startNextTurn(UUID matchId) {
+        MatchData matchData = matchDataRepository.findById(matchId).orElse(null);
+        if (matchData == null) {
+            System.err.println("MATCH `" + matchId + "` NOT FOUND!");
+            return;
+        }
+
+        if (matchData.getState() == MATCH_STATE.END_RESULT || matchData.getState() == MATCH_STATE.END_PLAYER_DISCONNECTED) {
+            frdbService.setMatch(matchData.getId(), matchData);
+            return;
+        }
+
+        int attackerIdx = matchData.getAttackerPlayerIdx();
+        List<PlayerData> players = matchData.getPlayers();
+
+        //초기화를 안해도 될 것 같긴함
+        for(int i = 0; i<players.size(); i++){
+            PlayerData player = players.get(i);
+            player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
+            player.setAckState(ACK_TYPE.NO_ACK);
+            player.setSelecting(true);
+            player.setAttacking(i == attackerIdx);
+        }
+
+        matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
+        matchData.setAttackSuccess(false);
+
+        if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
+            System.err.println("FAILED TO SCHEDULE NEXT TURN COUNTDOWN FOR GAME `" + matchData.getId() + "`");
+        }
+
+        playerDataRepository.saveAll(players);
+        MatchData newMatchData = matchDataRepository.save(matchData);
         frdbService.setMatch(newMatchData.getId(), newMatchData);
     }
 

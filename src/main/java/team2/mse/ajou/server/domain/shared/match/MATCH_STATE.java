@@ -15,12 +15,22 @@ public enum MATCH_STATE {
     // Lobby: game start countdown
     /** 대기 화면: 게임 시작 카운트다운 */
     LOBBY_START_COUNTDOWN,
-    // Ingame: attacker move selection
+
+    // Ingame: player move selection
+    /** 인게임: 두 플레이어 손 선택 */
+    GAME_PLAYER_CHOICE,
+    // Ingame:
+    /** 인게임: 두 플레이어 손 선택완료 후 결과 출력중 */
+    GAME_CHOICE_FINISHED,
+
+    // TODO: DELETE
     /** 인게임: 공격수 손 선택 */
     GAME_ATK_CHOICE,
     // Ingame: defender move selection
     /** 인게임: 수비수 손 선택 */
     GAME_DEF_CHOICE,
+
+
     // Ingame: end of a single round (caused by player KO)
     /** 인게임: 한 라운드 끝. 플레이어 사망 */
     GAME_ROUND_END_PLAYER_KO,
@@ -37,8 +47,8 @@ public enum MATCH_STATE {
      */
     public boolean isIngame() {
         return List.of(
-                    MATCH_STATE.GAME_ATK_CHOICE,
-                    MATCH_STATE.GAME_DEF_CHOICE,
+                    MATCH_STATE.GAME_PLAYER_CHOICE,
+                    MATCH_STATE.GAME_CHOICE_FINISHED,
                     MATCH_STATE.GAME_ROUND_END_PLAYER_KO
                 )
                 .contains(this);

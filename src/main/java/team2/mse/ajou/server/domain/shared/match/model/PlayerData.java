@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 
 import java.util.UUID;
@@ -10,6 +11,7 @@ import java.util.UUID;
  * Player data. Entity saved to internal DB.
  *
  * @author Ahn Yubin / 202021088
+ * @author Junseo Hwang / 202322128 (55~64 line)
  */
 @Entity
 @Data
@@ -54,4 +56,9 @@ public class PlayerData {
      * Selected move.
      */
     private HAND_CHOICE choice;
+    /**
+     * player's ack state.
+     * if player does not spend ack, ack state is NO_ACK
+     */
+    private ACK_TYPE ackState = ACK_TYPE.NO_ACK;
 }
