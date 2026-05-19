@@ -4,14 +4,18 @@ import jakarta.persistence.*;
 import lombok.Data;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
+import team2.mse.ajou.server.domain.shared.match.ITEM;
+import team2.mse.ajou.server.domain.shared.match.PERK;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Player data. Entity saved to internal DB.
  *
  * @author Ahn Yubin / 202021088
- * @author Junseo Hwang / 202322128 (55~64 line)
+ * @author Junseo Hwang / 202322128
  */
 @Entity
 @Data
@@ -29,6 +33,11 @@ public class PlayerData {
     @Column(unique = true)
     private String username;
     /**
+     * player's ack state.
+     * if player does not spend ack, ack state is NO_ACK
+     */
+    private ACK_TYPE ackState = ACK_TYPE.NO_ACK;
+    /**
      * Points. (kills/wins)
      */
     private int wins = 0;
@@ -40,6 +49,8 @@ public class PlayerData {
      * (Lobby) Whether this player ready for start of the match.
      */
     private boolean isReady = false;
+
+    //==========Turn==============
     /**
      * (Turn) Whether this player has the 'attacker' role.
      */
@@ -56,9 +67,27 @@ public class PlayerData {
      * Selected move.
      */
     private HAND_CHOICE choice;
+
+    //=========Perk==========
     /**
-     * player's ack state.
-     * if player does not spend ack, ack state is NO_ACK
+     * 적용중인 Perks
      */
-    private ACK_TYPE ackState = ACK_TYPE.NO_ACK;
+    private List<PERK> perkList = new ArrayList<>();
+    /**
+     * 클라이언트 화면에 띄워진 perk list
+     */
+    private List<PERK> perkChoiceList = new ArrayList<>();
+
+    //==========Item==========
+    /**
+     * 랜덤으로 받은 아이템
+     */
+    private ITEM receviedItem;
+    /**
+     * 보유한 아이템
+     */
+    private List<ITEM> itemList = new ArrayList<>();
+
+
+
 }

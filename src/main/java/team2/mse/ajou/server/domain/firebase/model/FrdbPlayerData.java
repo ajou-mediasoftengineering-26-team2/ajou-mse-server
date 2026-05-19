@@ -1,7 +1,11 @@
 package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.Data;
+import team2.mse.ajou.server.domain.shared.match.ITEM;
+import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+
+import java.util.List;
 
 /**
  * Player data used to set FRDB (Firebase Realtime DB). Internally converted from `PlayerData`.
@@ -18,6 +22,12 @@ public class FrdbPlayerData {
     private boolean isSelecting;
     private boolean isFinalWinner;
 
+    private List<PERK> perkList;
+    private List<PERK> perkChoiceList;
+
+    private ITEM receivedItem;
+    private List<ITEM> itemList;
+
     public static FrdbPlayerData from(PlayerData playerData) {
         FrdbPlayerData data = new FrdbPlayerData();
 
@@ -28,6 +38,12 @@ public class FrdbPlayerData {
         data.setAttacking(playerData.isAttacking());
         data.setSelecting(playerData.isSelecting());
         data.setFinalWinner(playerData.isFinalWinner());
+
+        data.setPerkList(playerData.getPerkList());
+        data.setPerkChoiceList(playerData.getPerkChoiceList());
+
+        data.setReceivedItem(playerData.getReceviedItem());
+        data.setItemList(playerData.getItemList());
 
         return data;
     }
