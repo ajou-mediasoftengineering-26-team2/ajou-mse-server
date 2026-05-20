@@ -101,7 +101,7 @@ public class TurnService {
         MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
-        if (matchData.getState() != MATCH_STATE.GAME_CHOICE_FINISHED) {
+        if (matchData.getState() != MATCH_STATE.GAME_TURN_ANIMATION) {
             throw new IllegalStateException("Turn animation ACK can be submitted only after turn result is calculated!");
         }
 

@@ -117,7 +117,7 @@ public class MatchTurnCalcService {
         matchData.setCurrentTurn(matchData.getCurrentTurn() + 1);
         matchData.setAttackSuccess(isAttackSuccess);
         matchData.setAttackerPlayerIdx(attackerIdx);
-        matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
+        matchData.setState(MATCH_STATE.GAME_TURN_ANIMATION);
 
         // (FIXME) End game as soon as player downs another.
         if (isPlayerKO) {

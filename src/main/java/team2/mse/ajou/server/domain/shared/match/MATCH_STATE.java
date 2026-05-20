@@ -22,6 +22,8 @@ public enum MATCH_STATE {
     // Ingame:
     /** 인게임: 두 플레이어 손 선택완료 후 결과 출력중 */
     GAME_CHOICE_FINISHED,
+    // Ingame:
+    GAME_TURN_ANIMATION,
 
     // TODO: DELETE
     /** 인게임: 공격수 손 선택 */
