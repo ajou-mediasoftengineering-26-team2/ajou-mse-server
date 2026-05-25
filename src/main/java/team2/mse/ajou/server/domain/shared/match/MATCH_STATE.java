@@ -26,15 +26,13 @@ public enum MATCH_STATE {
     /** 인게임: 두 플레이어 손 선택완료 후 결과 출력중 */
     GAME_CHOICE_FINISHED,
     // Ingame:
+    /** 인게임: 클라이언트가 공격/방어 애니메이션 재생 중*/
     GAME_TURN_ANIMATION,
 
-    // TODO: DELETE
-    /** 인게임: 공격수 손 선택 */
-    GAME_ATK_CHOICE,
-    // Ingame: defender move selection
-    /** 인게임: 수비수 손 선택 */
-    GAME_DEF_CHOICE,
-
+    /** 인게임: 플레이어가 perk 선택 중*/
+    GAME_PERK_CHOICE,
+    /** 인게임: 클라이언트가 아이템 받는 애니메이션 재생 중*/
+    GAME_ITEM_ANIMATION,
 
     // Ingame: end of a single round (caused by player KO)
     /** 인게임: 한 라운드 끝. 플레이어 사망 */
