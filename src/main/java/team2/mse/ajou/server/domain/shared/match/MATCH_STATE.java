@@ -16,6 +16,9 @@ public enum MATCH_STATE {
     /** 대기 화면: 게임 시작 카운트다운 */
     LOBBY_START_COUNTDOWN,
 
+    // 라운드 시작 전 애니메이션들 동전 던지기 등등
+    GAME_ROUND_START_ANIMATION,
+
     // Ingame: player move selection
     /** 인게임: 두 플레이어 손 선택 */
     GAME_PLAYER_CHOICE,
