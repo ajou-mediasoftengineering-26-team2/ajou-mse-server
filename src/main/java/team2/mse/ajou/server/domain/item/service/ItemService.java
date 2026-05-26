@@ -75,7 +75,7 @@ public class ItemService implements IItemService {
         MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
-        playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION);
+        playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
 
         // 둘다 ack 받으면 round 시작
         if(isAllItemAnimationEnd(matchData)){
