@@ -5,6 +5,7 @@ import lombok.Data;
 import team2.mse.ajou.server.domain.item.model.ConsumableItem;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
+import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 
@@ -69,6 +70,12 @@ public class PlayerData {
      */
     private HAND_CHOICE choice;
 
+    //=========Elemental======
+    /**
+     * 적용중인 hand elemental
+     */
+    private HAND_ELEMENTAL handElemental = HAND_ELEMENTAL.NONE;
+
     //=========Perk==========
     /**
      * 적용중인 Perks
@@ -83,7 +90,7 @@ public class PlayerData {
     /**
      * 랜덤으로 받은 아이템
      */
-    private ITEM_CODE receivedItemCODE;
+    private ITEM_CODE receivedItemCODE = ITEM_CODE.NONE;
     /**
      * 보유한 아이템
      */
