@@ -57,7 +57,7 @@ public class ItemService implements IItemService {
             matchData.updatePlayer(player);
             playerDataRepository.save(player);
         }
-        matchData.setState(MATCH_STATE.GAME_ITEM_ANIMATION);
+        matchData.setState(MATCH_STATE.GAME_PERK_ITEM_RECEIVING);
         matchDataRepository.save(matchData);
 
         frdbService.setMatch(matchId, matchData);
