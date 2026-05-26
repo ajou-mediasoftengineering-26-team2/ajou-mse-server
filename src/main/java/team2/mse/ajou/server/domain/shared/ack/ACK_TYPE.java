@@ -37,12 +37,12 @@ public enum ACK_TYPE {
      */
     ITEM_RECEIVE_ANIMATION_END,
 
-
-
     /**
      * 매치가 끝난 후 클라이언트가 모든 작업을 완료하고 보내는 Ack
      * MATCH_END를 받았다면 match를 모두 정리해야 합니다.
      */
     MATCH_END,
+
+    __TEST_ACK
 
 }
