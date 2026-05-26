@@ -2,8 +2,7 @@ package team2.mse.ajou.server.domain.item.service;
 
 import org.springframework.stereotype.Component;
 import team2.mse.ajou.server.domain.item.model.ConsumableItem;
-import team2.mse.ajou.server.domain.item.model.Items.ItemEmergencyTreatment;
-import team2.mse.ajou.server.domain.item.model.Items.ItemShield;
+import team2.mse.ajou.server.domain.item.model.Items.*;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
@@ -16,14 +15,13 @@ public class ItemFactory {
         return switch (itemCode) {
             case EMERGENCY_TREATMENT -> new ItemEmergencyTreatment();
             case SHIELD -> new ItemShield();
-            //TODO: 아이템 다만들기
-//            case RAGE -> new RageItem();
-//            case ESCAPE -> new EscapeItem();
-//            case REVERSAL -> new ReversalItem();
-//            case POTION -> new PotionItem();
-//            case RESISTANCE -> new ResistanceItem();
-//            case FINAL_STRIKE -> new FinalStrikeItem();
-//            case PANACEA -> new PanaceaItem();
+            case RAGE -> new ItemRage();
+            case ESCAPE -> new ItemEscape();
+            case REVERSAL -> new ItemReversal();
+            case HEALING_POTION -> new ItemHealingPotion();
+            case RESISTANCE -> new ItemResistance();
+            case FINAL_BLOW -> new ItemFinalBlow();
+            case PANACEA -> new ItemPanacea();
             default -> null;
         };
     }
