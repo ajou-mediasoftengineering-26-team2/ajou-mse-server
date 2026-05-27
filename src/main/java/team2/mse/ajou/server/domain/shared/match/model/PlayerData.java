@@ -94,6 +94,7 @@ public class PlayerData {
     /**
      * 보유한 아이템
      */
+    @OneToMany(fetch = FetchType.EAGER)
     private List<ConsumableItem> itemList = new ArrayList<>();
 
 
