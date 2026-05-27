@@ -16,6 +16,10 @@ import team2.mse.ajou.server.domain.shared.match.service.MatchTurnCalcService;
 
 import java.util.UUID;
 
+/**
+ * Test로 구현된 Elemental Service
+ * @author Junseo Hwang 202322128
+ */
 @Service("TestElementalService")
 public class TestElementalService implements IElementalService {
     private final PlayerDataRepository playerDataRepository;

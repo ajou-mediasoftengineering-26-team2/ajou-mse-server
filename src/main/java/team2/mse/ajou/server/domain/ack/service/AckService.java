@@ -8,6 +8,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import java.util.List;
 
 /**
+ * ack와 관련된 유틸을 제공해줌
  * @author Junseo Hwang 202322128
  */
 @Service
