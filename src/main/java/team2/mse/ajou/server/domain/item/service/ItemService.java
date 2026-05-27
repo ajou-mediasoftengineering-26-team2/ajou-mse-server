@@ -49,10 +49,10 @@ public class ItemService implements IItemService {
         List<PlayerData> players = matchData.getPlayers();
 
         for(PlayerData player: players) {
-            ConsumableItem randomItemNotExisted = getRandomItem(player);
+            ITEM_CODE randomItemNotExisted = getRandomItem(player);
 
             player.getItemList().add(randomItemNotExisted);
-            player.setReceivedItemCODE(randomItemNotExisted.getItemCode());
+            player.setReceivedItemCODE(randomItemNotExisted);
 
             matchData.updatePlayer(player);
             playerDataRepository.save(player);
@@ -95,13 +95,9 @@ public class ItemService implements IItemService {
         return true;
     }
 
-    private ConsumableItem getRandomItem(PlayerData playerData) {
-        List<ConsumableItem> itemList = playerData.getItemList();
-        Set<ITEM_CODE> existingCodes = new HashSet<>();
-
-        for (ConsumableItem item : itemList) {
-            existingCodes.add(item.getItemCode());
-        }
+    private ITEM_CODE getRandomItem(PlayerData playerData) {
+        List<ITEM_CODE> itemList = playerData.getItemList();
+        Set<ITEM_CODE> existingCodes = new HashSet<>(itemList);
 
         // 아직 없는 아이템 코드들
         List<ITEM_CODE> missingCodes = new ArrayList<>();
@@ -121,6 +117,6 @@ public class ItemService implements IItemService {
         int randomIndex = ThreadLocalRandom.current().nextInt(missingCodes.size());
         ITEM_CODE randomCode = missingCodes.get(randomIndex);
 
-        return ItemFactory.createItem(randomCode);
+        return randomCode;
     }
 }

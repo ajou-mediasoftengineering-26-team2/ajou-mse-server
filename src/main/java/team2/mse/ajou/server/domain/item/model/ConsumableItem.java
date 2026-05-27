@@ -1,5 +1,6 @@
 package team2.mse.ajou.server.domain.item.model;
 
+import jakarta.persistence.Entity;
 import lombok.Data;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 

@@ -44,10 +44,7 @@ public class FrdbPlayerData {
         data.setPerkChoiceList(playerData.getPerkChoiceList());
 
         data.setReceivedItemCODE(playerData.getReceivedItemCODE());
-        data.setItemCODEList(playerData.getItemList()
-                .stream()
-                .map(ConsumableItem::getItemCode)
-                .toList());
+        data.setItemCODEList(playerData.getItemList());
 
         return data;
     }
