@@ -1,5 +1,6 @@
 package team2.mse.ajou.server.domain.perk.controller;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.domain.perk.model.PutPerkChoiceRequest;
 import team2.mse.ajou.server.domain.perk.service.IPerkService;
@@ -20,7 +21,7 @@ import java.util.UUID;
 public class PerkController {
     IPerkService perkService;
 
-    public PerkController(IPerkService perkService) {
+    public PerkController(@Qualifier("TestPerkService")IPerkService perkService) {
         this.perkService = perkService;
     }
 
@@ -30,10 +31,12 @@ public class PerkController {
         UUID id = UUID.fromString(req.playerId());
         PERK perk = PERK.valueOf(req.perk());
 
+        // TODO: 현재 Test 구현은 둘에게 perk choice를 받으면 perk_item_receiving으로 넘어감. 타이머 종료로 넘어가야함.
         perkService.putPerkChoice(id, perk);
     }
 
     //안 쓸지도 모르겠습니다.
+    // 아마 안쓸것같습니다.
     @PutMapping("ack")
     public void perkAnimationEnd(@RequestBody PutAckRequest req){
         // TODO: Ack DB, Firebase에 저장

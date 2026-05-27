@@ -6,6 +6,7 @@ package team2.mse.ajou.server.domain.shared.match;
  * @author Junseo Hwang 202322128
  */
 public enum HAND_ELEMENTAL {
+    NONE,
     FIRE,       // 불
     LIGHTNING,  // 번개
     WATER,      // 물

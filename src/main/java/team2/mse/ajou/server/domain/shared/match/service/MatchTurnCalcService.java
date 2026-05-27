@@ -142,7 +142,7 @@ public class MatchTurnCalcService {
             matchData.setWinnerPlayerIdx(winnerPlayerIdx);
             matchData.setCurrentRound(matchData.getCurrentRound() + 1);
             matchData.setCurrentTurn(0);
-            matchData.setState(MATCH_STATE.END_RESULT);
+            matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
         }
     }
 }

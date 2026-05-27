@@ -15,6 +15,7 @@ import team2.mse.ajou.server.domain.shared.match.service.MatchTurnCalcService;
  * @author Junseo Hwang 202322128
  */
 @Service
+@Deprecated(forRemoval = true)
 public class PerkService {
     private final PlayerDataRepository playerDataRepository;
     private final MatchDataRepository matchDataRepository;
