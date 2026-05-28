@@ -53,6 +53,9 @@ public class TestElementalService implements IElementalService {
         playerData.setHandElemental(handElemental);
         matchData.updatePlayer(playerData);
 
+        playerDataRepository.save(playerData);
+        matchDataRepository.save(matchData);
+
         // TEST임
         if(ackService.isAllAckReceived(matchData, ACK_TYPE.__TEST_ACK)){
             matchData.setState(MATCH_STATE.GAME_ELEMENTAL_RECEIVING);
@@ -74,6 +77,9 @@ public class TestElementalService implements IElementalService {
 
         playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
         matchData.updatePlayer(playerData);
+
+        playerDataRepository.save(playerData);
+        matchDataRepository.save(matchData);
 
         if(ackService.isAllAckReceived(matchData, ACK_TYPE.ELEMENTAL_RECEIVE_ANIMATION_END)){
             matchData.setState(MATCH_STATE.GAME_ROUND_START_ANIMATION);

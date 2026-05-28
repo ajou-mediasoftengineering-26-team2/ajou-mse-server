@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.ack.service.AckService;
 import team2.mse.ajou.server.domain.firebase.service.FrdbService;
+import team2.mse.ajou.server.domain.item.service.IItemService;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
@@ -22,6 +23,7 @@ public class TestPerkService implements IPerkService {
     private final MatchDataRepository matchDataRepository;
     private final FrdbService frdbService;
     private final AckService ackService;
+    private final IItemService itemService;
 
     @Autowired
     public TestPerkService(PlayerDataRepository playerDataRepository,
@@ -29,11 +31,13 @@ public class TestPerkService implements IPerkService {
                        MatchTurnCalcService matchTurnCalcService,
                        MatchService matchService,
                        FrdbService frdbService,
-                           AckService ackService) {
+                           AckService ackService,
+                           IItemService itemService) {
         this.playerDataRepository = playerDataRepository;
         this.matchDataRepository = matchDataRepository;
         this.frdbService = frdbService;
         this.ackService = ackService;
+        this.itemService = itemService;
     }
 
     @Override
@@ -50,9 +54,13 @@ public class TestPerkService implements IPerkService {
         playerData.setPerkList(playerData.getPerkList());
         matchData.updatePlayer(playerData);
 
+        playerDataRepository.save(playerData);
+        matchDataRepository.save(matchData);
+
         // TEST임
         if(ackService.isAllAckReceived(matchData, ACK_TYPE.__TEST_ACK)){
-            matchData.setState(MATCH_STATE.GAME_PERK_ITEM_RECEIVING);
+            itemService.giveRandomItem(matchData.getId());
+//            matchData.setState(MATCH_STATE.GAME_PERK_ITEM_RECEIVING);
         }
 
         playerDataRepository.save(playerData);

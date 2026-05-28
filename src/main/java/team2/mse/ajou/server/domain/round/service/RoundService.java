@@ -46,6 +46,9 @@ public class RoundService implements IRoundService {
         playerData.setAckState(ACK_TYPE.ROUND_START_ANIMATION_END);
         matchData.updatePlayer(playerData);
 
+        playerDataRepository.save(playerData);
+        matchDataRepository.save(matchData);
+
         // 라운드 시작 애니메이션 종료 -> 플레이어 공격 선택
         if(ackService.isAllAckReceived(matchData, ACK_TYPE.ROUND_START_ANIMATION_END)){
             matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
@@ -64,6 +67,9 @@ public class RoundService implements IRoundService {
 
         playerData.setAckState(ACK_TYPE.ROUND_END_ANIMATION_END);
         matchData.updatePlayer(playerData);
+
+        playerDataRepository.save(playerData);
+        matchDataRepository.save(matchData);
 
         // 라운드 종료 애니메이션 종료(플레이어 ko)
         // -> 1라운드면 elemental 선택

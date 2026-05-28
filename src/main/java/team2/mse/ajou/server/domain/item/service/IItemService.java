@@ -7,5 +7,6 @@ import java.util.UUID;
  */
 public interface IItemService {
 
+    public void giveRandomItem(UUID matchId);
     public void receiveItemAnimationEndAck(UUID id);
 }

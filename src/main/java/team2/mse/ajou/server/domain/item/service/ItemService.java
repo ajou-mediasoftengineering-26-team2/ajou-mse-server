@@ -89,6 +89,9 @@ public class ItemService implements IItemService {
         playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
         matchData.updatePlayer(playerData);
 
+        playerDataRepository.save(playerData);
+        matchDataRepository.save(matchData);
+
         // 둘다 ack 받으면 round 시작
         if(isAllItemAnimationEnd(matchData)){
             matchData.setState(MATCH_STATE.GAME_ROUND_START_ANIMATION);
