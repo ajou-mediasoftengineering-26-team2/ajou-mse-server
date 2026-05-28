@@ -3,7 +3,6 @@ package team2.mse.ajou.server.domain.item.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.firebase.service.FrdbService;
-import team2.mse.ajou.server.domain.item.model.ConsumableItem;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
@@ -49,10 +48,22 @@ public class ItemService implements IItemService {
         List<PlayerData> players = matchData.getPlayers();
 
         for(PlayerData player: players) {
-            ITEM_CODE randomItemNotExisted = getRandomItem(player);
+            List<ITEM_CODE> unownedItemList = getUnownedItem(player);
 
-            player.getItemList().add(randomItemNotExisted);
-            player.setReceivedItemCODE(randomItemNotExisted);
+            int receivingCount;
+            if(matchData.getStation().equals("SEONGSU")){
+                receivingCount = Math.min(2, unownedItemList.size());
+            }
+            else{
+                receivingCount = Math.min(1, unownedItemList.size());
+            }
+
+            // 플레이어가 받을 아이템
+            List<ITEM_CODE> receivingItemList = unownedItemList.subList(0, receivingCount);
+            for(ITEM_CODE item: receivingItemList){
+                player.getItemList().add(item);
+            }
+            player.setReceivedItemList(receivingItemList);
 
             matchData.updatePlayer(player);
             playerDataRepository.save(player);
@@ -95,28 +106,26 @@ public class ItemService implements IItemService {
         return true;
     }
 
-    private ITEM_CODE getRandomItem(PlayerData playerData) {
+    private List<ITEM_CODE> getUnownedItem(PlayerData playerData) {
         List<ITEM_CODE> itemList = playerData.getItemList();
-        Set<ITEM_CODE> existingCodes = new HashSet<>(itemList);
+        Set<ITEM_CODE> existingItems = new HashSet<>(itemList);
 
         // 아직 없는 아이템 코드들
-        List<ITEM_CODE> missingCodes = new ArrayList<>();
+        List<ITEM_CODE> unownedItems = new ArrayList<>();
 
         for (ITEM_CODE code : ITEM_CODE.values()) {
-            if (!existingCodes.contains(code)) {
-                missingCodes.add(code);
+            if (!existingItems.contains(code)) {
+                unownedItems.add(code);
             }
         }
 
-        // 모든 아이템을 이미 가지고 있다면 추가 불가
-//        if (missingCodes.isEmpty()) {
-//            return ;
-//        }
+        Collections.shuffle(unownedItems);
 
-        // 없는 아이템 중 랜덤 선택
-        int randomIndex = ThreadLocalRandom.current().nextInt(missingCodes.size());
-        ITEM_CODE randomCode = missingCodes.get(randomIndex);
-
-        return randomCode;
+        return unownedItems;
+//        // 없는 아이템 중 랜덤 선택
+//        int randomIndex = ThreadLocalRandom.current().nextInt(unownedItems.size());
+//        ITEM_CODE randomCode = unownedItems.get(randomIndex);
+//
+//        return randomCode;
     }
 }

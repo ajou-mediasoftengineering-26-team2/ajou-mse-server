@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledFuture;
  * Match data management service.
  *
  * @author Ahn Yubin / 202021088
+ * @author Junseo Hwang 202322128
  */
 @Service
 public class MatchService {

@@ -2,7 +2,6 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import team2.mse.ajou.server.domain.item.model.ConsumableItem;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
@@ -90,7 +89,7 @@ public class PlayerData {
     /**
      * 랜덤으로 받은 아이템
      */
-    private ITEM_CODE receivedItemCODE = ITEM_CODE.NONE;
+    private List<ITEM_CODE> receivedItemList = new ArrayList<>();
     /**
      * 보유한 아이템
      */

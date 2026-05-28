@@ -1,7 +1,7 @@
 package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.Data;
-import team2.mse.ajou.server.domain.item.model.ConsumableItem;
+import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
@@ -23,11 +23,13 @@ public class FrdbPlayerData {
     private boolean isSelecting;
     private boolean isFinalWinner;
 
+    private HAND_CHOICE handChoice;
+
     private List<PERK> perkList;
     private List<PERK> perkChoiceList;
 
-    private ITEM_CODE receivedItemCODE;
-    private List<ITEM_CODE> itemCODEList;
+    private List<ITEM_CODE> receivedItemList;
+    private List<ITEM_CODE> itemList;
 
     public static FrdbPlayerData from(PlayerData playerData) {
         FrdbPlayerData data = new FrdbPlayerData();
@@ -40,11 +42,13 @@ public class FrdbPlayerData {
         data.setSelecting(playerData.isSelecting());
         data.setFinalWinner(playerData.isFinalWinner());
 
+        data.setHandChoice(playerData.getChoice());
+
         data.setPerkList(playerData.getPerkList());
         data.setPerkChoiceList(playerData.getPerkChoiceList());
 
-        data.setReceivedItemCODE(playerData.getReceivedItemCODE());
-        data.setItemCODEList(playerData.getItemList());
+        data.setReceivedItemList(playerData.getReceivedItemList());
+        data.setItemList(playerData.getItemList());
 
         return data;
     }
