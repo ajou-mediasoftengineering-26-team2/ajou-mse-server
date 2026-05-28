@@ -23,6 +23,7 @@ public class RoundService implements IRoundService {
     private final PlayerDataRepository playerDataRepository;
     private final MatchDataRepository matchDataRepository;
     private final FrdbService frdbService;
+    private final MatchService matchService;
 
     public RoundService(AckService ackService,
                         PlayerDataRepository playerDataRepository,
@@ -33,6 +34,7 @@ public class RoundService implements IRoundService {
         this.playerDataRepository = playerDataRepository;
         this.matchDataRepository = matchDataRepository;
         this.frdbService = frdbService;
+        this.matchService = matchService;
     }
 
     @Override
@@ -53,7 +55,10 @@ public class RoundService implements IRoundService {
         if(ackService.isAllAckReceived(matchData, ACK_TYPE.ROUND_START_ANIMATION_END)){
             matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
             MatchData updMatchData = matchDataRepository.save(matchData);
+
             frdbService.setMatch(updMatchData.getId(), updMatchData);
+
+            matchService.startNextTurn(matchData.getId());
         }
     }
 
