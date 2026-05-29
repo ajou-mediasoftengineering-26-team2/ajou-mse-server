@@ -35,13 +35,13 @@ services:
       MYSQL_ROOT_PASSWORD: /run/secrets/SECRET_MYSQL_ROOT_PASSWORD
       MYSQL_USER_FILE: /run/secrets/SECRET_MYSQL_USER
       MYSQL_PASSWORD_FILE: /run/secrets/SECRET_MYSQL_PASSWORD
-      MYSQL_DATABASE: ajou_mse_2026
+      MYSQL_DATABASE: ajou_mse_2026_dev
     secrets:
       - SECRET_MYSQL_ROOT_PASSWORD
       - SECRET_MYSQL_USER
       - SECRET_MYSQL_PASSWORD
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
