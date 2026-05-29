@@ -1,7 +1,7 @@
 # GitHub Actions for CI/CD. (Development server!)
 # Ahn Yubin / 202021088
 
-name: [DEV SERVER] Build with Gradle & Deploy to development environment
+name: (DEV SERVER) Build with Gradle & Deploy to development environment
 
 # Only run deploy on `deploy-test` branch
 on:
