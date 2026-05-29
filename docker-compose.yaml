@@ -41,7 +41,7 @@ services:
       - SECRET_MYSQL_USER
       - SECRET_MYSQL_PASSWORD
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
