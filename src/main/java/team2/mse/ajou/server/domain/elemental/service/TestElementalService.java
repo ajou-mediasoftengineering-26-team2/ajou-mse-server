@@ -75,13 +75,17 @@ public class TestElementalService implements IElementalService {
         MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
-        playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
+        playerData.setAckState(ACK_TYPE.ELEMENTAL_RECEIVE_ANIMATION_END);
         matchData.updatePlayer(playerData);
 
         playerDataRepository.save(playerData);
         matchDataRepository.save(matchData);
 
+        System.out.println(playerId+": elemental receiving animation end-ack");
+
         if(ackService.isAllAckReceived(matchData, ACK_TYPE.ELEMENTAL_RECEIVE_ANIMATION_END)){
+            System.out.println(matchData.getId()+": round start!");
+
             matchData.setState(MATCH_STATE.GAME_ROUND_START_ANIMATION);
             MatchData updMatchData = matchDataRepository.save(matchData);
             frdbService.setMatch(updMatchData.getId(), updMatchData);
