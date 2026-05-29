@@ -126,6 +126,12 @@ tasks.register('generateDockerSecrets') {
         new File(dir, "mysql_root_password.txt").text = mysql_root_password
         new File(dir, "mysql_user.txt").text = mysql_username
         new File(dir, "mysql_password.txt").text = mysql_password
+
+        def db_dir = new File(dir, "db-init")
+        db_dir.mkdirs()
+
+        def db_def_dev = "CREATE DATABASE IF NOT EXISTS ajou_mse_2026_dev;"
+        new File(db_dir, "setup-dev-server.sql").text = db_def_dev
     }
 }
 

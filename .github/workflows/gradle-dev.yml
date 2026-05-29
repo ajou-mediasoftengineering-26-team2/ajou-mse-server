@@ -78,7 +78,7 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: "dolce" # 이름이 돌쇠래요 껄껄껄
         key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
-        source: build/jib-image.tar, build/mysql_root_password.txt, build/mysql_user.txt, build/mysql_password.txt, docker-compose.yaml
+        source: build/jib-image.tar, build/db-init/setup-dev-server.sql, build/mysql_root_password.txt, build/mysql_user.txt, build/mysql_password.txt, docker-compose.yaml
         target: /home/dolce/deploys
 
     # Use SSH to "manually" load & run Docker images

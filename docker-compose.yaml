@@ -19,6 +19,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
+      - ./db-init:/docker-entrypoint-initdb.d
 #    networks:
 #      - ajou-mse-2026-backend
     healthcheck: # Wait for MySQL to run
