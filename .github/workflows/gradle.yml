@@ -73,7 +73,7 @@ jobs:
       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
     - name: Gradle Wrapper로 프로젝트 빌드
-      run: ./gradlew jibBuildTar -PIS_GITHUB_CI_CD=true -Dspring.profiles.active=prod
+      run: ./gradlew jibBuildTar -PIS_GITHUB_CI_CD=true
     
     # SCP the built image to Amazon EC2, in `~/deploy` directory. ( `~/deploy` -> `/home/dolce/deploy` )
     - name: 빌드한 Docker (.tar 이미지 + docker-compose.yml) 파일 SCP로 EC2 머신에 넘기기

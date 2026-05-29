@@ -43,7 +43,7 @@ jib {
             jvmFlags = ['-Duser.timezone=Asia/Seoul', '-Dspring.profiles.active=dev']
         } else {
             ports = ['8080/tcp']
-            jvmFlags = ['-Duser.timezone=Asia/Seoul', '-Dspring.profiles.active=prod']
+            jvmFlags = ['-Duser.timezone=Asia/Seoul']
         }
         environment = [TZ: 'Asia/Seoul']
     }
