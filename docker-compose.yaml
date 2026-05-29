@@ -45,6 +45,26 @@ services:
     environment:
       MYSQL_HOST: mse-2026-mysql-db
       SPRING_PROFILES_ACTIVE: docker
+
+  mse-server-dev:
+    container_name: mse-2026-backend-dev
+    profiles:
+      - deploy
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    image: ajou-mse/server-dev
+    tty: true
+    restart: always
+    ports:
+      - "8088:8088"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
+    environment:
+      MYSQL_HOST: mse-2026-mysql-db
+      SPRING_PROFILES_ACTIVE: docker
+
 secrets:
   SECRET_MYSQL_ROOT_PASSWORD:
     file: ./build/mysql_root_password.txt

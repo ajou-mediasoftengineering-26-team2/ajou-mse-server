@@ -25,13 +25,26 @@ description = 'ajou-mse-server'
 
 // jib setup
 jib {
+    def profile = System.getProperty("spring.profiles.active")
+
     to {
-        image = 'ajou-mse/server'
+
+        // dev/prod server distinction
+        if (profile == "dev") {
+            image = 'ajou-mse/server-dev'
+        } else {
+            image = 'ajou-mse/server'
+        }
     }
 
     container {
-        ports = [ '8080/tcp' ]
-        jvmFlags = ['-Duser.timezone=Asia/Seoul']
+        if (profile == "dev") {
+            ports = ['8088/tcp']
+            jvmFlags = ['-Duser.timezone=Asia/Seoul', '-Dspring.profiles.active=dev']
+        } else {
+            ports = ['8080/tcp']
+            jvmFlags = ['-Duser.timezone=Asia/Seoul', '-Dspring.profiles.active=prod']
+        }
         environment = [TZ: 'Asia/Seoul']
     }
 
@@ -118,4 +131,9 @@ tasks.register('generateDockerSecrets') {
 
 tasks.named('classes').configure {
     dependsOn 'generateDockerSecrets'
+}
+
+bootRun {
+    def profile = System.getProperty("spring.profiles.active")
+    systemProperty("spring.profiles.active", profile)
 }
