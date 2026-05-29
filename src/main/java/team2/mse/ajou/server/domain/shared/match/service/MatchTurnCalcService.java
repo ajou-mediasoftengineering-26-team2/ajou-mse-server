@@ -19,38 +19,10 @@ import java.util.List;
 @Service
 public class MatchTurnCalcService {
     /**
-     * Initializes given `MatchData` for the first turn of the match.
-     * @param matchData Match data to be modified.
-     */
-    public void initializeMatch(MatchData matchData) {
-        int attackerIdx = matchData.getAttackerPlayerIdx();
-
-        List<PlayerData> players = matchData.getPlayers();
-        if (players.size() < 2) {
-            throw new ApiError(5005, "Insufficient players in the match!");
-        }
-
-        // Reset HP and turn state. (Both players!!)
-        for (int i = 0; i < players.size(); i++) {
-            PlayerData player = players.get(i);
-            player.setHp(10);
-            player.setWins(0);
-            player.setFinalWinner(false);
-            player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
-            player.setAckState(team2.mse.ajou.server.domain.shared.ack.ACK_TYPE.NO_ACK);
-            player.setSelecting(true);
-            player.setAttacking(i == attackerIdx);
-        }
-
-        matchData.setAttackSuccess(false);
-        // DemageList를 초기에 설정해야할지도 모르겠습니다.
-        matchData.setState(MATCH_STATE.GAME_ROUND_START_ANIMATION);
-    }
-
-    /**
      * Calculates a single turn from given `MatchData`.
      * choice 상태에서 5초가 끝나면 finished 상태로 전환합니다.
      * 데미지 계산은 두 클라이언트의 /turn/choice 요청이 모두 들어온 뒤 실행합니다.
+     *
      * @param matchData Match data to be modified.
      */
     public void calculateTurn(MatchData matchData) {
@@ -66,7 +38,7 @@ public class MatchTurnCalcService {
             // 이 if문으로 들어왔다는 것은 5초가 지나서 choice가 끝났다는 것을 의미합니다.
             // finished가 되면 클라이언트는 choice결과를 /turn/choice로 보내게 됩니다.
             matchData.setState(MATCH_STATE.GAME_CHOICE_FINISHED);
-            //Damage 초기화
+            // Damage 초기화
             return;
         }
 
@@ -104,8 +76,8 @@ public class MatchTurnCalcService {
         // END DAMAGE CALCULATION LOGIC --------------------------
 
         // 다시 turn을 시작할 준비를 합니다.
-        //Update player datas
-        for(PlayerData player: players) {
+        // Update player datas
+        for (PlayerData player : players) {
             player.setSelecting(false);
             player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
             player.setAckState(ACK_TYPE.NO_ACK);

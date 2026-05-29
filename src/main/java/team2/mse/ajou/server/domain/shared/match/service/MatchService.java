@@ -4,6 +4,7 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.firebase.service.FrdbService;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
@@ -14,7 +15,6 @@ import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -98,6 +98,38 @@ public class MatchService {
         }
 
         return matchDataRepository.findById(playerData.getJoinedMatchId()).orElse(null);
+    }
+
+    /**
+     * Initializes given `MatchData` for the first turn of given round.
+     *
+     * @param matchData Match data to be modified.
+     */
+    public void initializeMatchRound(MatchData matchData) {
+        List<PlayerData> players = matchData.getPlayers();
+        if (players.size() < 2) {
+            throw new ApiError(5005, "Insufficient players in the match!");
+        }
+
+        // Random player attacks
+        int attackerIdx = (new Random()).nextInt() % players.size();
+
+        // Reset HP and turn state. (Both players!!)
+        for (int i = 0; i < players.size(); i++) {
+            PlayerData player = players.get(i);
+            player.setHp(10);
+            player.setFinalWinner(false);
+            player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
+            player.setAckState(team2.mse.ajou.server.domain.shared.ack.ACK_TYPE.NO_ACK);
+            player.setSelecting(true);
+            player.setAttacking(i == attackerIdx);
+        }
+
+        matchData.setAttackerPlayerIdx(attackerIdx);
+        matchData.setAttackSuccess(false);
+
+        // DemageList를 초기에 설정해야할지도 모르겠습니다.
+        matchData.setState(MATCH_STATE.GAME_ROUND_START_ANIMATION);
     }
 
     /**
@@ -222,6 +254,7 @@ public class MatchService {
 
     /**
      * Callback called when player joins the match. Sets up timer to start a match if sufficient players have joined and are ready.
+     *
      * @param matchData Match data to be modified.
      */
     @Transactional
@@ -244,6 +277,7 @@ public class MatchService {
 
     /**
      * Callback called when player leaves the match. Cancels timer if there's one.
+     *
      * @param matchData Match data to be modified.
      */
     @Transactional
@@ -260,11 +294,12 @@ public class MatchService {
             matchData.setState(MATCH_STATE.END_PLAYER_DISCONNECTED);
             cancelCountdownForMatch(matchData);
         }
-        //matchData.setCountdownStartTime(ZonedDateTime.now());
+        // matchData.setCountdownStartTime(ZonedDateTime.now());
     }
 
     /**
      * Callback called when match is started. Determines the initial attacker, and sets the timer to get the inputs for the first turn.
+     *
      * @param matchId Match ID.
      */
     @Transactional
@@ -275,7 +310,7 @@ public class MatchService {
             return;
         }
 
-        matchTurnCalcService.initializeMatch(matchData);
+        initializeMatchNew(matchData);
 
         // Schedule turn handling task in 5 seconds from now.
         if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
@@ -292,6 +327,7 @@ public class MatchService {
 
     /**
      * Callback called when a turn of match needs to be processed. Handles player input and attack/defence and its outcomes.
+     *
      * @param matchId Match ID.
      */
     @Transactional
@@ -304,7 +340,7 @@ public class MatchService {
 
         // 5초 타이머는 choice -> finished로 갈때만 사용합니다.
         // 나중에 ack 오류 처리를 위해 finished -> choice 타이머를 가동할 수 도 있습니다.
-        if(matchData.getState() != MATCH_STATE.GAME_PLAYER_CHOICE) return;
+        if (matchData.getState() != MATCH_STATE.GAME_PLAYER_CHOICE) return;
         // Schedule turn handling task in 5 seconds from now.
 //        if (matchData.getState().isIngame()) {
 //            if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
@@ -324,6 +360,7 @@ public class MatchService {
 
     /**
      * Starts the next 5-sec choice after both clients finish animation and send Ack.
+     *
      * @param matchId Match ID.
      */
     @Transactional
@@ -342,8 +379,8 @@ public class MatchService {
         int attackerIdx = matchData.getAttackerPlayerIdx();
         List<PlayerData> players = matchData.getPlayers();
 
-        //초기화를 안해도 될 것 같긴함
-        for(int i = 0; i<players.size(); i++){
+        // 초기화를 안해도 될 것 같긴함
+        for (int i = 0; i < players.size(); i++) {
             PlayerData player = players.get(i);
             player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
             player.setAckState(ACK_TYPE.NO_ACK);
@@ -367,7 +404,7 @@ public class MatchService {
      * Closes all match and removes all data.
      */
     public void deleteAllMatch() {
-        for (ScheduledFuture<?> handler: countdownSchedulers.values()) {
+        for (ScheduledFuture<?> handler : countdownSchedulers.values()) {
             handler.cancel(false);
         }
         countdownSchedulers.clear();
@@ -380,19 +417,19 @@ public class MatchService {
      * Also modifies given `MatchData` to be used for DB updates and such.
      *
      * @param matchData Match data to be modified.
-     * @param callback Callback on countdown end.
-     * @param seconds Countdown seconds.
+     * @param callback  Callback on countdown end.
+     * @param seconds   Countdown seconds.
      * @return Whether it was successful.
      */
-    private boolean setCountdownForMatch(MatchData matchData, Runnable callback, int seconds) {
+    public boolean setCountdownForMatch(MatchData matchData, Runnable callback, int seconds) {
         ScheduledFuture<?> handlePrev = countdownSchedulers.getOrDefault(matchData.getId(), null);
 
         if (handlePrev != null && !handlePrev.isDone()) {
             return false;
         }
 
-        ZonedDateTime   currentTime = ZonedDateTime.now(),
-                        when = currentTime.plusSeconds(seconds);
+        ZonedDateTime currentTime = ZonedDateTime.now(),
+                when = currentTime.plusSeconds(seconds);
 
         System.out.println("COUNTDOWN MATCH " + matchData.getId() + " @ " + currentTime);
 
@@ -409,8 +446,8 @@ public class MatchService {
      * Also modifies given `MatchData` to be used for DB updates and such.
      *
      * @param matchData Match data to be modified.
-     * @param callback Callback on countdown end.
-     * @param when Countdown end time.
+     * @param callback  Callback on countdown end.
+     * @param when      Countdown end time.
      * @return Whether it was successful.
      */
     private boolean setCountdownForMatch(MatchData matchData, Runnable callback, ZonedDateTime when) {
@@ -435,6 +472,7 @@ public class MatchService {
 
     /**
      * Cancels given match's timer.
+     *
      * @param matchData Match data to be modified.
      * @return Whether it was successful.
      */
@@ -448,5 +486,22 @@ public class MatchService {
         }
 
         return false;
+    }
+
+    /**
+     * Initializes given `MatchData` for new match.
+     *
+     * @param matchData Match data to be modified.
+     */
+    private void initializeMatchNew(MatchData matchData) {
+        initializeMatchRound(matchData);
+
+        // Reset wins
+        List<PlayerData> players = matchData.getPlayers();
+
+        for (int i = 0; i < players.size(); i++) {
+            PlayerData player = players.get(i);
+            player.setWins(0);
+        }
     }
 }

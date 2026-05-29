@@ -21,7 +21,7 @@ import java.util.UUID;
 public class PerkController {
     IPerkService perkService;
 
-    public PerkController(@Qualifier("TestPerkService")IPerkService perkService) {
+    public PerkController(IPerkService perkService) {
         this.perkService = perkService;
     }
 
