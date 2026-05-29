@@ -131,6 +131,8 @@ tasks.register('generateDockerSecrets') {
         db_dir.mkdirs()
 
         def db_def_dev = "CREATE DATABASE IF NOT EXISTS ajou_mse_2026_dev;"
+                                    + "GRANT ALL PRIVILEGES ON ajou_mse_2026_dev.* TO 'mse2026'@'%';"
+
         new File(db_dir, "setup-dev-server.sql").text = db_def_dev
     }
 }
