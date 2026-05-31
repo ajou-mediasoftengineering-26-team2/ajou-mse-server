@@ -115,8 +115,12 @@ public class ItemService implements IItemService {
 
         // 아직 없는 아이템 코드들
         List<ITEM_CODE> unownedItems = new ArrayList<>();
+        // NONE이 아이템으로 지급되면 정말로 이상하겠지요. 필터링해줍니다.
+        List<ITEM_CODE> availableItems = Arrays.stream(ITEM_CODE.values())
+                                        .filter(itemCode -> itemCode != ITEM_CODE.NONE)
+                                        .toList();
 
-        for (ITEM_CODE code : ITEM_CODE.values()) {
+        for (ITEM_CODE code : availableItems) {
             if (!existingItems.contains(code)) {
                 unownedItems.add(code);
             }
