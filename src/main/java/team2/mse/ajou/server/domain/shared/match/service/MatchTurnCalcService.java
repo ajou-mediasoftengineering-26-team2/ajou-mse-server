@@ -45,6 +45,8 @@ public class MatchTurnCalcService {
         int attackerIdx = matchData.getAttackerPlayerIdx();
         int defenceIdx = (attackerIdx + 1) % players.size();
 
+        System.out.printf("\t[calculateTurn @ %s] BEFORE ATTACKER IDX: %d, DEFENDER IDX: %d\n", matchData.getId(), attackerIdx, defenceIdx);
+
         // Attacking player reference.
         PlayerData attackerPlayer = players.get(attackerIdx);
         HAND_CHOICE attackerChoice = attackerPlayer.getChoice();
@@ -69,6 +71,9 @@ public class MatchTurnCalcService {
             // switch attackerIdx and defenceIdx
             defenceIdx ^= 1;
             attackerIdx ^= 1;
+
+            System.out.printf("\t[calculateTurn @ %s] AFTER SWITCH ATTACKER IDX: %d, DEFENDER IDX: %d\n", matchData.getId(), attackerIdx, defenceIdx);
+
             attackerPlayer = players.get(attackerIdx);
             defencePlayer = players.get(defenceIdx);
             isPlayerKO = false;
