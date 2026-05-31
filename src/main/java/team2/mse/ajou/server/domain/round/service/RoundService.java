@@ -140,6 +140,9 @@ public class RoundService implements IRoundService {
                     perks.add(selectedPerk);
                     player.setPerkList(perks);
                     player.setPerkChoiceList(Collections.emptyList());
+
+                    // + ACK 할 수 있도록 셋팅
+                    player.setAckState(ACK_TYPE.NO_ACK);
                 }
 
                 // "클라이언트는 perk, item 수령 애니메이션을 출력하고 ack를 보내면 됨"
