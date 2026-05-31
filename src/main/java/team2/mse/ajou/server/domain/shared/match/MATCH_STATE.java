@@ -97,4 +97,16 @@ public enum MATCH_STATE {
                 )
                 .contains(this);
     }
+
+    /**
+     * Determines whether this state is considered "receiving item".
+     * @return Receiving items?
+     */
+    public boolean isReceivingItems() {
+        return List.of(
+                        MATCH_STATE.GAME_PERK_ITEM_RECEIVING,
+                        MATCH_STATE.GAME_ELEMENTAL_RECEIVING
+                )
+                .contains(this);
+    }
 }

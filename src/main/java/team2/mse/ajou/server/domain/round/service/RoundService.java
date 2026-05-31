@@ -124,15 +124,15 @@ public class RoundService implements IRoundService {
             matchService.setCountdownForMatch(matchData, () -> {
                 System.out.printf("Countdown END for match `%s`\n", matchId);
 
-                // "이때 perk(elemental)과 item이 다 업데이트 됨"
-                // (item: 랜덤 아이템 지급)
-                itemService.giveRandomItem(matchId);
-
                 MatchData countdownMatchData = matchDataRepository.findById(matchId)
                         .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
-                List<PlayerData> players = countdownMatchData.getPlayers();
+
+                // "이때 perk(elemental)과 item이 다 업데이트 됨"
+                // (item: 랜덤 아이템 지급)
+                itemService.giveRandomItem(countdownMatchData);
 
                 // (perk: perkChoiceCurrent값에 해당하는 perk 지급 & perkChoiceList 빈 리스트로 갱신)
+                List<PlayerData> players = countdownMatchData.getPlayers();
                 for (PlayerData player : players) {
                     List<PERK> perks = player.getPerkList();
                     PERK selectedPerk = player.getPerkChoiceCurrent();

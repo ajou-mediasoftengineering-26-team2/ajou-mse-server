@@ -1,5 +1,7 @@
 package team2.mse.ajou.server.domain.item.service;
 
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+
 import java.util.UUID;
 
 /**
@@ -7,6 +9,6 @@ import java.util.UUID;
  */
 public interface IItemService {
 
-    public void giveRandomItem(UUID matchId);
+    public void giveRandomItem(MatchData matchData);
     public void receiveItemAnimationEndAck(UUID id);
 }
