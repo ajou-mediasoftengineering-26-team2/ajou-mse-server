@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * @author Junseo Hwang 202322128
@@ -79,7 +80,7 @@ public class RoundService implements IRoundService {
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + playerId));
         UUID matchId = playerData.getJoinedMatchId();
         MatchData matchData = matchDataRepository.findById(matchId)
-                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
 
         playerData.setAckState(ACK_TYPE.ROUND_END_ANIMATION_END);
         matchData.updatePlayer(playerData);
@@ -109,6 +110,7 @@ public class RoundService implements IRoundService {
                     int returnSz = Math.min(availablePerks.size(), 3);
 
                     Collections.shuffle(availablePerks);
+                    player.setPerkChoiceCurrent(null);
                     player.setPerkChoiceList(availablePerks.subList(0, returnSz));
                 }
 
@@ -120,24 +122,30 @@ public class RoundService implements IRoundService {
             MATCH_STATE nextState = isElementalChoice ? MATCH_STATE.GAME_ELEMENTAL_RECEIVING : MATCH_STATE.GAME_PERK_ITEM_RECEIVING;
 
             matchService.setCountdownForMatch(matchData, () -> {
-                MatchData countdownMatchData = matchDataRepository.findById(matchId)
-                        .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
-                List<PlayerData> players = countdownMatchData.getPlayers();
+                System.out.printf("Countdown END for match `%s`\n", matchId);
 
                 // "이때 perk(elemental)과 item이 다 업데이트 됨"
                 // (item: 랜덤 아이템 지급)
                 itemService.giveRandomItem(matchId);
+
+                MatchData countdownMatchData = matchDataRepository.findById(matchId)
+                        .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
+                List<PlayerData> players = countdownMatchData.getPlayers();
+
                 // (perk: perkChoiceCurrent값에 해당하는 perk 지급 & perkChoiceList 빈 리스트로 갱신)
                 for (PlayerData player : players) {
                     List<PERK> perks = player.getPerkList();
                     PERK selectedPerk = player.getPerkChoiceCurrent();
 
                     perks.add(selectedPerk);
+                    player.setPerkList(perks);
                     player.setPerkChoiceList(Collections.emptyList());
                 }
 
                 // "클라이언트는 perk, item 수령 애니메이션을 출력하고 ack를 보내면 됨"
                 countdownMatchData.setState(nextState);
+
+                System.out.printf("\t> Match `%s` (vs %s): Players: [%s]\n", countdownMatchData.getId(), matchId, players.stream().map(player -> player.getUsername()).collect(Collectors.joining()));
 
                 playerDataRepository.saveAll(players);
                 MatchData updMatchData = matchDataRepository.save(countdownMatchData);
@@ -146,6 +154,8 @@ public class RoundService implements IRoundService {
 
             MatchData updMatchData = matchDataRepository.save(matchData);
             frdbService.setMatch(updMatchData.getId(), updMatchData);
+
+            System.out.printf("Countdown BEGIN for match `%s` (`%s`)\n", matchId);
         }
     }
 }
