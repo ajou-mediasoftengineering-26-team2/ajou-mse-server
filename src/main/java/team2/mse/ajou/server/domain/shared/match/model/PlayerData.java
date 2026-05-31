@@ -84,6 +84,10 @@ public class PlayerData {
      * 클라이언트 화면에 띄워진 perk list
      */
     private List<PERK> perkChoiceList = new ArrayList<>();
+    /**
+     * 클라이언트가 현재 선택중인 perk (이후 `MATCH_STATE.GAME_PERK_ITEM_RECEIVING` 상태로 넘어가는 시점에서 실제로 `perkList` 적용)
+     */
+    private PERK perkChoiceCurrent = null;
 
     //==========Item==========
     /**
