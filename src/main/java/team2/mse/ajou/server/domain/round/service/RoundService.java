@@ -145,7 +145,8 @@ public class RoundService implements IRoundService {
                 // "클라이언트는 perk, item 수령 애니메이션을 출력하고 ack를 보내면 됨"
                 countdownMatchData.setState(nextState);
 
-                System.out.printf("\t> Match `%s` (vs %s): Players: [%s]\n", countdownMatchData.getId(), matchId, players.stream().map(player -> player.getUsername()).collect(Collectors.joining()));
+                String playersFormatted = players.stream().map(player -> player.getUsername()).collect(Collectors.joining(", "));
+                System.out.printf("\t> Match `%s` (vs %s): Players: [%s]\n", countdownMatchData.getId(), matchId, playersFormatted);
 
                 playerDataRepository.saveAll(players);
                 MatchData updMatchData = matchDataRepository.save(countdownMatchData);
@@ -155,7 +156,7 @@ public class RoundService implements IRoundService {
             MatchData updMatchData = matchDataRepository.save(matchData);
             frdbService.setMatch(updMatchData.getId(), updMatchData);
 
-            System.out.printf("Countdown BEGIN for match `%s` (`%s`)\n", matchId);
+            System.out.printf("Countdown BEGIN for match `%s`\n", matchId);
         }
     }
 }
