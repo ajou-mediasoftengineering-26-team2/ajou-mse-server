@@ -39,6 +39,7 @@ public class TurnController
         }
         // When Firebase cannot be used.
         catch (Exception e){
+            System.err.printf("FIREBASE ERROR @ putHandChoice(), INPUT = %s (id: %s): %s\n", req.choice(), req.id(), e);
             throw new ApiError(5000, "firebase error");
         }
     }
