@@ -39,6 +39,8 @@ public class MatchService {
     private final TaskScheduler scheduler;
     private final Map<UUID, ScheduledFuture<?>> countdownSchedulers;
 
+    private final Random attackerRandom;
+
     public MatchService(FrdbService frdbService, MatchDataRepository matchDataRepository, PlayerDataRepository playerDataRepository, StationRepository stationRepository, MatchTurnCalcService matchTurnCalcService) {
         this.frdbService = frdbService;
         this.matchDataRepository = matchDataRepository;
@@ -48,6 +50,8 @@ public class MatchService {
 
         this.scheduler = new SimpleAsyncTaskScheduler();
         this.countdownSchedulers = new HashMap<>();
+
+        this.attackerRandom = new Random(System.currentTimeMillis());
     }
 
     /**
@@ -112,7 +116,7 @@ public class MatchService {
         }
 
         // Random player attacks
-        int attackerIdx = (new Random()).nextInt() % players.size();
+        int attackerIdx = attackerRandom.nextInt(0, players.size());
 
         // Reset HP and turn state. (Both players!!)
         for (int i = 0; i < players.size(); i++) {
