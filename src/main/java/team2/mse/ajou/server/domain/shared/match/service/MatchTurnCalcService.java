@@ -84,7 +84,7 @@ public class MatchTurnCalcService {
         // Update player datas
         for (PlayerData player : players) {
             player.setSelecting(false);
-            player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
+            //player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
             player.setAckState(ACK_TYPE.NO_ACK);
         }
         attackerPlayer.setAttacking(true);
