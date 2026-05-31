@@ -67,6 +67,8 @@ public class TurnService {
         }
 
         HAND_CHOICE handChoice = HAND_CHOICE.valueOf(choice);
+        System.out.printf("\t[%s] PLAYER [`%s`] INPUT: (%s) `%s`\n", matchData.getId(), uuid, handChoice, choice);
+
         playerData.setChoice(handChoice);
         playerData.setSelecting(false);
         matchData.updatePlayer(playerData);
@@ -75,6 +77,7 @@ public class TurnService {
         matchDataRepository.save(matchData);
 
         if (isAllChoiceSubmitted(matchData)) {
+            System.out.printf("[%s] TURN CONTINUE\n", matchData.getId());
             matchTurnCalcService.calculateTurn(matchData);
 
             playerDataRepository.saveAll(matchData.getPlayers());
