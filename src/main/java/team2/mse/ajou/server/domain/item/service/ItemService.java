@@ -85,9 +85,6 @@ public class ItemService implements IItemService {
         MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
-        playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
-        matchData.updatePlayer(playerData);
-
         if (!matchData.getState().isReceivingItems()) {
             throw new IllegalStateException("Item/perk/elemental receive animation ACK can be submitted only after turn result is calculated!");
         }
@@ -95,6 +92,9 @@ public class ItemService implements IItemService {
         if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
             throw new IllegalStateException("Player is already acknowledged!");
         }
+
+        playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
+        matchData.updatePlayer(playerData);
 
         // 둘 다 ACK 받으면 다음 라운드로 이동
         if (isAllItemAnimationEnd(matchData)) {
