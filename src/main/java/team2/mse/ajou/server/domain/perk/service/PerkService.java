@@ -84,7 +84,8 @@ public class PerkService implements IPerkService {
         }
 
         playerDataRepository.save(playerData);
-        matchDataRepository.save(matchData);
+        MatchData updMatchData = matchDataRepository.save(matchData);
+        frdbService.setMatch(updMatchData.getId(), updMatchData);
     }
 
     /**

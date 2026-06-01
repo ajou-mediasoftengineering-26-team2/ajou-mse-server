@@ -21,7 +21,7 @@ import java.util.UUID;
 public class ElementalController {
     IElementalService elementalService;
 
-    public ElementalController(@Qualifier("TestElementalService")IElementalService elementalService) {
+    public ElementalController(IElementalService elementalService) {
         this.elementalService = elementalService;
     }
 
