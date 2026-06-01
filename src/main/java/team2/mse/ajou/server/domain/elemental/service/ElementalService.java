@@ -80,7 +80,8 @@ public class ElementalService implements IElementalService {
         matchData.updatePlayer(playerData);
 
         playerDataRepository.save(playerData);
-        matchDataRepository.save(matchData);
+        MatchData updMatchData = matchDataRepository.save(matchData);
+        frdbService.setMatch(updMatchData.getId(), updMatchData);
     }
 
     @Override
