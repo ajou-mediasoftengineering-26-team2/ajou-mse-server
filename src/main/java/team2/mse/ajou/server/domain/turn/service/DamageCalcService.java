@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class DamageCalcSerivce implements IDamageCalcService {
+public class DamageCalcService implements IDamageCalcService {
     @Override
     public List<DamageData> calcDamageList(MatchData matchData) {
         List<DamageData> damageDataList = new ArrayList<>();
@@ -60,6 +60,8 @@ public class DamageCalcSerivce implements IDamageCalcService {
             for(IPerk perk : defenderPerkList){
                 perk.usePerkIfPossible(matchData);
             }
+
+            defender.setHp(Math.max(0,defender.getHp()-damageDataList.getLast().getDamage()));
         }
 
         return damageDataList;
