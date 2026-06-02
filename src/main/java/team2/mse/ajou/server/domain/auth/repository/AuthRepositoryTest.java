@@ -6,7 +6,14 @@ import org.springframework.stereotype.Repository;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Test repository for testing authentication endpoints before migrating to MySQL.
+ * DEBUG ONLY!! Will be removed soon.
+ *
+ * @author Ahn Yubin / 202021088
+ */
 @Repository
+@Deprecated(forRemoval = true)
 @Qualifier("Test")
 public class AuthRepositoryTest implements AuthRepository {
     private Map<String, String> usernameToPlayerToken;

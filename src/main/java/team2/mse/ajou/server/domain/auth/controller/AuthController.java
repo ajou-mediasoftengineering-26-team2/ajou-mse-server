@@ -1,34 +1,33 @@
 package team2.mse.ajou.server.domain.auth.controller;
 
 import org.springframework.web.bind.annotation.*;
-import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.auth.model.*;
-import team2.mse.ajou.server.domain.auth.repository.PlayerInfoRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
 import team2.mse.ajou.server.domain.auth.service.AuthService;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 import java.util.List;
-import java.util.UUID;
 
 /**
- * 사용자 로그인 / 인증 관련 API.
- * 베이스 URL: `<서버 주소>/auth`
+ * User login/authentication API endpoints.
+ * Base URL: `<SERVER URL>/auth`
  *
- * @author yubin
+ * @author Ahn Yubin / 202021088
  */
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
     private final AuthService authService;
-    private final PlayerInfoRepository playerInfoRepository;
+    private final PlayerDataRepository playerDataRepository;
 
-    public AuthController(AuthService authService, PlayerInfoRepository playerInfoRepository) {
+    public AuthController(AuthService authService, PlayerDataRepository playerDataRepository) {
         this.authService = authService;
-        this.playerInfoRepository = playerInfoRepository;
+        this.playerDataRepository = playerDataRepository;
     }
 
     /**
-     * 주어진 닉네임으로 로그인하고, 로비에 입장하거나 새로운 로비를 생성합니다.
-     * 플레이어 고유식별자인 플레이어 토큰과, 로비 고유식별자인 로비 ID, 그리고 로비가 새로 생성되어 다른 플레이어 대기가 필요한지를 응답으로 내려줍니다.
+     * Login with given username then joins (and creates if needed) a match.
+     * Returns player and match (UU)ID.
      *
      * @param req Request body
      * @return Response body
@@ -46,7 +45,7 @@ public class AuthController {
     }
 
     /**
-     * 로그인 된 플레이어 토큰으로 로그아웃 합니다. 참가중인 로비가 있으면 나갑니다.
+     * Logs out player from given player UUID. Leaves ongoing match if the player is currently joining one.
      *
      * @param req Request body
      */
@@ -58,8 +57,7 @@ public class AuthController {
     }
 
     /**
-     * 주어진 닉네임이 이미 사용 중인지 확인합니다.
-     * 사용 가능한지 여부를 응답으로 내려줍니다.
+     * Checks whether given username is available.
      *
      * @param req Request body
      * @return Response body
@@ -73,13 +71,13 @@ public class AuthController {
     }
 
     /**
-     * 모든 플레이어 목록을 가져옵니다.
+     * Fetches list of all players.
      *
      * @return Response body
      */
     @GetMapping("/all-players")
     public GetAllPlayersResponse getAllPlayers() {
-        List<PlayerInfo> playerInfos = playerInfoRepository.findAll();
-        return new GetAllPlayersResponse(playerInfos);
+        List<PlayerData> playerData = playerDataRepository.findAll();
+        return new GetAllPlayersResponse(playerData);
     }
 }

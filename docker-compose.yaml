@@ -1,3 +1,5 @@
+# Docker compose setup file.
+# Ahn Yubin / 202021088
 services:
   mysql-db:
     image: mysql
@@ -14,9 +16,12 @@ services:
       - SECRET_MYSQL_PASSWORD
     ports:
       - "3306:3306"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
 #    networks:
 #      - ajou-mse-2026-backend
-    healthcheck: # MySQL이 정상적으로 실행될 때까지 기다리도록 설정
+    healthcheck: # Wait for MySQL to run
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$(cat /run/secrets/SECRET_MYSQL_USER)", "-p$$(cat /run/secrets/SECRET_MYSQL_PASSWORD)" ]
       interval: 10s
       retries: 5
@@ -34,8 +39,12 @@ services:
     restart: always
     ports:
       - "8080:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
     environment:
       MYSQL_HOST: mse-2026-mysql-db
+      SPRING_PROFILES_ACTIVE: docker
 secrets:
   SECRET_MYSQL_ROOT_PASSWORD:
     file: ./build/mysql_root_password.txt

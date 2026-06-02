@@ -11,9 +11,9 @@ import team2.mse.ajou.server.apiresponse.model.ApiResponse;
 import team2.mse.ajou.server.apiresponse.model.ErrorData;
 
 /**
- * 서버 비즈니스 로직 실행시 발생하는 API 에러를 이쁘게 `ApiResponse<>` 클래스로 감싸줍니다.
+ * Catches any unhandled exceptions into `ApiResponse<>` class to make error handling on client side simpler.
  *
- * @author yubin
+ * @author Ahn Yubin / 202021088
  */
 @RestControllerAdvice
 public class ApiResponseExceptionHandlerAdvice {
@@ -38,7 +38,7 @@ public class ApiResponseExceptionHandlerAdvice {
         // TODO: Logger 사용
         err.printStackTrace();
 
-        ErrorData data = new ErrorData(0, "알 수 없는 서버 에러: (%s)".formatted(err.toString()));
+        ErrorData data = new ErrorData(0, "UNKNOWN SERVER ERROR: (%s)".formatted(err.toString()));
         ApiResponse<ErrorData> body = ApiResponse.error(data);
         ResponseEntity<ApiResponse<ErrorData>> res;
 

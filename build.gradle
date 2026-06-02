@@ -1,4 +1,10 @@
-// jib에서 spring boot + docker 플러그인 무시하게
+/*
+ * Buildscript.
+ *
+ * Ahn Yubin / 202021088
+ */
+
+// Since we're using jib, we have to make it ignore spring boot + docker plugin with this filter.
 buildscript {
     dependencies {
         classpath('com.google.cloud.tools:jib-layer-filter-extension-gradle:0.3.0')
@@ -9,8 +15,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '4.0.5'
     id 'io.spring.dependency-management' version '1.1.7'
-    // Docker 이미지를 만들어서 (쉽게?) 서버에 올리기 위한 빌드업
-    // 구글에서 만든 'jib'이라 불리는 플러그인을 사용합니다. 빌드스크립트에 기능을 추가하는 플러그인이지요
+    // Use jib plugin to create Docker image for easier/consistent deployment.
     id 'com.google.cloud.tools.jib' version '3.5.3'
 }
 
@@ -18,17 +23,19 @@ group = 'team2.mse.ajou'
 version = '0.0.1-SNAPSHOT'
 description = 'ajou-mse-server'
 
-// jib 플러그인을 셋팅해봅시다
+// jib setup
 jib {
     to {
         image = 'ajou-mse/server'
     }
 
     container {
-        ports = [ '8080/tcp' ];
+        ports = [ '8080/tcp' ]
+        jvmFlags = ['-Duser.timezone=Asia/Seoul']
+        environment = [TZ: 'Asia/Seoul']
     }
 
-    // docker compose 플러그인 무시. 어쩌피 docker에서 실행하니깐 spring boot 플러그인으로 별도로 실행해줄 필요가 없습니다
+    // jib: ignore docker compose plugin. since we're "manually" running docker on CI/CD.
     pluginExtensions {
         pluginExtension {
             implementation = 'com.google.cloud.tools.jib.gradle.extension.layerfilter.JibLayerFilterExtension'
@@ -78,13 +85,16 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
     runtimeOnly 'com.mysql:mysql-connector-j'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    //swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.3'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
 
-// Docker에 사용 가능한 secrets 파일 생성
+// Generate secret files for Docker.
 tasks.register('generateDockerSecrets') {
     doLast {
         def dir = layout.buildDirectory.get().asFile

@@ -1,78 +1,91 @@
 package team2.mse.ajou.server.domain.auth.service;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
-import team2.mse.ajou.server.domain.auth.model.LobbyInfo;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.shared.match.service.MatchService;
 
 import java.util.UUID;
 
 /**
- * 플레이어 로그인 & 로비 접속 인터랙션 관련 기능들 담당 서비스.
+ * Player login & matchmaking related service.
  *
- * @author yubin
+ * @author Ahn Yubin / 202021088
  */
 @Service
 public class AuthService {
-    private final PlayerInfoService playerInfoService;
-    private final LobbyService lobbyService;
+    private final PlayerDataRepository playerDataRepository;
+    private final MatchService matchService;
 
-    public AuthService(PlayerInfoService playerInfoService, LobbyService lobbyService) {
-        this.playerInfoService = playerInfoService;
-        this.lobbyService = lobbyService;
+    public AuthService(PlayerDataRepository playerDataRepository, MatchService matchService) {
+        this.playerDataRepository = playerDataRepository;
+        this.matchService = matchService;
     }
 
+    /**
+     * Login with given username then joins (and creates if needed) a match.
+     * Returns player and match (UU)ID.
+     *
+     * @param playerName Player username.
+     * @return Result data.
+     */
+    @Transactional
     public LoginAndJoinResult loginAndJoin(String playerName) {
-        if (playerName == null || playerName.isBlank()) { // 이상한 입력값
-            throw ApiError.INVALID_PARAMETER; // 자주 쓰이는 에러는 미리 정의된 상수 ApiError로 준비해봤습니다.
-        } else if ("error".equalsIgnoreCase(playerName)) { // 그 외 에러
-            throw new ApiError(67676767, "사용자가 에러를 원한대요 그래서 에러를 던져줬습니다. 67676767", HttpStatus.BAD_REQUEST);
-        } else if ("error_unexpected".equalsIgnoreCase(playerName)) { // 예상치 못한 에러 (500)
+        if (playerName == null || playerName.isBlank()) { // Invalid parameter
+            throw ApiError.INVALID_PARAMETER; // Use constant/pre-made ApiError for common errors
+        } else if ("error".equalsIgnoreCase(playerName)) { // Misc. error scenario
+            throw new ApiError(67676767, "ERROR TEST", HttpStatus.BAD_REQUEST);
+        } else if ("error_unexpected".equalsIgnoreCase(playerName)) { // Artificial (?) unexpected error (500) test scenario
             // throw new ArithmeticException();
-            // 혹은
-            int wow = 10 / 0; // ArithmeticException throw됨
+            // OR
+            int wow = 10 / 0; // ArithmeticException is thrown here
         }
 
-        LobbyInfo lobby = null;
+        MatchData lobby = null;
         UUID playerId = null;
 
         try {
             try {
-                playerId = playerInfoService.login(playerName);
+                playerId = forceLogin(playerName);
             } catch (IllegalArgumentException e) {
-                throw new ApiError(4000, "중복되는 닉네임입니다.");
+                throw new ApiError(4000, "Username unavailable.");
             }
 
-            LobbyInfo previousLobby = lobbyService.getOpenLobby();
+            MatchData previousLobby = matchService.getOpenMatch();
 
             if (previousLobby != null) {
                 lobby = previousLobby;
             } else {
-                // 참가 가능 로비가 없으니 새 로비 생성
-                lobby = lobbyService.createLobby();
+                // Create a new lobby/match if there's no lobby to join
+                lobby = matchService.createMatch();
             }
 
-            // createLobby() 도 실패하면 무슨 일이 생겨서 로비를 참가할수도 새로 생성할수도 없는 상황인 것... 이거는 버그일 가능성이 커요
+            // If `createMatch()` fails, then we have problem finding lobbies to join. Mostly a bug.
             if (lobby == null) {
-                throw new ApiError(5001, "로비 검색에 실패했습니다.");
+                throw new ApiError(5001, "Failed to search for lobby.");
             }
 
-            // joinLobby()가 실패하는 것도 동일한 이치
-            boolean result = lobbyService.joinLobby(playerId, lobby.getId());
+            // Same thing goes for `joinMatch()` failing.
+            boolean result = matchService.joinMatch(playerId, lobby.getId());
             if (!result) {
-                throw new ApiError(5002, "로비 참가에 실패했습니다.");
+                throw new ApiError(5002, "Failed to enter lobby.");
             }
         } catch (ApiError err) {
-            // 뭐가되었든 로비 참가에 실패하면 자동으로 로그아웃 시켜줍시다
+            // If (creating &) joining lobbies have failed on both end, log the player out to make it available to be used so players may try again.
             if (playerId != null) {
-                playerInfoService.logout(playerId);
+                forceLogout(playerId);
             }
             throw err;
         }
 
-        if (lobby == null) { // 이미 위에서 throw로 가드를 해줘서 사실상 진입 불가능합니다. 그래도 혹시나..
-            throw new ApiError(5000, "로비 에러. (실제로는 불가능한 에러입니다 만약 이게 내려오면 알려주세요!!)");
+        if (lobby == null) { // This is theoretically un-reachable condition. But just in case.
+            throw new ApiError(5000, "Lobby error. (FATAL ERROR!! CALL YUBIN)");
         }
 
         return new LoginAndJoinResult(
@@ -81,31 +94,88 @@ public class AuthService {
         );
     }
 
+    /**
+     * Logs out player from given player UUID. Leaves ongoing match if the player is currently joining one.
+     *
+     * @param playerId Player UUID.
+     */
+    @Transactional
     public void logout(UUID playerId) {
         if (playerId == null) {
             throw ApiError.INVALID_PARAMETER;
         }
 
-        // 1] 플레이어가 로비에 입장해있는 경우 퇴장
-        LobbyInfo lobby = lobbyService.findLobbyByPlayerId(playerId);
+        // 1] Log out player if they are currently in match first.
+        MatchData lobby = matchService.findMatchByPlayerId(playerId);
         if (lobby != null) {
-            lobbyService.leaveLobby(playerId, lobby.getId());
+            matchService.leaveMatch(playerId, lobby.getId());
         }
 
-        // 2] 그 뒤에서야 플레이어 로그인 여부 판단 & 로그아웃 진행
-        if (!playerInfoService.isPlayerExists(playerId)) {
-            throw new ApiError(4001, "로그인 되지 않은 플레이어입니다.");
+        // 2] Log out player if they are currently are.
+        if (!isPlayerLoggedIn(playerId)) {
+            throw new ApiError(4001, "User not logged in.");
         }
-        playerInfoService.logout(playerId);
+        forceLogout(playerId);
 
         System.out.printf("Player `%s` left the game!\n", playerId);
     }
 
+    /**
+     * Checks whether given username is available.
+     *
+     * @param playerName Username.
+     * @return Whether given username is available.
+     */
     public boolean checkPlayerNameAvailable(String playerName) {
         if (playerName == null) {
             throw ApiError.INVALID_PARAMETER;
         }
 
-        return playerInfoService.isUsernameAvailable(playerName);
+        if (!isUsernameValid(playerName)) {
+            return false;
+        }
+        return !playerDataRepository.existsByUsername(playerName);
+    }
+
+    private void forceLogout(UUID playerId) {
+        playerDataRepository.deleteById(playerId);
+        System.out.println("LOGOUT FOR `%s`".formatted(playerId));
+    }
+
+    private UUID forceLogin(String username) {
+        if (!checkPlayerNameAvailable(username)) {
+            throw new IllegalArgumentException("Username unavailable.");
+        }
+
+        PlayerData playerData = new PlayerData();
+        // FIXME: Add player ready button in the lobby / waiting screen
+        playerData.setReady(true);
+
+        playerData.setUsername(username);
+
+        PlayerData res = playerDataRepository.save(playerData);
+        // System.out.println("SAVING PLAYERINFO FOR `%s`".formatted(res.getId()));
+
+        return res.getId();
+    }
+
+    /**
+     * Checks whether given username is in valid format.
+     *
+     * @param username Username.
+     * @return Whether given username is valid.
+     */
+    private boolean isUsernameValid(@NonNull String username) {
+        return !username.isEmpty();
+    }
+
+    /**
+     * Checks whether player with given ID is currently logged in.
+     *
+     * @param playerId Player UUID.
+     * @return Whether given player is logged in.
+     */
+    private boolean isPlayerLoggedIn(UUID playerId) {
+        return playerDataRepository.existsById(playerId);
     }
 }
