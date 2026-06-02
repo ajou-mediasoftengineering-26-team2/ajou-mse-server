@@ -149,6 +149,9 @@ public class MatchData {
 
     @Transient
     public void clearDamageDataList() {
+        if(damageDataList == null) {
+            damageDataList = new ArrayList<>();
+        }
         for (DamageData damageData : damageDataList) {
             damageData.setMatchData(null);
         }
