@@ -70,7 +70,7 @@ public class MatchData {
     @OneToMany(fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
 
-    @OneToMany(mappedBy = "matchData", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("damageIndex ASC")
     private List<DamageData> damageDataList = new ArrayList<>();
 
@@ -143,7 +143,6 @@ public class MatchData {
 
     @Transient
     public void addDamageData(DamageData damageData) {
-        damageData.setMatchData(this);
         damageDataList.add(damageData);
     }
 
@@ -151,9 +150,6 @@ public class MatchData {
     public void clearDamageDataList() {
         if(damageDataList == null) {
             damageDataList = new ArrayList<>();
-        }
-        for (DamageData damageData : damageDataList) {
-            damageData.setMatchData(null);
         }
         damageDataList.clear();
     }

@@ -23,10 +23,6 @@ public class DamageData{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "match_data_id")
-    private MatchData matchData;
-
     private int damage = 1;
     private int coin = 2;
     private int recoveredHp = 0;
