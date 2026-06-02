@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.Data;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
+import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
@@ -25,6 +26,8 @@ public class FrdbPlayerData {
 
     private HAND_CHOICE handChoice;
 
+    private HAND_ELEMENTAL handElemental;
+
     private List<PERK> perkList;
     private List<PERK> perkChoiceList;
 
@@ -43,6 +46,8 @@ public class FrdbPlayerData {
         data.setFinalWinner(playerData.isFinalWinner());
 
         data.setHandChoice(playerData.getChoice());
+
+        data.setHandElemental(playerData.getHandElemental());
 
         data.setPerkList(playerData.getPerkList());
         data.setPerkChoiceList(playerData.getPerkChoiceList());
