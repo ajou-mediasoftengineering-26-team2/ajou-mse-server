@@ -146,4 +146,12 @@ public class MatchData {
         damageData.setMatchData(this);
         damageDataList.add(damageData);
     }
+
+    @Transient
+    public void clearDamageDataList() {
+        for (DamageData damageData : damageDataList) {
+            damageData.setMatchData(null);
+        }
+        damageDataList.clear();
+    }
 }

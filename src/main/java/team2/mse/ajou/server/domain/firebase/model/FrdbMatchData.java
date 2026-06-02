@@ -29,7 +29,7 @@ public class FrdbMatchData {
     private int currentRound;
     private boolean isAttackSuccess;
     private Map<String, FrdbPlayerData> players;
-    private List<DamageData> damageList;
+    private List<FrdbDamageData> damageList;
 
     // 내부적인 LobbyData -> FRDB 로비 정보 변환
     public static FrdbMatchData from(MatchData matchData) {
@@ -52,7 +52,12 @@ public class FrdbMatchData {
         data.setAttackSuccess(matchData.isAttackSuccess());
         data.setPlayers(players);
 
-        data.setDamageList(matchData.getDamageDataList());
+        data.setDamageList(
+                matchData.getDamageDataList()
+                        .stream()
+                        .map(FrdbDamageData::from)
+                        .toList()
+        );
 
         return data;
     }

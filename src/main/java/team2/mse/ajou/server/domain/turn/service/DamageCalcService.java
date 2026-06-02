@@ -15,9 +15,7 @@ import java.util.List;
 @Service
 public class DamageCalcService implements IDamageCalcService {
     @Override
-    public List<DamageData> calcDamageList(MatchData matchData) {
-        List<DamageData> damageDataList = new ArrayList<>();
-
+    public void calcDamageList(MatchData matchData) {
         PlayerData attacker = matchData.getPlayers().get(matchData.getAttackerPlayerIdx());
         PlayerData defender = matchData.getPlayers().get(matchData.getAttackerPlayerIdx()^1);
 
@@ -29,30 +27,34 @@ public class DamageCalcService implements IDamageCalcService {
 
         // 행동에 따른 전체적인 값들 전처리
         switch (attacker.getChoice()) {
-        case SINGLE_HAND_FLIP_LEFT:
-            attackCnt = 1;
-            handAttackType = ATTACK_TYPE.LEFT_HAND;
-
-        case SINGLE_HAND_FLIP_RIGHT:
-            attackCnt = 1;
-            handAttackType = ATTACK_TYPE.RIGHT_HAND;
-
-        case BOTH_HANDS_FLIP:
-            attackCnt = 1;
-            handAttackType = ATTACK_TYPE.BOTH_HAND;
-
-        case INSERT_BETWEEN_HANDS:
-            attackCnt = 5;
-            handAttackType = ATTACK_TYPE.BOTH_HAND;
-
-        case SHAKE_OVER_HANDS:
-            attackCnt = 7;
-            handAttackType = ATTACK_TYPE.BOTH_HAND;
+            case SINGLE_HAND_FLIP_LEFT -> {
+                attackCnt = 1;
+                handAttackType = ATTACK_TYPE.LEFT_HAND;
+            }
+            case SINGLE_HAND_FLIP_RIGHT -> {
+                attackCnt = 1;
+                handAttackType = ATTACK_TYPE.RIGHT_HAND;
+            }
+            case BOTH_HANDS_FLIP -> {
+                attackCnt = 1;
+                handAttackType = ATTACK_TYPE.BOTH_HAND;
+            }
+            case INSERT_BETWEEN_HANDS -> {
+                attackCnt = 5;
+                handAttackType = ATTACK_TYPE.BOTH_HAND;
+            }
+            case SHAKE_OVER_HANDS -> {
+                attackCnt = 7;
+                handAttackType = ATTACK_TYPE.BOTH_HAND;
+            }
         }
 
         for(int i = 0; i<attackCnt; i++){
-            damageDataList.add(new DamageData());
-            damageDataList.getLast().setAttackType(handAttackType);
+            DamageData damageData = new DamageData();
+            damageData.setAttackType(handAttackType);
+            damageData.setDamageIndex(i);
+
+            matchData.addDamageData(damageData);
 
             for(IPerk perk : attackerPerkList){
                 perk.usePerkIfPossible(matchData);
@@ -61,10 +63,8 @@ public class DamageCalcService implements IDamageCalcService {
                 perk.usePerkIfPossible(matchData);
             }
 
-            defender.setHp(Math.max(0,defender.getHp()-damageDataList.getLast().getDamage()));
+            defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
         }
-
-        return damageDataList;
     }
 
     @Override

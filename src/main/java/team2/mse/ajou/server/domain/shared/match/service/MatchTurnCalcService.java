@@ -70,7 +70,7 @@ public class MatchTurnCalcService {
             // FIXME: CONSTANT DAMAGE (2) FOR NOW.
 //            int damageAmount = 2;
 //            defencePlayer.setHp(Math.max(0, defencePlayer.getHp() - damageAmount));
-            matchData.setDamageDataList(damageCalcService.calcDamageList(matchData));
+            damageCalcService.calcDamageList(matchData);
 
             isPlayerKO = (defencePlayer.getHp() <= 0);
         } else {

@@ -8,6 +8,6 @@ import team2.mse.ajou.server.domain.turn.model.DefendEffect;
 import java.util.List;
 
 public interface IDamageCalcService {
-    List<DamageData> calcDamageList(MatchData matchData);
+    void calcDamageList(MatchData matchData);
     List<DefendEffect> calcDefendList(MatchData matchData);
 }
