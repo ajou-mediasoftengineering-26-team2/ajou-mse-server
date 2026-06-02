@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.subway.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import team2.mse.ajou.server.domain.subway.Util;
 import team2.mse.ajou.server.domain.subway.api.SubwayApiClient;
 import team2.mse.ajou.server.domain.subway.model.realtimemetro.RealtimePositionList;
 import team2.mse.ajou.server.domain.subway.model.realtimemetro.SubwayResponse;
