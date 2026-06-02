@@ -1,9 +1,10 @@
 package team2.mse.ajou.server.domain.turn.service;
 
 import org.springframework.stereotype.Service;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
-import team2.mse.ajou.server.domain.turn.model.Damage;
+import team2.mse.ajou.server.domain.turn.model.DamageData;
 import team2.mse.ajou.server.domain.turn.model.DefendEffect;
 
 import java.util.ArrayList;
@@ -12,8 +13,8 @@ import java.util.List;
 @Service
 public class DamageCalcSerivce implements IDamageCalcService {
     @Override
-    public List<Damage> calcDamageList(PlayerData attacker, PlayerData defender) {
-        List<Damage> damageList = new ArrayList<>();
+    public List<DamageData> calcDamageList(PlayerData attacker, PlayerData defender) {
+        List<DamageData> damageDataList = new ArrayList<>();
 
         int attackCnt = 0;
         ATTACK_TYPE handAttackType = ATTACK_TYPE.NONE;
@@ -50,7 +51,7 @@ public class DamageCalcSerivce implements IDamageCalcService {
 //            damageList.add(new Damage(1, ));
         }
 
-        return damageList;
+        return damageDataList;
     }
 
     @Override
