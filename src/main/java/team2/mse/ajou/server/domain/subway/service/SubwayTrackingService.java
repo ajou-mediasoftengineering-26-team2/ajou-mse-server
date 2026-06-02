@@ -29,6 +29,7 @@ public class SubwayTrackingService {
         if (subway == null || subway.realtimePositionList() == null || subway.realtimePositionList().isEmpty()) {
             trackedTrainNo = null;
             System.out.println("[subway] no train data");
+            stationRepository.setStation(Util.UNKNOWN);
             return;
         }
 
@@ -36,6 +37,7 @@ public class SubwayTrackingService {
         if (inboundTrains.isEmpty()) {
             trackedTrainNo = null;
             System.out.println("[subway] no updnLine=0 train data");
+            stationRepository.setStation(Util.UNKNOWN);
             return;
         }
 
