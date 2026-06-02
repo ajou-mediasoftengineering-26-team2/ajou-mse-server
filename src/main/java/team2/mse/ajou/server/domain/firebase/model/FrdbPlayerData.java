@@ -34,6 +34,8 @@ public class FrdbPlayerData {
     private List<ITEM_CODE> receivedItemList;
     private List<ITEM_CODE> itemList;
 
+    private int coin;
+
     public static FrdbPlayerData from(PlayerData playerData) {
         FrdbPlayerData data = new FrdbPlayerData();
 
@@ -54,6 +56,8 @@ public class FrdbPlayerData {
 
         data.setReceivedItemList(playerData.getReceivedItemList());
         data.setItemList(playerData.getItemList());
+
+        data.setCoin(playerData.getCoin());
 
         return data;
     }

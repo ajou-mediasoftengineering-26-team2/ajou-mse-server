@@ -7,6 +7,7 @@ import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+import team2.mse.ajou.server.domain.turn.service.IDamageCalcService;
 
 import java.util.List;
 
@@ -18,6 +19,10 @@ import java.util.List;
  */
 @Service
 public class MatchTurnCalcService {
+    private final IDamageCalcService damageCalcService;
+    public MatchTurnCalcService(IDamageCalcService damageCalcService) {
+        this.damageCalcService = damageCalcService;
+    }
     /**
      * Calculates a single turn from given `MatchData`.
      * choice 상태에서 5초가 끝나면 finished 상태로 전환합니다.
@@ -63,8 +68,10 @@ public class MatchTurnCalcService {
         if (isAttackSuccess) {
             // Deal damage to defending player.
             // FIXME: CONSTANT DAMAGE (2) FOR NOW.
-            int damageAmount = 2;
-            defencePlayer.setHp(Math.max(0, defencePlayer.getHp() - damageAmount));
+//            int damageAmount = 2;
+//            defencePlayer.setHp(Math.max(0, defencePlayer.getHp() - damageAmount));
+            matchData.setDamageDataList(damageCalcService.calcDamageList(matchData));
+
             isPlayerKO = (defencePlayer.getHp() <= 0);
         } else {
             // Defending success! Switch the roles around.

@@ -70,6 +70,11 @@ public class MatchData {
     @OneToMany(fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
 
+    @OneToMany(mappedBy = "matchData", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("damageIndex ASC")
+    private List<DamageData> damageDataList = new ArrayList<>();
+
+
     /**
      * Find player by UUID.
      *
@@ -134,5 +139,11 @@ public class MatchData {
         }
 
         return false;
+    }
+
+    @Transient
+    public void addDamageData(DamageData damageData) {
+        damageData.setMatchData(this);
+        damageDataList.add(damageData);
     }
 }
