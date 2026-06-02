@@ -132,7 +132,8 @@ public class MatchService {
         matchData.setAttackerPlayerIdx(attackerIdx);
         matchData.setAttackSuccess(false);
 
-        // DemageList를 초기에 설정해야할지도 모르겠습니다.
+        // DamageList를 초기에 설정해야할지도 모르겠습니다.
+        matchData.setDamageDataList(new ArrayList<>());
         matchData.setState(MATCH_STATE.GAME_ROUND_START_ANIMATION);
     }
 
