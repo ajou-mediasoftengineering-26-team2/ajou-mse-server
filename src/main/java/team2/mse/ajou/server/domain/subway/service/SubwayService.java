@@ -22,8 +22,7 @@ public class SubwayService {
         // As an admin, the app has access to read and write all data, regardless of Security Rules
         DatabaseReference ref = firebaseDatabase.getReference();
         System.out.println(station);
-        ref.child("testGame")
-                .child("currentStation")
+        ref.child("station")
                 .setValueAsync(station);
     }
 }
