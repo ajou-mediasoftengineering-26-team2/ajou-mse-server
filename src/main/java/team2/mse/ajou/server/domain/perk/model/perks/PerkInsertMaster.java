@@ -3,8 +3,9 @@ package team2.mse.ajou.server.domain.perk.model.perks;
 import team2.mse.ajou.server.domain.perk.model.Perk;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
+import team2.mse.ajou.server.domain.shared.match.model.DamageData;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.turn.model.DamageData;
 
 public class PerkInsertMaster extends Perk {
     private final int bonusValue = 2;
@@ -14,16 +15,24 @@ public class PerkInsertMaster extends Perk {
     }
 
     @Override
-    public void usePerkIfPossible(PlayerData player, DamageData damageData) {
-        if(isAvailable(player, damageData)) {
-            damageData.addDamage(bonusValue);
-            damageData.addUsedPerk(perk);
+    public void usePerkIfPossible(MatchData matchData) {
+        if (!isAvailable(matchData)) {
+            return;
         }
+
+        DamageData damageData = getCurrentDamageData(matchData);
+        damageData.addDamage(bonusValue);
+        damageData.addUsedPerk(perk);
     }
 
     @Override
-    public boolean isAvailable(PlayerData player, DamageData damageData)
-    {
-        return player.getChoice() == HAND_CHOICE.INSERT_BETWEEN_HANDS && damageData.getDamageIndex() == 0;
+    public boolean isAvailable(MatchData matchData) {
+        if(!isInTurn(matchData)) return false;
+        PlayerData attacker = getAttacker(matchData);
+        DamageData damageData = getCurrentDamageData(matchData);
+        return isAttackSuccess(matchData)
+                && attacker != null
+                && attacker.getChoice() == HAND_CHOICE.INSERT_BETWEEN_HANDS
+                && isFirstDamage(damageData);
     }
 }

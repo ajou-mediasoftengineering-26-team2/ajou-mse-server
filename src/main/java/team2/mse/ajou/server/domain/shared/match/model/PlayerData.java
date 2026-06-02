@@ -98,4 +98,6 @@ public class PlayerData {
      * 보유한 아이템
      */
     private List<ITEM_CODE> itemList = new ArrayList<>();
+
+    private int coin;
 }

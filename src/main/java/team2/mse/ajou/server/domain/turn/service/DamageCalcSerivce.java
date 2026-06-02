@@ -1,10 +1,12 @@
 package team2.mse.ajou.server.domain.turn.service;
 
 import org.springframework.stereotype.Service;
+import team2.mse.ajou.server.domain.perk.model.IPerk;
+import team2.mse.ajou.server.domain.perk.service.PerkFactory;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
-import team2.mse.ajou.server.domain.turn.model.DamageData;
+import team2.mse.ajou.server.domain.shared.match.model.DamageData;
 import team2.mse.ajou.server.domain.turn.model.DefendEffect;
 
 import java.util.ArrayList;
@@ -13,8 +15,14 @@ import java.util.List;
 @Service
 public class DamageCalcSerivce implements IDamageCalcService {
     @Override
-    public List<DamageData> calcDamageList(PlayerData attacker, PlayerData defender) {
+    public List<DamageData> calcDamageList(MatchData matchData) {
         List<DamageData> damageDataList = new ArrayList<>();
+
+        PlayerData attacker = matchData.getPlayers().get(matchData.getAttackerPlayerIdx());
+        PlayerData defender = matchData.getPlayers().get(matchData.getAttackerPlayerIdx()^1);
+
+        List<IPerk> attackerPerkList = PerkFactory.createPerkList(attacker.getPerkList());
+        List<IPerk> defenderPerkList = PerkFactory.createPerkList(defender.getPerkList());
 
         int attackCnt = 0;
         ATTACK_TYPE handAttackType = ATTACK_TYPE.NONE;
@@ -43,19 +51,22 @@ public class DamageCalcSerivce implements IDamageCalcService {
         }
 
         for(int i = 0; i<attackCnt; i++){
-            int damage = 1;
-            int coin = 1;
+            damageDataList.add(new DamageData());
+            damageDataList.getLast().setAttackType(handAttackType);
 
-
-
-//            damageList.add(new Damage(1, ));
+            for(IPerk perk : attackerPerkList){
+                perk.usePerkIfPossible(matchData);
+            }
+            for(IPerk perk : defenderPerkList){
+                perk.usePerkIfPossible(matchData);
+            }
         }
 
         return damageDataList;
     }
 
     @Override
-    public List<DefendEffect> calcDefendList(PlayerData defender) {
+    public List<DefendEffect> calcDefendList(MatchData matchData) {
         return List.of();
     }
 }
