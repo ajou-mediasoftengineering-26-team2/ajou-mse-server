@@ -119,7 +119,13 @@ public class TurnService {
         matchDataRepository.save(matchData);
 
         if (isAllTurnAnimationEnd(matchData)) {
-            matchService.startNextTurn(matchData.getId());
+            if(matchData.isKo()){
+                //일단 스테이트만 넘겨봐
+                matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
+            }
+            else{
+                matchService.startNextTurn(matchData.getId());
+            }
         }
     }
 

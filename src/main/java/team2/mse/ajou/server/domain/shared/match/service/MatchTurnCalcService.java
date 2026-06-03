@@ -106,6 +106,7 @@ public class MatchTurnCalcService {
         // (FIXME) End game as soon as player downs another.
         if (isPlayerKO) {
             attackerPlayer.setWins(attackerPlayer.getWins() + 1);
+            matchData.setKo(true);
 
             int winnerPlayerIdx = -1;
             int winsMax = -1;
@@ -124,9 +125,10 @@ public class MatchTurnCalcService {
             }
 
             matchData.setWinnerPlayerIdx(winnerPlayerIdx);
+            //TODO: 라운드를 다른 곳에서 바꿔야 할 수 도..
             matchData.setCurrentRound(matchData.getCurrentRound() + 1);
             matchData.setCurrentTurn(0);
-            matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
+//            matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
         }
     }
 }

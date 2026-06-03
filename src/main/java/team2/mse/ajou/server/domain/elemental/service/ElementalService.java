@@ -23,6 +23,8 @@ import java.util.UUID;
  */
 @Service
 public class ElementalService implements IElementalService {
+    private final int[] costOfUpgrade = {0, 10, 20, 30, 100, 9999};
+
     private final PlayerDataRepository playerDataRepository;
     private final MatchDataRepository matchDataRepository;
     private final MatchService matchService;
@@ -77,6 +79,33 @@ public class ElementalService implements IElementalService {
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         playerData.setHandElemental(handElemental);
+        matchData.updatePlayer(playerData);
+
+        playerDataRepository.save(playerData);
+        MatchData updMatchData = matchDataRepository.save(matchData);
+        frdbService.setMatch(updMatchData.getId(), updMatchData);
+    }
+
+    @Override
+    public void upgradeElemental(UUID id, HAND_ELEMENTAL handElemental) {
+        PlayerData playerData = playerDataRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
+        MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
+
+        // 업그레이드 못하는데 업그레이드 쿼리가 들어온 경우 (he is hacker!!)
+        if(playerData.getCoin() < playerData.getUpgradeCost()) {
+            throw new IllegalArgumentException("Coin is less than Cost: " + id);
+        }
+
+        if(playerData.getHandElemental() == HAND_ELEMENTAL.NONE) {
+            return;
+        }
+
+        playerData.setCoin(playerData.getCoin() - playerData.getUpgradeCost());
+        playerData.setElementalLevel(playerData.getElementalLevel() + 1);
+        playerData.setUpgradeCost(costOfUpgrade[playerData.getElementalLevel()]);
+
         matchData.updatePlayer(playerData);
 
         playerDataRepository.save(playerData);

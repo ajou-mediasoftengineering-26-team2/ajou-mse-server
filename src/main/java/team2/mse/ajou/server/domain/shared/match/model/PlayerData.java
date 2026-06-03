@@ -100,4 +100,7 @@ public class PlayerData {
     private List<ITEM_CODE> itemList = new ArrayList<>();
 
     private int coin;
+
+    private int elementalLevel;
+    private int upgradeCost;
 }
