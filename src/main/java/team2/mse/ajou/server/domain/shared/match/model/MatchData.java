@@ -67,6 +67,8 @@ public class MatchData {
     /**
      * List of players joined in this match.
      */
+    private boolean ko = false;
+
     @OneToMany(fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
 

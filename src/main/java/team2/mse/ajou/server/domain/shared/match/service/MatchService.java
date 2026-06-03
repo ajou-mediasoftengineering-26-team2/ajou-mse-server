@@ -396,6 +396,7 @@ public class MatchService {
         matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
         matchData.clearDamageDataList();
         matchData.setAttackSuccess(false);
+        matchData.setKo(false);
 
         if (!setCountdownForMatch(matchData, () -> onMatchTurn(matchData.getId()), 5)) {
             System.err.println("FAILED TO SCHEDULE NEXT TURN COUNTDOWN FOR GAME `" + matchData.getId() + "`");
