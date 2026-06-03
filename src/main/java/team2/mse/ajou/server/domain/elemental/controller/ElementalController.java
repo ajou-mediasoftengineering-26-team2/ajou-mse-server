@@ -30,13 +30,21 @@ public class ElementalController {
      * @param req
      */
     @PutMapping("/choice")
-    public void putPerkChoice(@RequestBody PutElementalChoiceRequest req){
+    public void putElementalChoice(@RequestBody PutElementalChoiceRequest req){
         // TODO:  DB, Firebase에 저장
         UUID id = UUID.fromString(req.playerId());
         HAND_ELEMENTAL handElemental = HAND_ELEMENTAL.valueOf(req.handElemental());
 
         // TODO: 현재 Test 구현은 둘에게 choice를 받으면 elemental_receiving으로 넘어감. 타이머 종료로 넘어가야함.
         elementalService.putElementalChoice(id, handElemental);
+    }
+
+    @PutMapping("/upgrade")
+    public void putElementalUpgrade(@RequestBody PutElementalChoiceRequest req){
+        UUID id = UUID.fromString(req.playerId());
+        HAND_ELEMENTAL handElemental = HAND_ELEMENTAL.valueOf(req.handElemental());
+
+        elementalService.upgradeElemental(id, handElemental);
     }
 
     /**

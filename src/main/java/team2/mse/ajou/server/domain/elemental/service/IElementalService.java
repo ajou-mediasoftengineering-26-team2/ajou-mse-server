@@ -15,5 +15,6 @@ public interface IElementalService {
      * @param handElemental
      */
     void putElementalChoice(UUID playerId, HAND_ELEMENTAL handElemental);
+    void upgradeElemental(UUID playerId, HAND_ELEMENTAL handElemental);
     void receiveElementalAnimationEndAck(UUID playerId);
 }

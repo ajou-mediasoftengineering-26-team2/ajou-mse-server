@@ -35,6 +35,8 @@ public class FrdbPlayerData {
     private List<ITEM_CODE> itemList;
 
     private int coin;
+    private int elementalLevel;
+    private int upgradeCost;
 
     public static FrdbPlayerData from(PlayerData playerData) {
         FrdbPlayerData data = new FrdbPlayerData();
@@ -58,6 +60,8 @@ public class FrdbPlayerData {
         data.setItemList(playerData.getItemList());
 
         data.setCoin(playerData.getCoin());
+        data.setElementalLevel(playerData.getElementalLevel());
+        data.setUpgradeCost(playerData.getUpgradeCost());
 
         return data;
     }
