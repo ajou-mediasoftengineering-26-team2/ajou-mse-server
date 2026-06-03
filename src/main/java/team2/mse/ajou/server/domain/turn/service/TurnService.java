@@ -122,7 +122,8 @@ public class TurnService {
             if(matchData.isKo()){
                 //일단 스테이트만 넘겨봐
                 matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
-                matchDataRepository.save(matchData);
+                MatchData updMatchData = matchDataRepository.save(matchData);
+                frdbService.setMatch(updMatchData.getId(), updMatchData);
             }
             else{
                 matchService.startNextTurn(matchData.getId());
