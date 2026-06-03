@@ -50,6 +50,8 @@ public class PerkService implements IPerkService {
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         playerData.setPerkChoiceCurrent(perk);
+        playerData.getPerkList().add(perk);
+
         matchData.updatePlayer(playerData);
 
         playerDataRepository.save(playerData);

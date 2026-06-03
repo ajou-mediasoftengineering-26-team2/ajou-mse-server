@@ -129,17 +129,22 @@ public class RoundService implements IRoundService {
 
                 // "이때 perk(elemental)과 item이 다 업데이트 됨"
                 // (item: 랜덤 아이템 지급)
-                itemService.giveRandomItem(countdownMatchData);
+                if(nextState == MATCH_STATE.GAME_PERK_ITEM_RECEIVING){
+                    itemService.giveRandomItem(countdownMatchData);
+                }
 
                 // (perk: perkChoiceCurrent값에 해당하는 perk 지급 & perkChoiceList 빈 리스트로 갱신)
                 List<PlayerData> players = countdownMatchData.getPlayers();
                 for (PlayerData player : players) {
-                    List<PERK> perks = player.getPerkList();
-                    PERK selectedPerk = player.getPerkChoiceCurrent();
-
-                    perks.add(selectedPerk);
-                    player.setPerkList(perks);
-                    player.setPerkChoiceList(Collections.emptyList());
+                    // 여기서 perk을 바꾸면 안됩니다!!!
+                    // 기본적으로 perk을 null로 설정하기 때문에
+                    // perk을 선택하지 않는 elemental에서 null이 list에 들어가버립니다!!!!!!!!!!!!
+//                    List<PERK> perks = player.getPerkList();
+//                    PERK selectedPerk = player.getPerkChoiceCurrent();
+//
+//                    perks.add(selectedPerk);
+//                    player.setPerkList(perks);
+//                    player.setPerkChoiceList(Collections.emptyList());
 
                     // + ACK 할 수 있도록 셋팅
                     player.setAckState(ACK_TYPE.NO_ACK);
