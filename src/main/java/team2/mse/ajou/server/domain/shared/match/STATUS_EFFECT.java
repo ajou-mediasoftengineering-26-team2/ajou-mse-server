@@ -1,4 +1,4 @@
-package team2.mse.ajou.server.domain.turn;
+package team2.mse.ajou.server.domain.shared.match;
 
 public enum STATUS_EFFECT {
     NONE,

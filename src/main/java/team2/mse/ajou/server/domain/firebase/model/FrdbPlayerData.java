@@ -1,10 +1,7 @@
 package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.Data;
-import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
-import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
-import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
-import team2.mse.ajou.server.domain.shared.match.PERK;
+import team2.mse.ajou.server.domain.shared.match.*;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 import java.util.List;
@@ -38,6 +35,8 @@ public class FrdbPlayerData {
     private int elementalLevel;
     private int upgradeCost;
 
+    private List<STATUS_EFFECT> statusEffectList;
+
     public static FrdbPlayerData from(PlayerData playerData) {
         FrdbPlayerData data = new FrdbPlayerData();
 
@@ -62,6 +61,8 @@ public class FrdbPlayerData {
         data.setCoin(playerData.getCoin());
         data.setElementalLevel(playerData.getElementalLevel());
         data.setUpgradeCost(playerData.getUpgradeCost());
+
+        data.setStatusEffectList(playerData.getStatusEffectList());
 
         return data;
     }

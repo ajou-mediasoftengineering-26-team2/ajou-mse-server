@@ -2,11 +2,9 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import team2.mse.ajou.server.domain.item.service.ItemFactory;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
-import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
-import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
-import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
-import team2.mse.ajou.server.domain.shared.match.PERK;
+import team2.mse.ajou.server.domain.shared.match.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -98,9 +96,12 @@ public class PlayerData {
      * 보유한 아이템
      */
     private List<ITEM_CODE> itemList = new ArrayList<>();
+//    private List<ITEM_CODE> usedItemList = new ArrayList<>();
 
     private int coin;
 
     private int elementalLevel;
     private int upgradeCost;
+
+    private List<STATUS_EFFECT> statusEffectList = new ArrayList<>();
 }

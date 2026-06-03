@@ -2,20 +2,43 @@ package team2.mse.ajou.server.domain.item.model.Items;
 
 import team2.mse.ajou.server.domain.item.model.ConsumableItem;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
+import team2.mse.ajou.server.domain.shared.match.model.DamageData;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- *
+ * 보호막: HP 20 이하 시 다음 턴 받는 데미지 0
+ * 발동 시 아이템은 즉시 사라지고, 다음 turn 이후 처음 받는 공격 데미지를 0으로 만듭니다.
  * @author Junseo Hwang 202322128
  */
 public class ItemShield extends ConsumableItem {
+    private final int triggerHp = 20;
 
     public ItemShield() {
         super(ITEM_CODE.SHIELD);
     }
 
     @Override
-    public void useItemIfPossible() {
+    public void useItemIfPossible(MatchData matchData, int ownerPlayerIdx) {
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
+        DamageData damageData = getCurrentDamageData(matchData);
 
+        if (!isAvailable(matchData, ownerPlayerIdx)) {
+            return;
+        }
+
+        damageData.setDamage(0);
+        consumeItem(owner, damageData);
     }
 
+    @Override
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
+        return isInTurn(matchData)
+                && isAttackSuccess(matchData)
+                && isOwnerDefender(matchData, ownerPlayerIdx)
+                && owner != null
+                && getCurrentDamageData(matchData) != null
+                && owner.getHp() <= triggerHp;
+    }
 }

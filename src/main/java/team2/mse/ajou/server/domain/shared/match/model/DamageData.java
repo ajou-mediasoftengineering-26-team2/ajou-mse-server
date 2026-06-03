@@ -8,7 +8,7 @@ import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
-import team2.mse.ajou.server.domain.turn.STATUS_EFFECT;
+import team2.mse.ajou.server.domain.shared.match.STATUS_EFFECT;
 
 import java.util.ArrayList;
 import java.util.List;
