@@ -116,8 +116,14 @@ public class RunningMatch {
         if (this.matchId != null) {
             timerHandle.cancel(false);
 
-            playerAckObservers.forEach((playerId, observer) -> {
+            playerAckObservers.forEach((playerId, _) -> {
                 unsubscribeToPlayerAckEvents(playerId);
+            });
+            playerDataObservers.forEach((playerId, _) -> {
+                unsubscribeToPlayerDataUpdates(playerId);
+            });
+            matchDataObservers.forEach((matchId, _) -> {
+                unsubscribeToMatchDataUpdates(matchId);
             });
 
             unsubscribeToMatchPlayerJoinEvents();
@@ -195,8 +201,8 @@ public class RunningMatch {
     }
 
     protected void unsubscribeToPlayerDataUpdates(UUID playerId) {
-        Observer<PlayerData> observer = playerDataObservers.getOrDefault(matchId, null);
-        Observable<PlayerData> observable = playerDataObservableCurrent.getOrDefault(matchId, null);
+        Observer<PlayerData> observer = playerDataObservers.getOrDefault(playerId, null);
+        Observable<PlayerData> observable = playerDataObservableCurrent.getOrDefault(playerId, null);
 
         if (observer == null) {
             System.err.printf("[PLR] RunningMatch::unsubscribeToPlayerDataUpdates(MATCH: %s, PLR: %s) | PLR DATA UPDATES ARE NOT SUBSCRIBED YET! (observer = null)\n", matchId, playerId);
@@ -291,6 +297,11 @@ public class RunningMatch {
      */
     private void onPlayerAck(UUID playerId, ACK_TYPE type) {
         System.out.printf("[PLR] RunningMatch::onPlayerAck(TYPE: %s, PLR: %s)\n", type, playerId);
+
+        if (currentStateLogic == null) {
+            System.err.printf("\t[MATCH] RunningMatch::onPlayerAck(PLR: %s) | STATE IS NULL!\n", playerId);
+            return;
+        }
 
         currentStateLogic.onPlayerAck(this, playerId, type);
     }

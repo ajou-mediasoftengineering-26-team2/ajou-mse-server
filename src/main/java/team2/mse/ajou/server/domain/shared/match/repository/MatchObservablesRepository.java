@@ -2,12 +2,13 @@ package team2.mse.ajou.server.domain.shared.match.repository;
 
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+import team2.mse.ajou.server.domain.shared.observer.FlowMappedObservable;
 import team2.mse.ajou.server.domain.shared.observer.Observable;
 
 import java.util.UUID;
 
 public interface MatchObservablesRepository {
-    Observable<MatchData> getMatchDataObservable(UUID matchId);
+    FlowMappedObservable<MatchData, MatchData> getMatchDataObservable(UUID matchId);
 
     Observable<UUID> getMatchPlayerJoinEventsObservable(UUID matchId);
 

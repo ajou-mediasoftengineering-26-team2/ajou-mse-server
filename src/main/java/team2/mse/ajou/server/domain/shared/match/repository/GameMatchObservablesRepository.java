@@ -5,7 +5,7 @@ import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.observer.DefaultObservable;
+import team2.mse.ajou.server.domain.shared.observer.FlowMappedObservable;
 import team2.mse.ajou.server.domain.shared.observer.Observable;
 
 import java.util.HashMap;
@@ -14,14 +14,14 @@ import java.util.UUID;
 
 @Repository
 public class GameMatchObservablesRepository implements GameObservablesRepository {
-    private final Map<UUID, Observable<UUID>> matchPlayerJoinEventObservables;
-    private final Map<UUID, Observable<UUID>> matchPlayerLeaveEventObservables;
-    private final Map<UUID, Observable<MATCH_STATE>> matchStateSwitchEventObservables;
+    private final Map<UUID, FlowMappedObservable<UUID, UUID>> matchPlayerJoinEventObservables;
+    private final Map<UUID, FlowMappedObservable<UUID, UUID>> matchPlayerLeaveEventObservables;
+    private final Map<UUID, FlowMappedObservable<MATCH_STATE, MATCH_STATE>> matchStateSwitchEventObservables;
 
-    private final Map<UUID, Observable<ACK_TYPE>> playerAckEventObservables;
+    private final Map<UUID, FlowMappedObservable<ACK_TYPE, ACK_TYPE>> playerAckEventObservables;
 
-    private final Map<UUID, Observable<PlayerData>> playerDataObservables;
-    private final Map<UUID, Observable<MatchData>> matchDataObservables;
+    private final Map<UUID, FlowMappedObservable<PlayerData, PlayerData>> playerDataObservables;
+    private final Map<UUID, FlowMappedObservable<MatchData, MatchData>> matchDataObservables;
 
     public GameMatchObservablesRepository() {
         this.matchPlayerJoinEventObservables = new HashMap<>();
@@ -35,7 +35,7 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
     }
 
     @Override
-    public Observable<MatchData> getMatchDataObservable(UUID matchId) {
+    public FlowMappedObservable<MatchData, MatchData> getMatchDataObservable(UUID matchId) {
         return fetchOrCreateMatchDataObservable(matchId);
     }
 
@@ -102,28 +102,28 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
         observable.updateValue(type);
     }
 
-    private Observable<MatchData> fetchOrCreateMatchDataObservable(UUID matchId) {
-        return fetchOrCreateObservable(matchDataObservables, matchId, null, true, true);
+    private FlowMappedObservable<MatchData, MatchData> fetchOrCreateMatchDataObservable(UUID matchId) {
+        return fetchOrCreateObservable(matchDataObservables, matchId, null, true, true, true);
     }
 
-    private Observable<PlayerData> fetchOrCreatePlayerDataObservable(UUID playerId) {
-        return fetchOrCreateObservable(playerDataObservables, playerId, null, true, true);
+    private FlowMappedObservable<PlayerData, PlayerData> fetchOrCreatePlayerDataObservable(UUID playerId) {
+        return fetchOrCreateObservable(playerDataObservables, playerId, null, true, true, true);
     }
 
-    private Observable<UUID> fetchOrCreateMatchPlayerJoinEventObservable(UUID matchId) {
-        return fetchOrCreateObservable(matchPlayerJoinEventObservables, matchId, null, false, false);
+    private FlowMappedObservable<UUID, UUID> fetchOrCreateMatchPlayerJoinEventObservable(UUID matchId) {
+        return fetchOrCreateObservable(matchPlayerJoinEventObservables, matchId, null, true, false, false);
     }
 
-    private Observable<UUID> fetchOrCreateMatchPlayerLeaveEventObservable(UUID matchId) {
-        return fetchOrCreateObservable(matchPlayerLeaveEventObservables, matchId, null, false, false);
+    private FlowMappedObservable<UUID, UUID> fetchOrCreateMatchPlayerLeaveEventObservable(UUID matchId) {
+        return fetchOrCreateObservable(matchPlayerLeaveEventObservables, matchId, null, true, false, false);
     }
 
-    private Observable<MATCH_STATE> fetchOrCreateMatchStateSwitchEventObservable(UUID matchId) {
-        return fetchOrCreateObservable(matchStateSwitchEventObservables, matchId, MATCH_STATE.LOBBY_WAITING, true, true);
+    private FlowMappedObservable<MATCH_STATE, MATCH_STATE> fetchOrCreateMatchStateSwitchEventObservable(UUID matchId) {
+        return fetchOrCreateObservable(matchStateSwitchEventObservables, matchId, MATCH_STATE.LOBBY_WAITING, true, true, true);
     }
 
-    private Observable<ACK_TYPE> fetchOrCreatePlayerAckEventObservable(UUID playerId) {
-        return fetchOrCreateObservable(playerAckEventObservables, playerId, ACK_TYPE.NO_ACK, true, true);
+    private FlowMappedObservable<ACK_TYPE, ACK_TYPE> fetchOrCreatePlayerAckEventObservable(UUID playerId) {
+        return fetchOrCreateObservable(playerAckEventObservables, playerId, ACK_TYPE.NO_ACK, true, true, true);
     }
 
     /**
@@ -132,19 +132,21 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
      * @param map
      * @param id
      * @param initialValue
+     * @param isIgnoreNull
      * @param isIgnoreDuplicateValue
      * @param isNotifyOnSubscribe
      * @param <T>
      * @return
      */
-    private <T> Observable<T> fetchOrCreateObservable(
-            Map<UUID, Observable<T>> map,
+    private <T> FlowMappedObservable<T, T> fetchOrCreateObservable(
+            Map<UUID, FlowMappedObservable<T, T>> map,
             UUID id,
             T initialValue,
+            boolean isIgnoreNull,
             boolean isIgnoreDuplicateValue,
             boolean isNotifyOnSubscribe
     ) {
-        map.putIfAbsent(id, new DefaultObservable<>(initialValue, isIgnoreDuplicateValue, isNotifyOnSubscribe));
+        map.putIfAbsent(id, new FlowMappedObservable<T, T>(initialValue, isIgnoreNull, isIgnoreDuplicateValue, isNotifyOnSubscribe, value -> value));
         return map.get(id);
     }
 }

@@ -7,6 +7,7 @@ import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
+import team2.mse.ajou.server.domain.shared.observer.FlowMappedObservable;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
 import java.util.HashMap;
@@ -210,10 +211,25 @@ public class MatchRunnerService {
         // 플레이어 입장 등 매치 단위 옵저버 연결
         // Connect observers.
         data.connectMatch(matchId);
+        // data.subscribeToMatchPlayerJoinEvents(gameEventsRepository.getMatchPlayerJoinEventsObservable(matchId));
+        // data.subscribeToMatchPlayerLeaveEvents(gameEventsRepository.getMatchPlayerLeaveEventsObservable(matchId));
+        // data.subscribeToMatchStateSwitchEvents(gameEventsRepository.getMatchStateSwitchEventsObservable(matchId));
+        var matchDataObservable = gameEventsRepository.getMatchDataObservable(matchId);
+        var matchStateSwitch = new FlowMappedObservable<MatchData, MATCH_STATE>(MATCH_STATE.LOBBY_WAITING, true, true, true, value -> {
+            if (value == null) {
+                return null;
+            }
+
+            System.out.println("SWITCH CHECK");
+            return value.getState();
+        });
+
+        matchDataObservable.addDownstreamObservable(matchStateSwitch);
+
+        data.subscribeToMatchDataUpdates(matchId, matchDataObservable);
         data.subscribeToMatchPlayerJoinEvents(gameEventsRepository.getMatchPlayerJoinEventsObservable(matchId));
         data.subscribeToMatchPlayerLeaveEvents(gameEventsRepository.getMatchPlayerLeaveEventsObservable(matchId));
-        data.subscribeToMatchStateSwitchEvents(gameEventsRepository.getMatchStateSwitchEventsObservable(matchId));
-        data.subscribeToMatchDataUpdates(matchId, gameEventsRepository.getMatchDataObservable(matchId));
+        data.subscribeToMatchStateSwitchEvents(matchStateSwitch);
 
         allRunningMatches.put(matchId, data);
     }

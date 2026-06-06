@@ -11,8 +11,4 @@ public class DefaultObserver<T> implements Observer<T> {
     public void onNotify(T newValue) {
         callback.onNotify(newValue);
     }
-
-    public interface NotifyCallback<T> {
-        public void onNotify(T value);
-    }
 }
