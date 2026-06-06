@@ -168,7 +168,7 @@ public class DamageCalcService implements IDamageCalcService {
             item.useItemIfPossible(matchData, defenderIndex);
         }
 
-        defender.setHp(defender.getHp()+ defendData.getRecoveredHp());
+        defender.setHp(Math.min(defender.getMaxHp(), defender.getHp()+ defendData.getRecoveredHp()));
         defender.setCoin(defender.getCoin() + defendData.getCoin());
     }
 }
