@@ -1,5 +1,7 @@
 package team2.mse.ajou.server.domain.shared.match.states;
 
+import java.util.UUID;
+
 /**
  * 로비: 대기중 상태.
  * Lobby: Waiting for players state.
@@ -17,5 +19,18 @@ public class LobbyWaitingStateLogic implements MatchStateLogic {
         return false;
     }
 
+    @Override
+    public void onPlayerJoin(UUID playerId) {
 
+    }
+
+    @Override
+    public void onPlayerLeave(UUID playerId) {
+
+    }
+
+    @Override
+    public void onPlayerAck() {
+
+    }
 }

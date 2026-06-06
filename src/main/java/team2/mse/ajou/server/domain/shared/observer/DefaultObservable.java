@@ -4,20 +4,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Observer: Default observerable
+ * Observer: Default observable
+ *
  * @param <T>
  */
 public class DefaultObservable<T> implements Observable<T> {
     private final List<Observer<T>> observers;
     private T value;
+    private T previousValue;
 
-    public DefaultObservable() {
+    private final boolean isIgnoreDuplicateValue;
+    private final boolean isNotifyOnSubscribe;
+
+    public DefaultObservable(
+            T initialValue,
+            boolean isIgnoreDuplicateValue,
+            boolean isNotifyOnSubscribe
+    ) {
+        this.isIgnoreDuplicateValue = isIgnoreDuplicateValue;
+        this.isNotifyOnSubscribe = isNotifyOnSubscribe;
+
+        this.previousValue = initialValue;
+        this.value = initialValue;
         this.observers = new ArrayList<>();
     }
 
     @Override
     public void addObserver(Observer<T> observer) {
         observers.add(observer);
+
+        if (isNotifyOnSubscribe) {
+            observer.onNotify(value);
+        }
     }
 
     @Override
@@ -39,7 +57,12 @@ public class DefaultObservable<T> implements Observable<T> {
 
     @Override
     public void updateValue(T newValue) {
+        previousValue = value;
         value = newValue;
+
+        if (!isIgnoreDuplicateValue || previousValue != newValue) {
+            notifyAllObservers();
+        }
     }
 
     @Override

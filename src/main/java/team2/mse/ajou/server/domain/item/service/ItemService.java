@@ -3,14 +3,14 @@ package team2.mse.ajou.server.domain.item.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.ack.service.AckService;
-import team2.mse.ajou.server.domain.firebase.service.FrdbService;
+import team2.mse.ajou.server.domain.firebase.service.FrdbRepository;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchService;
+import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
+import team2.mse.ajou.server.domain.shared.match.service.MatchServiceLegacy;
 import team2.mse.ajou.server.domain.shared.match.service.MatchTurnCalcService;
 
 import java.util.*;
@@ -20,21 +20,21 @@ import java.util.*;
  */
 @Service
 public class ItemService implements IItemService {
-    private final PlayerDataRepository playerDataRepository;
-    private final MatchDataRepository matchDataRepository;
-    private final FrdbService frdbService;
+    private final PlayerDataJpaRepository playerDataJpaRepository;
+    private final MatchDataJpaRepository matchDataJPARepository;
+    private final FrdbRepository frdbRepository;
     private final AckService ackService;
-    private final MatchService matchService;
+    private final MatchServiceLegacy matchService;
 
     @Autowired
-    public ItemService(PlayerDataRepository playerDataRepository,
-                       MatchDataRepository matchDataRepository,
+    public ItemService(PlayerDataJpaRepository playerDataJpaRepository,
+                       MatchDataJpaRepository matchDataJPARepository,
                        MatchTurnCalcService matchTurnCalcService,
-                       MatchService matchService,
-                       FrdbService frdbService, AckService ackService) {
-        this.playerDataRepository = playerDataRepository;
-        this.matchDataRepository = matchDataRepository;
-        this.frdbService = frdbService;
+                       MatchServiceLegacy matchService,
+                       FrdbRepository frdbRepository, AckService ackService) {
+        this.playerDataJpaRepository = playerDataJpaRepository;
+        this.matchDataJPARepository = matchDataJPARepository;
+        this.frdbRepository = frdbRepository;
         this.ackService = ackService;
         this.matchService = matchService;
     }
@@ -80,9 +80,9 @@ public class ItemService implements IItemService {
      */
     @Override
     public void receiveItemAnimationEndAck(UUID playerId) {
-        PlayerData playerData = playerDataRepository.findById(playerId)
+        PlayerData playerData = playerDataJpaRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + playerId));
-        MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
+        MatchData matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         if (!matchData.getState().isReceivingItems()) {
@@ -102,9 +102,9 @@ public class ItemService implements IItemService {
             matchService.initializeMatchRound(matchData);
         }
 
-        playerDataRepository.saveAll(matchData.getPlayers());
-        MatchData updMatchData = matchDataRepository.save(matchData);
-        frdbService.setMatch(updMatchData.getId(), updMatchData);
+        playerDataJpaRepository.saveAll(matchData.getPlayers());
+        MatchData updMatchData = matchDataJPARepository.save(matchData);
+        frdbRepository.setMatch(updMatchData.getId(), updMatchData);
     }
 
     private boolean isAllItemAnimationEnd(MatchData matchData) {

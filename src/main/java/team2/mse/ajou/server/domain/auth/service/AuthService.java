@@ -8,8 +8,8 @@ import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchService;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
+import team2.mse.ajou.server.domain.shared.match.service.MatchServiceLegacy;
 
 import java.util.UUID;
 
@@ -20,11 +20,11 @@ import java.util.UUID;
  */
 @Service
 public class AuthService {
-    private final PlayerDataRepository playerDataRepository;
-    private final MatchService matchService;
+    private final PlayerDataJpaRepository playerDataJpaRepository;
+    private final MatchServiceLegacy matchService;
 
-    public AuthService(PlayerDataRepository playerDataRepository, MatchService matchService) {
-        this.playerDataRepository = playerDataRepository;
+    public AuthService(PlayerDataJpaRepository playerDataJpaRepository, MatchServiceLegacy matchService) {
+        this.playerDataJpaRepository = playerDataJpaRepository;
         this.matchService = matchService;
     }
 
@@ -134,11 +134,11 @@ public class AuthService {
         if (!isUsernameValid(playerName)) {
             return false;
         }
-        return !playerDataRepository.existsByUsername(playerName);
+        return !playerDataJpaRepository.existsByUsername(playerName);
     }
 
     private void forceLogout(UUID playerId) {
-        playerDataRepository.deleteById(playerId);
+        playerDataJpaRepository.deleteById(playerId);
         System.out.println("LOGOUT FOR `%s`".formatted(playerId));
     }
 
@@ -153,7 +153,7 @@ public class AuthService {
 
         playerData.setUsername(username);
 
-        PlayerData res = playerDataRepository.save(playerData);
+        PlayerData res = playerDataJpaRepository.save(playerData);
         // System.out.println("SAVING PLAYERINFO FOR `%s`".formatted(res.getId()));
 
         return res.getId();
@@ -176,6 +176,6 @@ public class AuthService {
      * @return Whether given player is logged in.
      */
     private boolean isPlayerLoggedIn(UUID playerId) {
-        return playerDataRepository.existsById(playerId);
+        return playerDataJpaRepository.existsById(playerId);
     }
 }

@@ -13,7 +13,7 @@ import java.util.UUID;
  * @author Ahn Yubin / 202021088
  */
 @Repository
-public interface PlayerDataRepository extends JpaRepository<PlayerData, UUID> {
+public interface PlayerDataJpaRepository extends JpaRepository<PlayerData, UUID> {
     /**
      * Fetch player by username.
      * @param username Username.

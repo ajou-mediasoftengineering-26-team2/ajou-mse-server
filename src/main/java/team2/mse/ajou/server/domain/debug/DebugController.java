@@ -3,8 +3,8 @@ package team2.mse.ajou.server.domain.debug;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchService;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
+import team2.mse.ajou.server.domain.shared.match.service.MatchServiceLegacy;
 
 /**
  * DEBUG ONLY!!!
@@ -15,10 +15,10 @@ import team2.mse.ajou.server.domain.shared.match.service.MatchService;
 @RestController
 @RequestMapping("/debug")
 public class DebugController {
-    private final MatchService matchService;
-    private final PlayerDataRepository playerInfoRepository;
+    private final MatchServiceLegacy matchService;
+    private final PlayerDataJpaRepository playerInfoRepository;
 
-    public DebugController(MatchService matchService, PlayerDataRepository playerInfoRepository) {
+    public DebugController(MatchServiceLegacy matchService, PlayerDataJpaRepository playerInfoRepository) {
         this.matchService = matchService;
         this.playerInfoRepository = playerInfoRepository;
     }

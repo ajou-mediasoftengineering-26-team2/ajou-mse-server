@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.firebase.service;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.firebase.model.FrdbMatchData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
@@ -13,13 +14,12 @@ import java.util.UUID;
  *
  * @author Ahn Yubin / 202021088
  */
-// TODO: Turn this into repository as we might not need more operations than what a repository does.
-@Service
-public class FrdbService {
+@Repository
+public class FrdbRepository {
     private final DatabaseReference matchRootRef;
     private final FirebaseDatabase firebaseDatabase;
 
-    public FrdbService(FirebaseDatabase firebaseDatabase) {
+    public FrdbRepository(FirebaseDatabase firebaseDatabase) {
         this.firebaseDatabase = firebaseDatabase;
 
         matchRootRef = firebaseDatabase

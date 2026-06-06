@@ -5,14 +5,14 @@ import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
-import team2.mse.ajou.server.domain.firebase.service.FrdbService;
+import team2.mse.ajou.server.domain.firebase.service.FrdbRepository;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
 import java.time.ZonedDateTime;
@@ -26,10 +26,11 @@ import java.util.concurrent.ScheduledFuture;
  * @author Ahn Yubin / 202021088
  * @author Junseo Hwang 202322128
  */
+@Service
 public class MatchServiceLegacy {
-    private final FrdbService frdbService;
-    private final MatchDataRepository matchDataRepository;
-    private final PlayerDataRepository playerDataRepository;
+    private final FrdbRepository frdbRepository;
+    private final MatchDataJpaRepository matchDataJPARepository;
+    private final PlayerDataJpaRepository playerDataJpaRepository;
     private final StationRepository stationRepository;
 
     private final MatchTurnCalcService matchTurnCalcService;
@@ -40,10 +41,10 @@ public class MatchServiceLegacy {
 
     private final Random attackerRandom;
 
-    public MatchServiceLegacy(FrdbService frdbService, MatchDataRepository matchDataRepository, PlayerDataRepository playerDataRepository, StationRepository stationRepository, MatchTurnCalcService matchTurnCalcService) {
-        this.frdbService = frdbService;
-        this.matchDataRepository = matchDataRepository;
-        this.playerDataRepository = playerDataRepository;
+    public MatchServiceLegacy(FrdbRepository frdbRepository, MatchDataJpaRepository matchDataJPARepository, PlayerDataJpaRepository playerDataJpaRepository, StationRepository stationRepository, MatchTurnCalcService matchTurnCalcService) {
+        this.frdbRepository = frdbRepository;
+        this.matchDataJPARepository = matchDataJPARepository;
+        this.playerDataJpaRepository = playerDataJpaRepository;
         this.stationRepository = stationRepository;
         this.matchTurnCalcService = matchTurnCalcService;
 
@@ -60,7 +61,7 @@ public class MatchServiceLegacy {
      */
     @Transactional
     public MatchData getOpenMatch() {
-        return matchDataRepository.findAll()
+        return matchDataJPARepository.findAll()
                 .stream()
                 .filter(match -> match.getPlayers().size() < 2 && match.getState() == MATCH_STATE.LOBBY_WAITING)
                 .findFirst()
@@ -80,7 +81,7 @@ public class MatchServiceLegacy {
         String station = stationRepository.getStation();
         matchData.setStation(station);
 
-        matchData = matchDataRepository.save(matchData);
+        matchData = matchDataJPARepository.save(matchData);
 
         System.out.println("MATCH CREATE: %s / %s".formatted(matchData.getId(), matchData.getPlayers()));
 
@@ -95,12 +96,12 @@ public class MatchServiceLegacy {
      */
     @Transactional
     public MatchData findMatchByPlayerId(UUID playerId) {
-        PlayerData playerData = playerDataRepository.findById(playerId).orElse(null);
+        PlayerData playerData = playerDataJpaRepository.findById(playerId).orElse(null);
         if (playerData == null) {
             return null;
         }
 
-        return matchDataRepository.findById(playerData.getJoinedMatchId()).orElse(null);
+        return matchDataJPARepository.findById(playerData.getJoinedMatchId()).orElse(null);
     }
 
     /**
@@ -145,8 +146,8 @@ public class MatchServiceLegacy {
      */
     @Transactional
     public boolean joinMatch(UUID playerId, UUID matchId) {
-        Optional<MatchData> matchData = matchDataRepository.findById(matchId);
-        Optional<PlayerData> playerData = playerDataRepository.findById(playerId);
+        Optional<MatchData> matchData = matchDataJPARepository.findById(matchId);
+        Optional<PlayerData> playerData = playerDataJpaRepository.findById(playerId);
         if (matchData.isEmpty() || playerData.isEmpty()) {
             return false;
         }
@@ -170,10 +171,10 @@ public class MatchServiceLegacy {
 
         // Update internal DB to reflect this change.
         // newPlayerData = playerDataRepository.save(newPlayerData);
-        newMatchData = matchDataRepository.save(newMatchData);
+        newMatchData = matchDataJPARepository.save(newMatchData);
 
         // Apply to Firebase RDB aswell.
-        frdbService.setMatch(matchId, newMatchData);
+        frdbRepository.setMatch(matchId, newMatchData);
         return true;
     }
 
@@ -190,8 +191,8 @@ public class MatchServiceLegacy {
             return false;
         }
 
-        Optional<MatchData> matchData = matchDataRepository.findById(matchId);
-        Optional<PlayerData> playerData = playerDataRepository.findById(playerId);
+        Optional<MatchData> matchData = matchDataJPARepository.findById(matchId);
+        Optional<PlayerData> playerData = playerDataJpaRepository.findById(playerId);
         if (matchData.isEmpty() || playerData.isEmpty()) {
             return false;
         }
@@ -211,11 +212,11 @@ public class MatchServiceLegacy {
         onPlayerLeave(newMatchData);
 
         // Update internal DB to reflect this change.
-        newPlayerData = playerDataRepository.save(newPlayerData);
-        newMatchData = matchDataRepository.save(newMatchData);
+        newPlayerData = playerDataJpaRepository.save(newPlayerData);
+        newMatchData = matchDataJPARepository.save(newMatchData);
 
         // Apply to Firebase RDB aswell.
-        frdbService.setMatch(matchId, newMatchData);
+        frdbRepository.setMatch(matchId, newMatchData);
         return true;
     }
 
@@ -226,7 +227,7 @@ public class MatchServiceLegacy {
      * @return Player data. null if not found.
      */
     public PlayerData getPlayerById(UUID id) {
-        return playerDataRepository
+        return playerDataJpaRepository
                 .findById(id)
                 .orElse(null);
     }
@@ -238,8 +239,8 @@ public class MatchServiceLegacy {
      */
     @Transactional
     public void savePlayer(PlayerData playerData) {
-        Optional<MatchData> matchData = matchDataRepository.findById(playerData.getJoinedMatchId());
-        PlayerData newPlayerData = playerDataRepository.save(playerData);
+        Optional<MatchData> matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId());
+        PlayerData newPlayerData = playerDataJpaRepository.save(playerData);
 
         // We need match data because we have to update player information inside the match.
         if (matchData.isEmpty()) {
@@ -250,10 +251,10 @@ public class MatchServiceLegacy {
 
         // Update internal DB to reflect this change.
         newMatchData.updatePlayer(playerData);
-        newMatchData = matchDataRepository.save(newMatchData);
+        newMatchData = matchDataJPARepository.save(newMatchData);
 
         // Apply to Firebase RDB aswell.
-        frdbService.setMatch(newMatchData.getId(), newMatchData);
+        frdbRepository.setMatch(newMatchData.getId(), newMatchData);
     }
 
     /**
@@ -308,7 +309,7 @@ public class MatchServiceLegacy {
      */
     @Transactional
     public void onMatchStart(UUID matchId) {
-        MatchData matchData = matchDataRepository.findById(matchId).orElse(null);
+        MatchData matchData = matchDataJPARepository.findById(matchId).orElse(null);
         if (matchData == null) {
             System.err.println("MATCH `" + matchId + "` NOT FOUND!");
             return;
@@ -322,11 +323,11 @@ public class MatchServiceLegacy {
         }
 
         // Update internal DB to reflect this change.
-        List<PlayerData> newPlayerDatas = playerDataRepository.saveAll(matchData.getPlayers());
-        matchDataRepository.save(matchData);
+        List<PlayerData> newPlayerDatas = playerDataJpaRepository.saveAll(matchData.getPlayers());
+        matchDataJPARepository.save(matchData);
 
         // Apply to Firebase RDB aswell.
-        frdbService.setMatch(matchData.getId(), matchData);
+        frdbRepository.setMatch(matchData.getId(), matchData);
     }
 
     /**
@@ -336,7 +337,7 @@ public class MatchServiceLegacy {
      */
     @Transactional
     public void onMatchTurn(UUID matchId) {
-        MatchData matchData = matchDataRepository.findById(matchId).orElse(null);
+        MatchData matchData = matchDataJPARepository.findById(matchId).orElse(null);
         if (matchData == null) {
             System.err.println("MATCH `" + matchId + "` NOT FOUND!");
             return;
@@ -355,11 +356,11 @@ public class MatchServiceLegacy {
         matchTurnCalcService.calculateTurn(matchData);
 
         // Update internal DB to reflect this change.
-        List<PlayerData> newPlayerDatas = playerDataRepository.saveAll(matchData.getPlayers());
-        MatchData newMatchData = matchDataRepository.save(matchData);
+        List<PlayerData> newPlayerDatas = playerDataJpaRepository.saveAll(matchData.getPlayers());
+        MatchData newMatchData = matchDataJPARepository.save(matchData);
 
         // Apply to Firebase RDB aswell.
-        frdbService.setMatch(newMatchData.getId(), newMatchData);
+        frdbRepository.setMatch(newMatchData.getId(), newMatchData);
     }
 
     /**
@@ -369,14 +370,14 @@ public class MatchServiceLegacy {
      */
     @Transactional
     public void startNextTurn(UUID matchId) {
-        MatchData matchData = matchDataRepository.findById(matchId).orElse(null);
+        MatchData matchData = matchDataJPARepository.findById(matchId).orElse(null);
         if (matchData == null) {
             System.err.println("MATCH `" + matchId + "` NOT FOUND!");
             return;
         }
 
         if (matchData.getState() == MATCH_STATE.END_RESULT || matchData.getState() == MATCH_STATE.END_PLAYER_DISCONNECTED) {
-            frdbService.setMatch(matchData.getId(), matchData);
+            frdbRepository.setMatch(matchData.getId(), matchData);
             return;
         }
 
@@ -405,9 +406,9 @@ public class MatchServiceLegacy {
             System.err.println("FAILED TO SCHEDULE NEXT TURN COUNTDOWN FOR GAME `" + matchData.getId() + "`");
         }
 
-        playerDataRepository.saveAll(players);
-        MatchData newMatchData = matchDataRepository.save(matchData);
-        frdbService.setMatch(newMatchData.getId(), newMatchData);
+        playerDataJpaRepository.saveAll(players);
+        MatchData newMatchData = matchDataJPARepository.save(matchData);
+        frdbRepository.setMatch(newMatchData.getId(), newMatchData);
     }
 
     /**
@@ -418,8 +419,8 @@ public class MatchServiceLegacy {
             handler.cancel(false);
         }
         countdownSchedulers.clear();
-        matchDataRepository.deleteAll();
-        frdbService.clearAllMatch();
+        matchDataJPARepository.deleteAll();
+        frdbRepository.clearAllMatch();
     }
 
     /**

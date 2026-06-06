@@ -1,5 +1,7 @@
 package team2.mse.ajou.server.domain.shared.match.states;
 
+import java.util.UUID;
+
 /**
  * 매치 State: State별 동작 정의 인터페이스.
  * Match State: Interface for logic to run for each states.
@@ -22,4 +24,11 @@ public interface MatchStateLogic {
      * @return 인게임 여부.
      */
     boolean getIsIngame();
+
+    // State별 플레이어 입력 등 콜백
+    void onPlayerJoin(UUID playerId);
+
+    void onPlayerLeave(UUID playerId);
+
+    void onPlayerAck();
 }
