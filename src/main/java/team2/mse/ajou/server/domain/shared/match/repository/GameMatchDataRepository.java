@@ -2,15 +2,10 @@ package team2.mse.ajou.server.domain.shared.match.repository;
 
 import org.springframework.stereotype.Repository;
 import team2.mse.ajou.server.domain.firebase.service.FrdbRepository;
-import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.observer.DefaultObservable;
-import team2.mse.ajou.server.domain.shared.observer.Observable;
-import team2.mse.ajou.server.domain.shared.observer.Observer;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,10 +18,6 @@ import java.util.UUID;
  */
 @Repository
 public class GameMatchDataRepository implements GameDataRepository {
-    private final Map<UUID, Observable<UUID>> matchPlayerJoinEventObservables;
-    private final Map<UUID, Observable<UUID>> matchPlayerLeaveEventObservables;
-    private final Map<UUID, Observable<ACK_TYPE>> playerAckEventObservables;
-
     // 리포지토리들
     private final MatchDataJpaRepository matchDataJPARepository;
     private final PlayerDataJpaRepository playerDataJpaRepository;
@@ -37,28 +28,9 @@ public class GameMatchDataRepository implements GameDataRepository {
             PlayerDataJpaRepository playerDataJpaRepository,
             FrdbRepository frdbRepository
     ) {
-        this.matchPlayerJoinEventObservables = new HashMap<>();
-        this.matchPlayerLeaveEventObservables = new HashMap<>();
-        this.playerAckEventObservables = new HashMap<>();
-
         this.matchDataJPARepository = matchDataJPARepository;
         this.playerDataJpaRepository = playerDataJpaRepository;
         this.frdbRepository = frdbRepository;
-    }
-
-    @Override
-    public Observable<UUID> getPlayerJoinEventsObservable(UUID matchId) {
-        return fetchOrCreateObservable(matchPlayerJoinEventObservables, matchId, null, false, false);
-    }
-
-    @Override
-    public Observable<UUID> getPlayerLeaveEventsObservable(UUID matchId) {
-        return fetchOrCreateObservable(matchPlayerLeaveEventObservables, matchId, null, false, false);
-    }
-
-    @Override
-    public Observable<ACK_TYPE> getPlayerAckEventsObservable(UUID playerId) {
-        return fetchOrCreateObservable(playerAckEventObservables, playerId, ACK_TYPE.NO_ACK, true, true);
     }
 
     @Override
@@ -67,44 +39,57 @@ public class GameMatchDataRepository implements GameDataRepository {
     }
 
     @Override
+    public Optional<MatchData> findMatchByJoinedPlayerId(UUID playerId) {
+        PlayerData playerData = playerDataJpaRepository.findById(playerId).orElse(null);
+        if (playerData == null) {
+            return Optional.empty();
+        }
+
+        return matchDataJPARepository.findById(playerData.getJoinedMatchId());
+    }
+
+    @Override
+    public List<MatchData> findAllMatches() {
+        return matchDataJPARepository.findAll();
+    }
+
+    @Override
     public Optional<PlayerData> findPlayerById(UUID playerId) {
         return playerDataJpaRepository.findById(playerId);
     }
 
     @Override
-    public MatchData saveMatchData(MatchData data) {
+    public boolean isPlayerExistsByUsername(String name) {
+        return playerDataJpaRepository.existsByUsername(name);
+    }
+
+    @Override
+    public boolean isPlayerExistsById(UUID playerId) {
+        return playerDataJpaRepository.existsById(playerId);
+    }
+
+    @Override
+    public MatchData saveMatch(MatchData data) {
         return matchDataJPARepository.save(data);
     }
 
     @Override
-    public PlayerData savePlayerData(PlayerData data) {
+    public PlayerData savePlayer(PlayerData data) {
         return playerDataJpaRepository.save(data);
+    }
+
+    @Override
+    public void deleteMatchById(UUID matchId) {
+        matchDataJPARepository.deleteById(matchId);
+    }
+
+    @Override
+    public void deletePlayerById(UUID playerId) {
+        playerDataJpaRepository.deleteById(playerId);
     }
 
     @Override
     public void updateFrdbMatchData(MatchData data) {
         frdbRepository.setMatch(data.getId(), data);
-    }
-
-    /**
-     * Map에 주어진 ID값에 대응하는 Observable가 있으면 그것을 반환하고, 없으면 새로 생성해서 반환합니다.
-     *
-     * @param map
-     * @param id
-     * @param initialValue
-     * @param isIgnoreDuplicateValue
-     * @param isNotifyOnSubscribe
-     * @param <T>
-     * @return
-     */
-    private <T> Observable<T> fetchOrCreateObservable(
-            Map<UUID, Observable<T>> map,
-            UUID id,
-            T initialValue,
-            boolean isIgnoreDuplicateValue,
-            boolean isNotifyOnSubscribe
-    ) {
-        map.putIfAbsent(id, new DefaultObservable<>(initialValue, isIgnoreDuplicateValue, isNotifyOnSubscribe));
-        return map.get(id);
     }
 }

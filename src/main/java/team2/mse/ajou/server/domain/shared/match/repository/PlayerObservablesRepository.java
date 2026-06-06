@@ -5,6 +5,8 @@ import team2.mse.ajou.server.domain.shared.observer.Observable;
 
 import java.util.UUID;
 
-public interface PlayerEventsRepository {
+public interface PlayerObservablesRepository {
     Observable<ACK_TYPE> getPlayerAckEventsObservable(UUID playerId);
+
+    void sendPlayerAckEvent(UUID playerId, ACK_TYPE type);
 }

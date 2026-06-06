@@ -2,9 +2,9 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import team2.mse.ajou.server.domain.item.service.ItemFactory;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.*;
+import team2.mse.ajou.server.domain.shared.match.modellisteners.PlayerDataJpaListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,7 @@ import java.util.UUID;
  * @author Junseo Hwang / 202322128
  */
 @Entity
+@EntityListeners({PlayerDataJpaListener.class})
 @Data
 public class PlayerData {
     @Id

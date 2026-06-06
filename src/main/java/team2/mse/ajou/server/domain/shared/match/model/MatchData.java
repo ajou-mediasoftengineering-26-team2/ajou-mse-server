@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
+import team2.mse.ajou.server.domain.shared.match.modellisteners.MatchDataJpaListener;
+import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ import java.util.UUID;
  * @author Ahn Yubin / 202021088
  */
 @Entity
+@EntityListeners({MatchDataJpaListener.class})
 @Getter
 @Setter
 public class MatchData {

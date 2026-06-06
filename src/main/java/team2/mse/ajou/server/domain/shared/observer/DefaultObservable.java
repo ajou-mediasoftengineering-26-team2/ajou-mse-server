@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.shared.observer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Observer: Default observable
@@ -60,7 +61,7 @@ public class DefaultObservable<T> implements Observable<T> {
         previousValue = value;
         value = newValue;
 
-        if (!isIgnoreDuplicateValue || previousValue != newValue) {
+        if (!isIgnoreDuplicateValue || !Objects.equals(previousValue, newValue)) {
             notifyAllObservers();
         }
     }

@@ -137,9 +137,13 @@ public enum MATCH_STATE {
     }
 
     @Transient
-    private MatchStateLogic logic;
+    private final MatchStateLogic logic;
 
     private MATCH_STATE(MatchStateLogic logic) {
         this.logic = logic;
+    }
+
+    public MatchStateLogic getLogic() {
+        return logic;
     }
 }
