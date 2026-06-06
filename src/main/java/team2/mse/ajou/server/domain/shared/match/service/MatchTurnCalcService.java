@@ -14,8 +14,8 @@ import java.util.List;
 /**
  * Match turn/game logic calculation handling service.
  *
- * @author Junseo Hwang 202322128
  * @author Ahn Yubin / 202021088
+ * @author Junseo Hwang 202322128
  */
 @Service
 public class MatchTurnCalcService {
@@ -63,6 +63,8 @@ public class MatchTurnCalcService {
         // Has attacking player KO'd the defending player?
         boolean isPlayerKO = false;
 
+        matchData.setAttackSuccess(isAttackSuccess);
+
         // BEGIN DAMAGE CALCULATION LOGIC --------------------------
         // TODO: ADD ON-DAMAGE PERK EFFECTS ETC
         if (isAttackSuccess) {
@@ -76,6 +78,8 @@ public class MatchTurnCalcService {
         } else {
             // Defending success! Switch the roles around.
             // switch attackerIdx and defenceIdx
+            damageCalcService.calcDefendEffect(matchData);
+
             defenceIdx ^= 1;
             attackerIdx ^= 1;
 
@@ -96,11 +100,10 @@ public class MatchTurnCalcService {
         }
         attackerPlayer.setAttacking(true);
         defencePlayer.setAttacking(false);
+        matchData.setAttackerPlayerIdx(attackerIdx);
 
         // Update match data.
         matchData.setCurrentTurn(matchData.getCurrentTurn() + 1);
-        matchData.setAttackSuccess(isAttackSuccess);
-        matchData.setAttackerPlayerIdx(attackerIdx);
         matchData.setState(MATCH_STATE.GAME_TURN_ANIMATION);
 
         // (FIXME) End game as soon as player downs another.
