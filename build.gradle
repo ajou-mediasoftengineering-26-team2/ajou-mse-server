@@ -19,6 +19,7 @@ plugins {
     id 'com.google.cloud.tools.jib' version '3.5.3'
 }
 
+def profile = System.getProperty("spring.profiles.active")
 group = 'team2.mse.ajou'
 version = '0.0.1-SNAPSHOT'
 description = 'ajou-mse-server'
@@ -26,12 +27,22 @@ description = 'ajou-mse-server'
 // jib setup
 jib {
     to {
-        image = 'ajou-mse/server'
+        // dev/prod server distinction
+        if (profile == "dev") {
+            image = 'ajou-mse/server-dev'
+        } else {
+            image = 'ajou-mse/server'
+        }
     }
 
     container {
-        ports = [ '8080/tcp' ]
-        jvmFlags = ['-Duser.timezone=Asia/Seoul']
+        if (profile == "dev") {
+            ports = ['8088/tcp']
+            jvmFlags = ['-Duser.timezone=Asia/Seoul', '-Dspring.profiles.active=dev']
+        } else {
+            ports = ['8080/tcp']
+            jvmFlags = ['-Duser.timezone=Asia/Seoul']
+        }
         environment = [TZ: 'Asia/Seoul']
     }
 
@@ -105,7 +116,13 @@ tasks.register('generateDockerSecrets') {
         def mysql_password = "test"
 
         def props = new Properties()
-        props.load(project.rootProject.file("src/main/resources/application-secrets.properties").newReader())
+        //props.load(project.rootProject.file("src/main/resources/application-secrets.properties").newReader())
+
+        if (profile != null && profile.contains("dev")) {
+            props.load(project.rootProject.file("src/main/resources/application-secrets-dev.properties").newReader())
+        } else {
+            props.load(project.rootProject.file("src/main/resources/application-secrets.properties").newReader())
+        }
 
         mysql_username = props.getProperty("spring.datasource.username", mysql_username)
         mysql_password = props.getProperty("spring.datasource.password", mysql_password)
