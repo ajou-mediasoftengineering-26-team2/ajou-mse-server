@@ -391,6 +391,10 @@ public class MatchService {
             player.setAckState(ACK_TYPE.NO_ACK);
             player.setSelecting(true);
             player.setAttacking(i == attackerIdx);
+
+            if(matchData.getCurrentTurn() == 0){
+                player.getStatusEffectList().clear();
+            }
         }
 
         matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
