@@ -98,7 +98,10 @@ public class DamageCalcService implements IDamageCalcService {
                 item.useItemIfPossible(matchData, defenderIndex);
             }
 
+            damageData.setDamage(Math.max(0, damageData.getDamage()));
+
             defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
+            attacker.setCoin(attacker.getCoin()+damageData.getCoin());
         }
 
         // Burning 상태이상시 BurnDamage
@@ -133,6 +136,7 @@ public class DamageCalcService implements IDamageCalcService {
             damageData.setDamage(Math.max(0, damageData.getDamage()));
 
             defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
+            attacker.setCoin(attacker.getCoin()+damageData.getCoin());
         }
 
         // 사용한  ItemResistance 제거 (얘만 턴 전체 적용이라 이렇게 됨;;)
