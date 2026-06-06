@@ -10,6 +10,7 @@ import team2.mse.ajou.server.domain.perk.model.IPerk;
 import team2.mse.ajou.server.domain.perk.service.PerkFactory;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.STATUS_EFFECT;
+import team2.mse.ajou.server.domain.shared.match.model.DefendData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
@@ -136,7 +137,26 @@ public class DamageCalcService implements IDamageCalcService {
     }
 
     @Override
-    public List<DefendEffect> calcDefendList(MatchData matchData) {
-        return List.of();
+    public void calcDefendEffect(MatchData matchData) {
+        PlayerData defender = matchData.getPlayers().get(matchData.getAttackerPlayerIdx()^1);
+        int defenderIndex = matchData.getAttackerPlayerIdx()^1;
+
+        IElemental defenderElemental = ElementalFactory.createElemental(defender.getHandElemental());
+        List<IPerk> defenderPerkList = PerkFactory.createPerkList(defender.getPerkList());
+        List<IConsumableItem> defenderItemLIst = ItemFactory.createItemList(defender.getItemList());
+
+        DefendData defendData = matchData.getDefendData();
+        defendData.initDefendData();
+
+        defenderElemental.useElementalIfPossible(matchData, defenderIndex);
+        for(IPerk perk : defenderPerkList){
+            perk.usePerkIfPossible(matchData);
+        }
+        for(IConsumableItem item : defenderItemLIst){
+            item.useItemIfPossible(matchData, defenderIndex);
+        }
+
+        defender.setHp(defender.getHp()+ defendData.getRecoveredHp());
+        defender.setCoin(defender.getCoin() + defendData.getCoin());
     }
 }

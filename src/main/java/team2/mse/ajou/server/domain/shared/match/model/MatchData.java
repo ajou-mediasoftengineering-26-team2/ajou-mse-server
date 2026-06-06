@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
+import team2.mse.ajou.server.domain.turn.model.DefendEffect;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -76,6 +77,8 @@ public class MatchData {
     @OrderBy("damageIndex ASC")
     private List<DamageData> damageDataList = new ArrayList<>();
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private DefendData defendData = new DefendData();
 
     /**
      * Find player by UUID.
