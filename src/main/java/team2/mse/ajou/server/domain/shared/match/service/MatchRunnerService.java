@@ -2,7 +2,6 @@ package team2.mse.ajou.server.domain.shared.match.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
@@ -12,6 +11,7 @@ import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +30,9 @@ public class MatchRunnerService {
     private final GameDataRepository gameDataRepository;
     private final StationRepository stationRepository;
 
+    // 뮤텍스
+    private final ReentrantLock mutex;
+
     public MatchRunnerService(
             GameObservablesRepository gameEventsRepository,
             GameDataRepository gameDataRepository,
@@ -40,6 +43,7 @@ public class MatchRunnerService {
         this.stationRepository = stationRepository;
 
         this.allRunningMatches = new HashMap<>();
+        this.mutex = new ReentrantLock();
     }
 
     @Transactional
@@ -54,7 +58,7 @@ public class MatchRunnerService {
         var newMatchId = newMatchData.getId();
 
         System.out.printf("[MATCH] MatchRunnerService::createNewMatch | NEW MATCH ID = %s\n", newMatchId);
-        setupMatch(newMatchId);
+        setupRunningMatch(newMatchId);
 
         return newMatchId;
     }
@@ -63,7 +67,7 @@ public class MatchRunnerService {
     public void deleteMatch(UUID matchId) {
         System.out.printf("[MATCH] MatchRunnerService::deleteMatch | TRY DELETING MATCH! (%s)\n", matchId);
 
-        freeMatch(matchId);
+        freeRunningMatch(matchId);
         gameDataRepository.deleteMatchById(matchId);
     }
 
@@ -179,19 +183,7 @@ public class MatchRunnerService {
         return true;
     }
 
-    /**
-     * PlayerData: ACK값 갱신 콜백.
-     * 값 변경시 자동으로 호출해줍니다.
-     *
-     * @param playerId
-     * @param type
-     */
-    public void updatePlayerAck(UUID playerId, ACK_TYPE type) {
-        System.out.printf("[PLR] MatchRunnerService::updatePlayerAck(PLR: %s, TYPE: %s)\n", playerId, type);
-        gameEventsRepository.sendPlayerAckEvent(playerId, type);
-    }
-
-    private void setupMatch(UUID matchId) {
+    private void setupRunningMatch(UUID matchId) {
         System.out.printf("[MATCH] MatchRunnerService::setupMatch | (%s)\n", matchId);
         var data = new RunningMatch();
 
@@ -200,11 +192,22 @@ public class MatchRunnerService {
         data.setMatchDataGetMethod(gameDataRepository::findMatchById);
         data.setPlayerDataGetMethod(gameDataRepository::findPlayerById);
         data.setMatchDataCommitMethod((matchData) -> {
-            gameDataRepository.saveMatch(matchData);
-            gameDataRepository.updateFrdbMatchData(matchData);
+            mutex.lock();
+            try {
+                gameDataRepository.saveMatch(matchData);
+                gameDataRepository.updateFrdbMatchData(matchData);
+            } finally {
+                mutex.unlock();
+            }
         });
         data.setPlayerDataCommitMethod((playerData) -> {
-            gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresent(gameDataRepository::updateFrdbMatchData);
+            mutex.lock();
+            try {
+                gameDataRepository.savePlayer(playerData);
+                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresent(gameDataRepository::updateFrdbMatchData);
+            } finally {
+                mutex.unlock();
+            }
         });
 
         // 플레이어 입장 등 매치 단위 옵저버 연결
@@ -215,7 +218,7 @@ public class MatchRunnerService {
         allRunningMatches.put(matchId, data);
     }
 
-    private void freeMatch(UUID matchId) {
+    private void freeRunningMatch(UUID matchId) {
         System.out.printf("[MATCH] MatchRunnerService::freeMatch | (%s)\n", matchId);
         var data = allRunningMatches.getOrDefault(matchId, null);
 
