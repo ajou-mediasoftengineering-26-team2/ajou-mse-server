@@ -62,11 +62,14 @@ public class MatchTurnCalcService {
         PlayerData defencePlayer = players.get(defenceIdx);
         HAND_CHOICE defenceChoice = defencePlayer.getChoice();
 
-        boolean isAttackSuccess = attackerChoice != defenceChoice;
         // Has attacking player KO'd the defending player?
         boolean isPlayerKO = false;
 
+        boolean isAttackSuccess = attackerChoice != defenceChoice;
+        matchData.setAttackSuccess(isAttackSuccess);
         applyPerksInAttackSuccessDecision(matchData, defenceIdx);
+
+        isAttackSuccess = matchData.isAttackSuccess();
         matchData.setAttackSuccess(isAttackSuccess);
 
         // BEGIN DAMAGE CALCULATION LOGIC --------------------------
