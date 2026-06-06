@@ -5,7 +5,6 @@ import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
-import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
@@ -197,6 +196,17 @@ public class MatchRunnerService {
         var data = new RunningMatch();
 
         // 매치 데이터 설정
+        // 데이터 가져오기 등 옵저버 연결
+        data.setMatchDataGetMethod(gameDataRepository::findMatchById);
+        data.setPlayerDataGetMethod(gameDataRepository::findPlayerById);
+        data.setMatchDataCommitMethod((matchData) -> {
+            gameDataRepository.saveMatch(matchData);
+            gameDataRepository.updateFrdbMatchData(matchData);
+        });
+        data.setPlayerDataCommitMethod((playerData) -> {
+            gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresent(gameDataRepository::updateFrdbMatchData);
+        });
+
         // 플레이어 입장 등 매치 단위 옵저버 연결
         // Connect observers.
         data.connectMatch(matchId);

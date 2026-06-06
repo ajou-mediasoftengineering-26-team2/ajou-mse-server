@@ -1,13 +1,17 @@
 package team2.mse.ajou.server.domain.shared.match.service;
 
+import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.states.MatchStateLogic;
 import team2.mse.ajou.server.domain.shared.observer.Observable;
 import team2.mse.ajou.server.domain.shared.observer.Observer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 
@@ -21,22 +25,40 @@ import java.util.concurrent.ScheduledFuture;
  * @author Ahn Yubin / 202021088
  */
 public class RunningMatch {
-    protected UUID matchId;
-    protected ScheduledFuture<?> timerHandle;
+    private UUID matchId;
+    private ScheduledFuture<?> timerHandle;
 
-    protected MATCH_STATE currentState;
-    protected MatchStateLogic currentStateLogic;
+    private MATCH_STATE currentState;
+    private MatchStateLogic currentStateLogic;
 
-    protected Observable<MATCH_STATE> stateSwitchObservableCurrent;
-    protected Observer<MATCH_STATE> stateSwitchObserver;
+    private Observable<MATCH_STATE> stateSwitchObservableCurrent;
+    private Observer<MATCH_STATE> stateSwitchObserver;
 
-    protected Observable<UUID> playerJoinObservableCurrent;
-    protected Observable<UUID> playerLeaveObservableCurrent;
-    protected Observer<UUID> playerJoinObserver;
-    protected Observer<UUID> playerLeaveObserver;
+    private Observable<UUID> playerJoinObservableCurrent;
+    private Observable<UUID> playerLeaveObservableCurrent;
+    private Observer<UUID> playerJoinObserver;
+    private Observer<UUID> playerLeaveObserver;
 
-    protected Map<UUID, Observable<ACK_TYPE>> playerAckObservableCurrent;
-    protected Map<UUID, Observer<ACK_TYPE>> playerAckObservers;
+    private Map<UUID, Observable<ACK_TYPE>> playerAckObservableCurrent;
+    private Map<UUID, Observer<ACK_TYPE>> playerAckObservers;
+
+    public interface GameDataGetMethod<T> {
+        Optional<T> getData(UUID id);
+    }
+
+    public interface GameDataSetMethod<T> {
+        void setData(T data);
+    }
+
+    // `RunningMatch` -> 외부로 나가는 콜백. 예를 들어 데이터 가져오기, 데이터 수정 후 확정(?), state 변경 등
+    @Setter
+    private GameDataGetMethod<MatchData> matchDataGetMethod;
+    @Setter
+    private GameDataGetMethod<PlayerData> playerDataGetMethod;
+    @Setter
+    private GameDataSetMethod<MatchData> matchDataCommitMethod;
+    @Setter
+    private GameDataSetMethod<PlayerData> playerDataCommitMethod;
 
     public RunningMatch() {
         this.stateSwitchObservableCurrent = null;
@@ -55,6 +77,11 @@ public class RunningMatch {
 
         this.matchId = null;
         this.timerHandle = null;
+
+        this.matchDataGetMethod = null;
+        this.matchDataCommitMethod = null;
+        this.playerDataGetMethod = null;
+        this.playerDataCommitMethod = null;
     }
 
     /**
@@ -90,12 +117,31 @@ public class RunningMatch {
         this.timerHandle = null;
     }
 
-    public void subscribeToMatchStateSwitchEvents(Observable<MATCH_STATE> observable) {
+    // 데이터 조회/설정 콜백 함수들
+    // `RunningMatch` 내에서 리포지토리를 바로 DI 및 참조하기보단 외부에서 값을 받아서 넣어주는 방식으로 작동합니다. 안그럼 너무 많은 곳에서 리포지토리를 직접적으로 참조하는 문제가 발생하겠지요...
+    public Optional<MatchData> getMatchData(UUID matchId) {
+        return matchDataGetMethod.getData(matchId);
+    }
+
+    public Optional<PlayerData> getPlayerData(UUID playerId) {
+        return playerDataGetMethod.getData(playerId);
+    }
+
+    public void commitPlayerData(PlayerData playerData) {
+        playerDataCommitMethod.setData(playerData);
+    }
+
+    public void commitMatchData(MatchData matchData) {
+        matchDataCommitMethod.setData(matchData);
+    }
+
+    // Observer 설정 함수들
+    protected void subscribeToMatchStateSwitchEvents(Observable<MATCH_STATE> observable) {
         observable.addObserver(stateSwitchObserver);
         stateSwitchObservableCurrent = observable;
     }
 
-    public void unsubscribeToMatchStateSwitchEvents() {
+    protected void unsubscribeToMatchStateSwitchEvents() {
         if (stateSwitchObservableCurrent != null) {
             stateSwitchObservableCurrent.removeObserver(stateSwitchObserver);
             stateSwitchObservableCurrent = null;
@@ -104,12 +150,12 @@ public class RunningMatch {
         }
     }
 
-    public void subscribeToMatchPlayerJoinEvents(Observable<UUID> observable) {
+    protected void subscribeToMatchPlayerJoinEvents(Observable<UUID> observable) {
         observable.addObserver(playerJoinObserver);
         playerJoinObservableCurrent = observable;
     }
 
-    public void unsubscribeToMatchPlayerJoinEvents() {
+    protected void unsubscribeToMatchPlayerJoinEvents() {
         if (playerJoinObservableCurrent != null) {
             playerJoinObservableCurrent.removeObserver(playerJoinObserver);
             playerJoinObservableCurrent = null;
@@ -118,12 +164,12 @@ public class RunningMatch {
         }
     }
 
-    public void subscribeToMatchPlayerLeaveEvents(Observable<UUID> observable) {
+    protected void subscribeToMatchPlayerLeaveEvents(Observable<UUID> observable) {
         observable.addObserver(playerLeaveObserver);
         playerLeaveObservableCurrent = observable;
     }
 
-    public void unsubscribeToMatchPlayerLeaveEvents() {
+    protected void unsubscribeToMatchPlayerLeaveEvents() {
         if (playerLeaveObservableCurrent != null) {
             playerLeaveObservableCurrent.removeObserver(playerLeaveObserver);
             playerLeaveObservableCurrent = null;
@@ -132,7 +178,7 @@ public class RunningMatch {
         }
     }
 
-    public void subscribeToPlayerAckEvents(UUID playerId, Observable<ACK_TYPE> observable) {
+    protected void subscribeToPlayerAckEvents(UUID playerId, Observable<ACK_TYPE> observable) {
         playerAckObservers.putIfAbsent(playerId, type -> {
             onPlayerAck(playerId, type);
         });
@@ -147,7 +193,7 @@ public class RunningMatch {
         playerAckObservableCurrent.put(playerId, observable);
     }
 
-    public void unsubscribeToPlayerAckEvents(UUID playerId) {
+    protected void unsubscribeToPlayerAckEvents(UUID playerId) {
         Observer<ACK_TYPE> observer = playerAckObservers.getOrDefault(playerId, null);
         Observable<ACK_TYPE> observable = playerAckObservableCurrent.getOrDefault(playerId, null);
 
@@ -172,7 +218,7 @@ public class RunningMatch {
     private void onPlayerAck(UUID playerId, ACK_TYPE type) {
         System.out.printf("[PLR] RunningMatch::onPlayerAck(TYPE: %s, PLR: %s)\n", type, playerId);
 
-        currentStateLogic.onPlayerAck(playerId, type);
+        currentStateLogic.onPlayerAck(this, playerId, type);
     }
 
     /**
@@ -188,7 +234,7 @@ public class RunningMatch {
             return;
         }
 
-        currentStateLogic.onPlayerJoin(playerId);
+        currentStateLogic.onPlayerJoin(this, playerId);
     }
 
     /**
@@ -204,7 +250,7 @@ public class RunningMatch {
             return;
         }
 
-        currentStateLogic.onPlayerLeave(playerId);
+        currentStateLogic.onPlayerLeave(this, playerId);
     }
 
     /**
@@ -222,12 +268,12 @@ public class RunningMatch {
             }
 
             if (currentStateLogic != null) {
-                currentStateLogic.onExit();
+                currentStateLogic.onExit(this);
             }
 
             currentState = newState;
             currentStateLogic = newState.getLogic();
-            currentStateLogic.onEnter();
+            currentStateLogic.onEnter(this);
         }
     }
 }

@@ -1,6 +1,8 @@
 package team2.mse.ajou.server.domain.shared.match.states;
 
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
 
 import java.util.UUID;
 
@@ -27,16 +29,14 @@ public interface MatchStateLogic {
      */
     boolean getIsIngame();
 
-    // `StateLogic` -> 외부로 나가는 콜백. 예를 들어 데이터 수정 후 확정(?), state 변경 등
-
     // State별 플레이어 입력 등 콜백
-    void onPlayerJoin(UUID playerId);
+    void onPlayerJoin(RunningMatch context, UUID playerId);
 
-    void onPlayerLeave(UUID playerId);
+    void onPlayerLeave(RunningMatch context, UUID playerId);
 
-    void onPlayerAck(UUID playerId, ACK_TYPE type);
+    void onPlayerAck(RunningMatch context, UUID playerId, ACK_TYPE type);
 
-    void onEnter();
+    void onEnter(RunningMatch context);
 
-    void onExit();
+    void onExit(RunningMatch context);
 }

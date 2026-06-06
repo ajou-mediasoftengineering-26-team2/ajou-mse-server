@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.shared.match;
 
 
 import jakarta.persistence.Transient;
+import team2.mse.ajou.server.domain.shared.match.states.LobbyStartCountdownStateLogic;
 import team2.mse.ajou.server.domain.shared.match.states.LobbyWaitingStateLogic;
 import team2.mse.ajou.server.domain.shared.match.states.MatchStateLogic;
 
@@ -23,7 +24,7 @@ public enum MATCH_STATE {
     /**
      * 대기 화면: 게임 시작 카운트다운
      */
-    LOBBY_START_COUNTDOWN(new LobbyWaitingStateLogic()),
+    LOBBY_START_COUNTDOWN(new LobbyStartCountdownStateLogic()),
 
     // match
     /**
