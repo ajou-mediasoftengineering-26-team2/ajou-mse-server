@@ -73,12 +73,17 @@ public class MatchData {
      */
     private boolean ko = false;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("damageIndex ASC")
     private List<DamageData> damageDataList = new ArrayList<>();
+
+    /**
+     * Last updated time
+     */
+    private ZonedDateTime lastUpdated = ZonedDateTime.now();
 
 
     /**
@@ -158,6 +163,11 @@ public class MatchData {
             damageDataList = new ArrayList<>();
         }
         damageDataList.clear();
+    }
+
+    @Transient
+    public void updateLastUpdated() {
+        lastUpdated = ZonedDateTime.now();
     }
 
     public MatchData(MatchData from) {

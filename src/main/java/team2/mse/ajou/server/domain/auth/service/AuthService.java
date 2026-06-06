@@ -198,5 +198,6 @@ public class AuthService {
         var ack = ACK_TYPE.valueOf(req.ack());
 
         playerData.setAckState(ack);
+        gameDataRepository.savePlayer(playerData);
     }
 }

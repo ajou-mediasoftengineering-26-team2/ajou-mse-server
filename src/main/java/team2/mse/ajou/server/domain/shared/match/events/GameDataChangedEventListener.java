@@ -22,7 +22,7 @@ public class GameDataChangedEventListener {
 
     // @EventListener 대신 @TransactionalEventListener을 써서 DB에 결과가 실제로 적용된 이후에 실행되도록 해봅시다...
     @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
     public void handleMatchDataChanged(MatchDataChangedEvent event) {
         // System.out.println("handleMatchDataChanged? -> " + event.matchId());
         // System.out.println("handleMatchDataChanged!!!");
@@ -30,7 +30,7 @@ public class GameDataChangedEventListener {
     }
 
     @Async
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
     public void handlePlayerDataChanged(PlayerDataChangedEvent event) {
         // System.out.println("handlePlayerDataChanged? -> " + event.playerId());
         // System.out.println("handlePlayerDataChanged!!!");

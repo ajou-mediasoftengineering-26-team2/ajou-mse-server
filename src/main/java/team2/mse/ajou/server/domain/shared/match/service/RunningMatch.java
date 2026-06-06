@@ -1,19 +1,19 @@
 package team2.mse.ajou.server.domain.shared.match.service;
 
+import lombok.Getter;
 import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.states.MatchStateLogic;
+import team2.mse.ajou.server.domain.shared.observer.FlowMappedObservable;
 import team2.mse.ajou.server.domain.shared.observer.Observable;
 import team2.mse.ajou.server.domain.shared.observer.Observer;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
+import java.util.stream.Collectors;
 
 /**
  * 매치별 내부 데이터 (게임과 연관없는 데이터) 관리용 클래스.
@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledFuture;
  * @author Ahn Yubin / 202021088
  */
 public class RunningMatch {
+    @Getter
     private UUID matchId;
     private ScheduledFuture<?> timerHandle;
 
@@ -154,7 +155,7 @@ public class RunningMatch {
     }
 
     // Observer 설정 함수들
-    protected void subscribeToMatchDataUpdates(UUID matchId, Observable<MatchData> observable) {
+    protected void subscribeToMatchDataUpdates(UUID matchId, FlowMappedObservable<MatchData, MatchData> observable) {
         matchDataObservers.putIfAbsent(matchId, matchData -> {
             onMatchDataUpdate(matchId, matchData);
         });
@@ -167,6 +168,37 @@ public class RunningMatch {
 
         observable.addObserver(observer);
         matchDataObservableCurrent.put(matchId, observable);
+
+        // 기타 사이드이펙트들
+        var matchStateObserver = new FlowMappedObservable<MatchData, MATCH_STATE>(MATCH_STATE.LOBBY_WAITING, true, true, true, value -> {
+            if (value == null) {
+                return null;
+            }
+
+            return value.getState();
+        });
+        var matchPlayerAckObserver = new FlowMappedObservable<MatchData, List<ACK_TYPE>>(List.of(), true, true, true, value -> {
+            if (value == null) {
+                return null;
+            }
+
+            return value.getPlayers().stream().map(PlayerData::getAckState).toList();
+        });
+        var matchPlayerListObserver = new FlowMappedObservable<MatchData, List<PlayerData>>(List.of(), true, true, true, value -> {
+            if (value == null) {
+                return null;
+            }
+
+            return value.getPlayers();
+        });
+
+        matchStateObserver.addObserver(this::onMatchStateSwitch);
+        matchPlayerAckObserver.addObserver(this::onMatchPlayerAckStateUpdate);
+        matchPlayerListObserver.addObserver(this::onMatchPlayerListUpdate);
+
+        observable.addDownstreamObservable(matchStateObserver);
+        observable.addDownstreamObservable(matchPlayerAckObserver);
+        observable.addDownstreamObservable(matchPlayerListObserver);
     }
 
     protected void unsubscribeToMatchDataUpdates(UUID matchId) {
@@ -362,25 +394,33 @@ public class RunningMatch {
         }
     }
 
-    private void onMatchDataUpdate(UUID matchId, MatchData matchData) {
-        System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s\n", matchId, matchData);
+    private void onMatchPlayerListUpdate(List<PlayerData> players) {
+        System.out.printf("[MATCH] RunningMatch::onMatchPlayerListUpdate(MATCH: %s) | %s\n", matchId, players.stream().map(player -> player.getId().toString()).collect(Collectors.joining(", ", "[", "]")));
 
         if (currentStateLogic == null) {
-            System.err.printf("\t[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | STATE IS NULL!\n", matchId);
+            System.err.printf("\t[MATCH] RunningMatch::onMatchPlayerListUpdate(MATCH: %s) | STATE IS NULL!\n", matchId);
             return;
         }
 
-        // currentStateLogic.onMatchData(this, playerId);
+        currentStateLogic.onMatchPlayerListUpdate(this, players);
+    }
+
+    private void onMatchPlayerAckStateUpdate(List<ACK_TYPE> ackState) {
+        System.out.printf("[MATCH] RunningMatch::onMatchPlayerAckStateUpdate(MATCH: %s) | %s\n", matchId, ackState);
+
+        if (currentStateLogic == null) {
+            System.err.printf("\t[MATCH] RunningMatch::onMatchPlayerAckStateUpdate(MATCH: %s) | STATE IS NULL!\n", matchId);
+            return;
+        }
+
+        currentStateLogic.onMatchPlayerAckStateUpdate(this, ackState);
+    }
+
+    private void onMatchDataUpdate(UUID matchId, MatchData matchData) {
+        System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s\n", matchId, matchData != null ? matchData.getState() : matchData);
     }
 
     private void onPlayerDataUpdate(UUID playerId, PlayerData playerData) {
         System.out.printf("[PLR] RunningMatch::onPlayerDataUpdate(MATCH: %s, PLR: %s) | %s\n", matchId, playerId, playerData);
-
-        if (currentStateLogic == null) {
-            System.err.printf("\t[PLR] RunningMatch::onPlayerDataUpdate(MATCH: %s, PLR: %s) | STATE IS NULL!\n", matchId, playerId);
-            return;
-        }
-
-        // currentStateLogic.onMatchData(this, playerId);
     }
 }

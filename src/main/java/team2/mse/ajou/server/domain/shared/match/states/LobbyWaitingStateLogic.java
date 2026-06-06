@@ -1,11 +1,12 @@
 package team2.mse.ajou.server.domain.shared.match.states;
 
-import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * 로비: 대기중 상태.
@@ -15,40 +16,17 @@ import java.util.UUID;
  */
 public class LobbyWaitingStateLogic implements MatchStateLogic {
     @Override
-    public String getSerializedName() {
-        return "LOBBY_WAITING";
-    }
-
-    @Override
-    public boolean getIsIngame() {
-        return false;
-    }
-
-    @Override
     public void onPlayerJoin(RunningMatch context, UUID playerId) {
-        System.out.printf("\t[STATE] LobbyWaitingStateLogic::onPlayerJoin(%s)\n", playerId);
+        // System.out.printf("\t[STATE] LobbyWaitingStateLogic::onPlayerJoin(%s)\n", playerId);
 
         context.getPlayerData(playerId).ifPresent(playerData -> {
             System.out.printf("\t\t* Player name: %s\n", playerData.getUsername());
-
-            var matchData = context.getMatchData(playerData.getJoinedMatchId()).orElse(null);
-
-            if (matchData == null) {
-                return;
-            }
-
-            var players = matchData.getPlayers();
-
-            if (players.size() >= 2) {
-                System.out.printf("\t[STATE] LobbyWaitingStateLogic::onPlayerJoin | START GAME WITH PLAYERS: %s\n", playerId, players);
-                matchData.setState(MATCH_STATE.LOBBY_START_COUNTDOWN);
-            }
         });
     }
 
     @Override
     public void onPlayerLeave(RunningMatch context, UUID playerId) {
-        System.out.printf("\t[STATE] LobbyWaitingStateLogic::onPlayerLeave(%s)\n", playerId);
+        // System.out.printf("\t[STATE] LobbyWaitingStateLogic::onPlayerLeave(%s)\n", playerId);
 
         context.getPlayerData(playerId).ifPresent(playerData -> {
             System.out.printf("\t\t* Player name: %s\n", playerData.getUsername());
@@ -56,18 +34,22 @@ public class LobbyWaitingStateLogic implements MatchStateLogic {
     }
 
     @Override
-    public void onPlayerAck(RunningMatch context, UUID playerId, ACK_TYPE type) {
-        System.out.printf("\t[STATE] LobbyWaitingStateLogic::onPlayerAck(PLR: %s, TYPE: %s)\n", playerId, type);
-    }
+    public void onMatchPlayerListUpdate(RunningMatch context, List<PlayerData> players) {
+        var playersFormatted = players.stream().map(player -> player.getId().toString()).collect(Collectors.joining(", ", "[", "]"));
 
-    @Override
-    public void onEnter(RunningMatch context) {
-        System.out.println("\t[STATE] LobbyWaitingStateLogic::onEnter()");
-    }
+        System.out.printf("\t[STATE] LobbyWaitingStateLogic::onMatchPlayerListUpdate(%s)\n", playersFormatted);
 
-    @Override
-    public void onExit(RunningMatch context) {
-        System.out.println("\t[STATE] LobbyWaitingStateLogic::onExit()");
+        if (players.size() >= 2) {
+            var matchData = context.getMatchData(context.getMatchId()).orElse(null);
+
+            if (matchData == null) {
+                return;
+            }
+
+            System.out.printf("\t[STATE] LobbyWaitingStateLogic::onPlayerJoin | START GAME WITH PLAYERS: %s\n", playersFormatted);
+            matchData.setState(MATCH_STATE.LOBBY_START_COUNTDOWN);
+            context.commitMatchData(matchData);
+        }
     }
 }
 

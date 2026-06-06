@@ -8,7 +8,6 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 게임 데이터 총괄하는 리포지토리.
@@ -20,27 +19,23 @@ import java.util.concurrent.locks.ReentrantLock;
 @Repository
 public class GameMatchDataRepository implements GameDataRepository {
     // 리포지토리들
-    private final MatchDataJpaRepository matchDataJPARepository;
+    private final MatchDataJpaRepository matchDataJpaRepository;
     private final PlayerDataJpaRepository playerDataJpaRepository;
     private final FrdbRepository frdbRepository;
 
-    private ReentrantLock mutex;
-
     public GameMatchDataRepository(
-            MatchDataJpaRepository matchDataJPARepository,
+            MatchDataJpaRepository matchDataJpaRepository,
             PlayerDataJpaRepository playerDataJpaRepository,
             FrdbRepository frdbRepository
     ) {
-        this.matchDataJPARepository = matchDataJPARepository;
+        this.matchDataJpaRepository = matchDataJpaRepository;
         this.playerDataJpaRepository = playerDataJpaRepository;
         this.frdbRepository = frdbRepository;
-
-        this.mutex = new ReentrantLock();
     }
 
     @Override
     public Optional<MatchData> findMatchById(UUID matchId) {
-        return matchDataJPARepository.findById(matchId);
+        return matchDataJpaRepository.findById(matchId);
     }
 
     @Override
@@ -50,12 +45,12 @@ public class GameMatchDataRepository implements GameDataRepository {
             return Optional.empty();
         }
 
-        return matchDataJPARepository.findById(playerData.getJoinedMatchId());
+        return matchDataJpaRepository.findById(playerData.getJoinedMatchId());
     }
 
     @Override
     public List<MatchData> findAllMatches() {
-        return matchDataJPARepository.findAll();
+        return matchDataJpaRepository.findAll();
     }
 
     @Override
@@ -75,17 +70,29 @@ public class GameMatchDataRepository implements GameDataRepository {
 
     @Override
     public MatchData saveMatch(MatchData data) {
-        return matchDataJPARepository.save(data);
+        data.updateLastUpdated();
+        return matchDataJpaRepository.save(data);
     }
 
     @Override
     public PlayerData savePlayer(PlayerData data) {
-        return playerDataJpaRepository.save(data);
+        PlayerData playerData = playerDataJpaRepository.save(data);
+        UUID joinedMatchId = playerData.getJoinedMatchId();
+
+        // 매치 DB도 갱신
+        if (joinedMatchId != null) {
+            matchDataJpaRepository.findById(joinedMatchId).ifPresent(matchData -> {
+                matchData.updateLastUpdated();
+                matchDataJpaRepository.save(matchData);
+            });
+        }
+
+        return playerData;
     }
 
     @Override
     public void deleteMatchById(UUID matchId) {
-        matchDataJPARepository.deleteById(matchId);
+        matchDataJpaRepository.deleteById(matchId);
     }
 
     @Override

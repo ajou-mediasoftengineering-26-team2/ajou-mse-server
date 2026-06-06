@@ -75,7 +75,7 @@ public class FlowMappedObservable<T, R> implements Observer<T>, Observable<R> {
         previousValue = value;
         value = newValue;
 
-        if (!isIgnoreDuplicateValue || !Objects.equals(previousValue, newValue)) {
+        if (!isIgnoreDuplicateValue || !Objects.equals(newValue, previousValue)) {
             notifyAllObservers();
             notifyAllDownstreamObservables();
         }

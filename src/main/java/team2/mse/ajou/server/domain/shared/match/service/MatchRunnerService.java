@@ -7,7 +7,6 @@ import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
-import team2.mse.ajou.server.domain.shared.observer.FlowMappedObservable;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
 import java.util.HashMap;
@@ -115,6 +114,8 @@ public class MatchRunnerService {
         // Add player to the list of joined player for match, and set joined match for player.
         playerData.setJoinedMatchId(matchId);
         matchData.updatePlayer(playerData);
+        // (뭔가 바뀌는 값이 있어야 콜백이 도므로 나중에 리셋해줄 attackingPlayer 인덱스값을 임의로 설정합니다. 이거 지우면 큰일나요!!)
+        matchData.setAttackerPlayerIdx(matchData.getPlayers().size());
 
         System.out.printf("[MATCH] MatchRunnerService::joinPlayerToMatch | PLAYER (%s) JOINED! (%s) -> NEW PLAYERS = [%s]\n",
                 playerId,
@@ -127,10 +128,7 @@ public class MatchRunnerService {
         // 플레이어 입장 이벤트 발행 & ACK 등 플레이어 단위 옵저버 추가 연결
         // Send match join event & Connect observers.
         gameEventsRepository.sendMatchPlayerJoinEvent(matchId, playerId);
-
-        data.subscribeToPlayerAckEvents(playerId, gameEventsRepository.getPlayerAckEventsObservable(playerId));
         data.subscribeToPlayerDataUpdates(playerId, gameEventsRepository.getPlayerDataObservable(playerId));
-        // onPlayerJoin(newMatchData);
 
         // 내부 DB 갱신
         // Update internal DB & Firebase RDB to reflect this change.
@@ -166,12 +164,13 @@ public class MatchRunnerService {
         playerData.setReady(false);
 
         matchData.removePlayer(playerId);
+        // (뭔가 바뀌는 값이 있어야 콜백이 도므로 나중에 리셋해줄 attackingPlayer 인덱스값을 임의로 설정합니다. 이거 지우면 큰일나요!!)
+        matchData.setAttackerPlayerIdx(matchData.getPlayers().size());
 
         // 플레이어 퇴장 이벤트 발행
         // Handle match leave event.
         gameEventsRepository.sendMatchPlayerLeaveEvent(matchId, playerId);
-        data.unsubscribeToPlayerAckEvents(playerId);
-        // onPlayerLeave(newMatchData);
+        data.unsubscribeToPlayerDataUpdates(playerId);
 
         // 내부 DB 갱신
         // Update internal DB & Firebase RDB to reflect this change.
@@ -211,25 +210,7 @@ public class MatchRunnerService {
         // 플레이어 입장 등 매치 단위 옵저버 연결
         // Connect observers.
         data.connectMatch(matchId);
-        // data.subscribeToMatchPlayerJoinEvents(gameEventsRepository.getMatchPlayerJoinEventsObservable(matchId));
-        // data.subscribeToMatchPlayerLeaveEvents(gameEventsRepository.getMatchPlayerLeaveEventsObservable(matchId));
-        // data.subscribeToMatchStateSwitchEvents(gameEventsRepository.getMatchStateSwitchEventsObservable(matchId));
-        var matchDataObservable = gameEventsRepository.getMatchDataObservable(matchId);
-        var matchStateSwitch = new FlowMappedObservable<MatchData, MATCH_STATE>(MATCH_STATE.LOBBY_WAITING, true, true, true, value -> {
-            if (value == null) {
-                return null;
-            }
-
-            System.out.println("SWITCH CHECK");
-            return value.getState();
-        });
-
-        matchDataObservable.addDownstreamObservable(matchStateSwitch);
-
-        data.subscribeToMatchDataUpdates(matchId, matchDataObservable);
-        data.subscribeToMatchPlayerJoinEvents(gameEventsRepository.getMatchPlayerJoinEventsObservable(matchId));
-        data.subscribeToMatchPlayerLeaveEvents(gameEventsRepository.getMatchPlayerLeaveEventsObservable(matchId));
-        data.subscribeToMatchStateSwitchEvents(matchStateSwitch);
+        data.subscribeToMatchDataUpdates(matchId, gameEventsRepository.getMatchDataObservable(matchId));
 
         allRunningMatches.put(matchId, data);
     }
