@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
@@ -27,6 +28,8 @@ public class DamageData{
     private int coin = 2;
     private int recoveredHp = 0;
     private ATTACK_TYPE attackType = ATTACK_TYPE.NONE;
+
+    private HAND_ELEMENTAL handElemental = HAND_ELEMENTAL.NONE;
 
     /**
      * Used Item
@@ -63,6 +66,8 @@ public class DamageData{
     @Enumerated(EnumType.STRING)
     @Column(name = "status_effect")
     private List<STATUS_EFFECT> statusEffects = new ArrayList<>();
+
+
 
     private boolean ko = false;
     private int damageIndex = 0;

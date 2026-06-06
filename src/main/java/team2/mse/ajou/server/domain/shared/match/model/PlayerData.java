@@ -41,6 +41,10 @@ public class PlayerData {
      */
     private int wins = 0;
     /**
+     * maxHp
+     */
+    private int maxHp = 10;
+    /**
      * Health.
      */
     private int hp = 10;
@@ -104,4 +108,6 @@ public class PlayerData {
     private int upgradeCost;
 
     private List<STATUS_EFFECT> statusEffectList = new ArrayList<>();
+
+    private int dodgeCount = 0; // 라운드 시작시에 0으로 초기화해야함
 }
