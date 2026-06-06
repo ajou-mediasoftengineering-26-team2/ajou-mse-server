@@ -110,4 +110,32 @@ public class PlayerData {
     private List<STATUS_EFFECT> statusEffectList = new ArrayList<>();
 
     private int dodgeCount = 0; // 라운드 시작시에 0으로 초기화해야함
+
+    public List<PERK> getPerkChoiceList() {
+        if(perkChoiceList == null) {
+            return perkChoiceList = new ArrayList<>();
+        }
+        return perkChoiceList;
+    }
+
+    public List<PERK> getPerkList() {
+        if(perkList == null) {
+            return perkList = new ArrayList<>();
+        }
+        return perkList;
+    }
+
+    public List<ITEM_CODE> getItemList() {
+        if(itemList == null) {
+            return itemList = new ArrayList<>();
+        }
+        return itemList;
+    }
+
+    public List<ITEM_CODE> getReceivedItemList() {
+        if(receivedItemList == null) {
+            return receivedItemList = new ArrayList<>();
+        }
+        return receivedItemList;
+    }
 }

@@ -112,6 +112,8 @@ public class RoundService implements IRoundService {
                     Collections.shuffle(availablePerks);
                     player.setPerkChoiceCurrent(null);
                     player.setPerkChoiceList(availablePerks.subList(0, returnSz));
+
+                    player.setDodgeCount(0);
                 }
 
                 // (DB 추가 갱신)
