@@ -70,12 +70,17 @@ public class DamageCalcService implements IDamageCalcService {
             DamageData damageData = new DamageData();
             damageData.setAttackType(handAttackType);
             damageData.setDamageIndex(i);
+            if(i == 0) damageData.setCoin(2);
 
             matchData.addDamageData(damageData);
 
             // Elemental 계산
             attackerElemental.isAvailable(matchData, attackerIndex);
             defenderElemental.isAvailable(matchData, defenderIndex);
+
+            if(damageData.getAttackType() == ATTACK_TYPE.MISS){
+                continue;
+            }
 
             // Perk 계산
             for(IPerk perk : attackerPerkList){
@@ -124,6 +129,9 @@ public class DamageCalcService implements IDamageCalcService {
             for(IConsumableItem item : defenderItemLIst){
                 item.useItemIfPossible(matchData, defenderIndex);
             }
+
+            damageData.setDamage(Math.max(0, damageData.getDamage()));
+
             defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
         }
 

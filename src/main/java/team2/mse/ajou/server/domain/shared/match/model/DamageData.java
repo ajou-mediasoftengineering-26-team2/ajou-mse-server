@@ -25,7 +25,7 @@ public class DamageData{
     private Long id;
 
     private int damage = 1;
-    private int coin = 2;
+    private int coin = 0;
     private int recoveredHp = 0;
     private ATTACK_TYPE attackType = ATTACK_TYPE.NONE;
 

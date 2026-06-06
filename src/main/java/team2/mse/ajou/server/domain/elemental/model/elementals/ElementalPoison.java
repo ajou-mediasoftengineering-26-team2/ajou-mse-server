@@ -7,24 +7,17 @@ import team2.mse.ajou.server.domain.shared.match.model.DamageData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
-import static java.nio.file.Files.getOwner;
-
 public class ElementalPoison extends Elemental {
-    private final int[] maxHpReduceByLevel = {0, 5, 6, 8, 10, 12};
+    private final int[] damageReduceByLevel = {0, 1, 2, 3, 4, 5};
 
     public ElementalPoison() {
         super(HAND_ELEMENTAL.POISON);
     }
 
-
     // 이 친구 구현하는게 좀 애매하네요
     @Override
     public void useElementalIfPossible(MatchData matchData, int ownerPlayerIdx) {
         PlayerData owner = getOwner(matchData, ownerPlayerIdx);
-
-        if (isRoundStart(matchData) && hasElemental(owner)) {
-            return;
-        }
 
         if (!isAvailable(matchData, ownerPlayerIdx)) {
             return;
@@ -32,13 +25,27 @@ public class ElementalPoison extends Elemental {
 
         PlayerData opponent = getOpponent(matchData, ownerPlayerIdx);
         DamageData damageData = getCurrentDamageData(matchData);
-        int reduceValue = maxHpReduceByLevel[getLevel(owner)];
+        int level = getLevel(owner);
 
-        opponent.setMaxHp(Math.max(1, opponent.getMaxHp() - reduceValue));
-        opponent.setHp(Math.min(opponent.getHp(), opponent.getMaxHp()));
+        // 내가 공격했을 때
+        if(isOwnerAttacker(matchData, ownerPlayerIdx)) {
+            addUsedElemental(damageData);
+            if(opponent.getStatusEffectList() != null
+                    && !opponent.getStatusEffectList().contains(STATUS_EFFECT.POISON))
+            {
+                opponent.getStatusEffectList().add(STATUS_EFFECT.POISON);
+            }
+            return;
+        }
 
-        damageData.addStatusEffect(STATUS_EFFECT.POISON);
-        addUsedElemental(damageData);
+        // 내가 맞았는데 상대가 Poison 상태일때
+        if(isOwnerDefender(matchData, ownerPlayerIdx)
+                && opponent.getStatusEffectList() != null
+                && opponent.getStatusEffectList().contains(STATUS_EFFECT.POISON))
+        {
+            // 일단 여기서 0로 막지 않음. elemental은 perk, item보다 먼저 계산되기 때문에 perk, item에서 lower bound가 걸림
+            damageData.setDamage(damageData.getDamage()-damageReduceByLevel[level]);
+        }
     }
 
     @Override
@@ -49,11 +56,10 @@ public class ElementalPoison extends Elemental {
 
         return isInTurn(matchData)
                 && isAttackSuccess(matchData)
-                && isOwnerAttacker(matchData, ownerPlayerIdx)
+                && isOwnerDefender(matchData, ownerPlayerIdx)
                 && hasElemental(owner)
                 && opponent != null
                 && damageData != null
-                && isFirstDamage(damageData)
-                && opponent.getStatusEffectList() != null && !opponent.getStatusEffectList().contains(STATUS_EFFECT.POISON);
+                && isFirstDamage(damageData);
     }
 }

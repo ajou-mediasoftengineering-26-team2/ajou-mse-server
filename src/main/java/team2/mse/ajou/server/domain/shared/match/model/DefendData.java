@@ -40,7 +40,7 @@ public class DefendData {
     public void initDefendData()
     {
         recoveredHp = 0;
-        coin = 0;
+        coin = 5;
 
         if(usedPerks == null) usedPerks = new ArrayList<>();
         else usedPerks.clear();

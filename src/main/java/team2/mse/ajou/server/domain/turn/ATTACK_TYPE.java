@@ -9,5 +9,4 @@ public enum ATTACK_TYPE {
     MISS,
 
     BURNING,
-    POISON,
 }

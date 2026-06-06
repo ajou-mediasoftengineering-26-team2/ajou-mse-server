@@ -8,9 +8,12 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
 
+/**
+ * 불 속성 - 공격시 Burning 상태이상. 턴이 종료될 때 Burning상태라면 데미지를 입음
+ * @author Junseo Hwang 202322128
+ */
 public class ElementalFire extends Elemental {
-    private final int[] burnDamageByLevel = {0, 2, 2, 3, 3, 4};
-    private final int[] burnTurnByLevel = {0, 2, 3, 3, 4, 4};
+    private final int[] burnDamageByLevel = {0, 1, 2, 3, 4, 5};
 
     public ElementalFire() {
         super(HAND_ELEMENTAL.FIRE);

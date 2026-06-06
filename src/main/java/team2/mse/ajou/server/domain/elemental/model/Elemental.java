@@ -22,10 +22,15 @@ public abstract class Elemental implements IElemental {
         return false;
     }
 
+    /**
+     * 두 명의 플레이어가 모두 있는지
+     * @param matchData 현재 매치
+     * @return 모두 있다면 true
+     */
     protected boolean hasTwoPlayers(MatchData matchData) {
         return matchData != null && matchData.getPlayers() != null && matchData.getPlayers().size() >= 2;
     }
-
+    
     protected boolean isValidOwnerIdx(MatchData matchData, int ownerPlayerIdx) {
         return hasTwoPlayers(matchData)
                 && ownerPlayerIdx >= 0
