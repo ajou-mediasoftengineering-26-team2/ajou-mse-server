@@ -1,12 +1,15 @@
 package team2.mse.ajou.server.domain.turn.service;
 
 import org.springframework.stereotype.Service;
+import team2.mse.ajou.server.domain.elemental.model.IElemental;
+import team2.mse.ajou.server.domain.elemental.service.ElementalFactory;
 import team2.mse.ajou.server.domain.item.model.IConsumableItem;
 import team2.mse.ajou.server.domain.item.model.Items.ItemResistance;
 import team2.mse.ajou.server.domain.item.service.ItemFactory;
 import team2.mse.ajou.server.domain.perk.model.IPerk;
 import team2.mse.ajou.server.domain.perk.service.PerkFactory;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
+import team2.mse.ajou.server.domain.shared.match.STATUS_EFFECT;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
@@ -22,6 +25,12 @@ public class DamageCalcService implements IDamageCalcService {
     public void calcDamageList(MatchData matchData) {
         PlayerData attacker = matchData.getPlayers().get(matchData.getAttackerPlayerIdx());
         PlayerData defender = matchData.getPlayers().get(matchData.getAttackerPlayerIdx()^1);
+
+        int attackerIndex = matchData.getAttackerPlayerIdx();
+        int defenderIndex = matchData.getAttackerPlayerIdx()^1;
+
+        IElemental attackerElemental = ElementalFactory.createElemental(attacker.getHandElemental());
+        IElemental defenderElemental = ElementalFactory.createElemental(defender.getHandElemental());
 
         List<IPerk> attackerPerkList = PerkFactory.createPerkList(attacker.getPerkList());
         List<IPerk> defenderPerkList = PerkFactory.createPerkList(defender.getPerkList());
@@ -63,6 +72,10 @@ public class DamageCalcService implements IDamageCalcService {
 
             matchData.addDamageData(damageData);
 
+            // Elemental 계산
+            attackerElemental.isAvailable(matchData, attackerIndex);
+            defenderElemental.isAvailable(matchData, defenderIndex);
+
             // Perk 계산
             for(IPerk perk : attackerPerkList){
                 perk.usePerkIfPossible(matchData);
@@ -73,20 +86,43 @@ public class DamageCalcService implements IDamageCalcService {
 
             // Item 계산
             for(IConsumableItem item : attackerItemList){
-                item.useItemIfPossible(matchData, matchData.getAttackerPlayerIdx());
+                item.useItemIfPossible(matchData, attackerIndex);
             }
             for(IConsumableItem item : defenderItemLIst){
-                item.useItemIfPossible(matchData, matchData.getAttackerPlayerIdx()^1);
+                item.useItemIfPossible(matchData, defenderIndex);
             }
 
-//            // 사용한 Item 제거
-//            for(ITEM_CODE usedItem : attacker.getUsedItemList()) {
-//                attacker.getItemList().remove(usedItem);
-//            }
-//            for(ITEM_CODE usedItem : defender.getUsedItemList()) {
-//                defender.getItemList().remove(usedItem);
-//            }
+            defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
+        }
 
+        // Burning 상태이상시 BurnDamage
+        if(defender.getStatusEffectList().contains(STATUS_EFFECT.BURNING)){
+            DamageData damageData = new DamageData();
+            damageData.setAttackType(ATTACK_TYPE.BURNING);
+            damageData.setDamageIndex(attackCnt);
+            damageData.setDamage(0);
+
+            matchData.addDamageData(damageData);
+
+            // Elemental 계산
+            attackerElemental.isAvailable(matchData, attackerIndex);
+            defenderElemental.isAvailable(matchData, defenderIndex);
+
+            // Perk 계산
+            for(IPerk perk : attackerPerkList){
+                perk.usePerkIfPossible(matchData);
+            }
+            for(IPerk perk : defenderPerkList){
+                perk.usePerkIfPossible(matchData);
+            }
+
+            // Item 계산
+            for(IConsumableItem item : attackerItemList){
+                item.useItemIfPossible(matchData, attackerIndex);
+            }
+            for(IConsumableItem item : defenderItemLIst){
+                item.useItemIfPossible(matchData, defenderIndex);
+            }
             defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
         }
 
