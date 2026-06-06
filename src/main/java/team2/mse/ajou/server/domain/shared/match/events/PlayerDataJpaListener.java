@@ -1,9 +1,9 @@
-package team2.mse.ajou.server.domain.shared.match.modellisteners;
+package team2.mse.ajou.server.domain.shared.match.events;
 
 import jakarta.persistence.PostUpdate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
 
 /**
  * 내부 DB에서 플레이어 Entity의 값이 바뀌면 (= DB상 값이 바뀌어 save까지 되는 시점) 호출되는 콜백을 처리합니다.
@@ -13,14 +13,14 @@ import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepos
  */
 @Component
 public class PlayerDataJpaListener {
-    private final GameObservablesRepository eventsRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-    public PlayerDataJpaListener(GameObservablesRepository eventsRepository) {
-        this.eventsRepository = eventsRepository;
+    public PlayerDataJpaListener(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     @PostUpdate
     public void onMatchDataUpdate(PlayerData playerData) {
-        eventsRepository.sendPlayerAckEvent(playerData.getId(), playerData.getAckState());
+        applicationEventPublisher.publishEvent(new PlayerDataChangedEvent(playerData.getId()));
     }
 }

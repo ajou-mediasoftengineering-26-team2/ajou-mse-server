@@ -8,6 +8,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 게임 데이터 총괄하는 리포지토리.
@@ -23,6 +24,8 @@ public class GameMatchDataRepository implements GameDataRepository {
     private final PlayerDataJpaRepository playerDataJpaRepository;
     private final FrdbRepository frdbRepository;
 
+    private ReentrantLock mutex;
+
     public GameMatchDataRepository(
             MatchDataJpaRepository matchDataJPARepository,
             PlayerDataJpaRepository playerDataJpaRepository,
@@ -31,6 +34,8 @@ public class GameMatchDataRepository implements GameDataRepository {
         this.matchDataJPARepository = matchDataJPARepository;
         this.playerDataJpaRepository = playerDataJpaRepository;
         this.frdbRepository = frdbRepository;
+
+        this.mutex = new ReentrantLock();
     }
 
     @Override

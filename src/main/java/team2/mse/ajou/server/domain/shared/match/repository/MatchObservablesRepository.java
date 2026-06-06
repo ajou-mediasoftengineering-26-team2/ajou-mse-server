@@ -15,6 +15,8 @@ public interface MatchObservablesRepository {
 
     Observable<MATCH_STATE> getMatchStateSwitchEventsObservable(UUID matchId);
 
+    void sendMatchDataUpdate(MatchData matchData);
+
     void sendMatchPlayerJoinEvent(UUID matchId, UUID playerId);
 
     void sendMatchPlayerLeaveEvent(UUID matchId, UUID playerId);

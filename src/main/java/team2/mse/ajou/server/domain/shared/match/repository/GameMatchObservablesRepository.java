@@ -4,6 +4,7 @@ import org.springframework.stereotype.Repository;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.observer.DefaultObservable;
 import team2.mse.ajou.server.domain.shared.observer.Observable;
 
@@ -19,6 +20,7 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
 
     private final Map<UUID, Observable<ACK_TYPE>> playerAckEventObservables;
 
+    private final Map<UUID, Observable<PlayerData>> playerDataObservables;
     private final Map<UUID, Observable<MatchData>> matchDataObservables;
 
     public GameMatchObservablesRepository() {
@@ -28,6 +30,7 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
 
         this.playerAckEventObservables = new HashMap<>();
 
+        this.playerDataObservables = new HashMap<>();
         this.matchDataObservables = new HashMap<>();
     }
 
@@ -52,6 +55,13 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
     }
 
     @Override
+    public void sendMatchDataUpdate(MatchData matchData) {
+        var copyMatchData = new MatchData(matchData);
+        var observable = fetchOrCreateMatchDataObservable(matchData.getId());
+        observable.updateValue(copyMatchData);
+    }
+
+    @Override
     public void sendMatchPlayerJoinEvent(UUID matchId, UUID playerId) {
         var observable = fetchOrCreateMatchPlayerJoinEventObservable(matchId);
         observable.updateValue(playerId);
@@ -70,8 +80,20 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
     }
 
     @Override
+    public Observable<PlayerData> getPlayerDataObservable(UUID playerId) {
+        return fetchOrCreatePlayerDataObservable(playerId);
+    }
+
+    @Override
     public Observable<ACK_TYPE> getPlayerAckEventsObservable(UUID playerId) {
         return fetchOrCreatePlayerAckEventObservable(playerId);
+    }
+
+    @Override
+    public void sendPlayerDataUpdate(PlayerData playerData) {
+        var copyPlayerData = new PlayerData(playerData);
+        var observable = fetchOrCreatePlayerDataObservable(playerData.getId());
+        observable.updateValue(copyPlayerData);
     }
 
     @Override
@@ -81,7 +103,11 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
     }
 
     private Observable<MatchData> fetchOrCreateMatchDataObservable(UUID matchId) {
-        return fetchOrCreateObservable(matchDataObservables, matchId, null, true, false);
+        return fetchOrCreateObservable(matchDataObservables, matchId, null, true, true);
+    }
+
+    private Observable<PlayerData> fetchOrCreatePlayerDataObservable(UUID playerId) {
+        return fetchOrCreateObservable(playerDataObservables, playerId, null, true, true);
     }
 
     private Observable<UUID> fetchOrCreateMatchPlayerJoinEventObservable(UUID matchId) {

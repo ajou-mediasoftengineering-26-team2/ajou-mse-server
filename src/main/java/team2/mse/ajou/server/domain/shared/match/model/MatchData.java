@@ -2,10 +2,10 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.modellisteners.MatchDataJpaListener;
-import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
+import team2.mse.ajou.server.domain.shared.match.events.MatchDataJpaListener;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -19,6 +19,7 @@ import java.util.UUID;
  */
 @Entity
 @EntityListeners({MatchDataJpaListener.class})
+@NoArgsConstructor
 @Getter
 @Setter
 public class MatchData {
@@ -153,9 +154,26 @@ public class MatchData {
 
     @Transient
     public void clearDamageDataList() {
-        if(damageDataList == null) {
+        if (damageDataList == null) {
             damageDataList = new ArrayList<>();
         }
         damageDataList.clear();
+    }
+
+    public MatchData(MatchData from) {
+        this.id = from.id;
+        this.station = from.station;
+        this.countdownStartTime = from.countdownStartTime;
+        this.countdownSec = from.countdownSec;
+        this.state = from.state;
+        this.winnerPlayerIdx = from.winnerPlayerIdx;
+        this.currentTurn = from.currentTurn;
+        this.currentRound = from.currentRound;
+        this.currentPlayerIdx = from.currentPlayerIdx;
+        this.attackerPlayerIdx = from.attackerPlayerIdx;
+        this.isAttackSuccess = from.isAttackSuccess;
+        this.ko = from.ko;
+        this.players = new ArrayList<>(from.players.stream().map(PlayerData::new).toList());
+        this.damageDataList = new ArrayList<>(from.damageDataList.stream().map(DamageData::new).toList());
     }
 }

@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
-import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.STATUS_EFFECT;
+import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class DamageData{
+public class DamageData {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -67,12 +67,27 @@ public class DamageData{
     private boolean ko = false;
     private int damageIndex = 0;
 
+    public DamageData(DamageData damageData) {
+        this.id = damageData.id;
+        this.damage = damageData.damage;
+        this.coin = damageData.coin;
+        this.recoveredHp = damageData.recoveredHp;
+        this.attackType = damageData.attackType;
+        this.usedItems = new ArrayList<>(damageData.usedItems);
+        this.usedPerks = new ArrayList<>(damageData.usedPerks);
+        this.statusEffects = new ArrayList<>(damageData.statusEffects);
+        this.ko = damageData.ko;
+        this.damageIndex = damageData.damageIndex;
+    }
+
     public void addDamage(int damage) {
         this.damage += damage;
     }
+
     public void addCoin(int coin) {
         this.coin += coin;
     }
+
     public void addRecoveredHp(int recoveredHp) {
         this.recoveredHp += recoveredHp;
     }

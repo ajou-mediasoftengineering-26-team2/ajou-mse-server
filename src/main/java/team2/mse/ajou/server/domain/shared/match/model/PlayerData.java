@@ -2,9 +2,10 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.*;
-import team2.mse.ajou.server.domain.shared.match.modellisteners.PlayerDataJpaListener;
+import team2.mse.ajou.server.domain.shared.match.events.PlayerDataJpaListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.UUID;
  */
 @Entity
 @EntityListeners({PlayerDataJpaListener.class})
+@NoArgsConstructor
 @Data
 public class PlayerData {
     @Id
@@ -105,4 +107,28 @@ public class PlayerData {
     private int upgradeCost;
 
     private List<STATUS_EFFECT> statusEffectList = new ArrayList<>();
+
+    public PlayerData(PlayerData from) {
+        this.id = from.id;
+        this.joinedMatchId = from.joinedMatchId;
+        this.username = from.username;
+        this.ackState = from.ackState;
+        this.wins = from.wins;
+        this.hp = from.hp;
+        this.isReady = from.isReady;
+        this.isAttacking = from.isAttacking;
+        this.isSelecting = from.isSelecting;
+        this.isFinalWinner = from.isFinalWinner;
+        this.choice = from.choice;
+        this.handElemental = from.handElemental;
+        this.perkList = new ArrayList<>(from.perkList);
+        this.perkChoiceList = new ArrayList<>(from.perkChoiceList);
+        this.perkChoiceCurrent = from.perkChoiceCurrent;
+        this.receivedItemList = new ArrayList<>(from.receivedItemList);
+        this.itemList = new ArrayList<>(from.itemList);
+        this.coin = from.coin;
+        this.elementalLevel = from.elementalLevel;
+        this.upgradeCost = from.upgradeCost;
+        this.statusEffectList = new ArrayList<>(from.statusEffectList);
+    }
 }

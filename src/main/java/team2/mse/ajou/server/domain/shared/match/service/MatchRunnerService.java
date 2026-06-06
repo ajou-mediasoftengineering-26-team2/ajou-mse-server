@@ -127,8 +127,8 @@ public class MatchRunnerService {
         // Send match join event & Connect observers.
         gameEventsRepository.sendMatchPlayerJoinEvent(matchId, playerId);
 
-        var playerAckEventObservable = gameEventsRepository.getPlayerAckEventsObservable(playerId);
-        data.subscribeToPlayerAckEvents(playerId, playerAckEventObservable);
+        data.subscribeToPlayerAckEvents(playerId, gameEventsRepository.getPlayerAckEventsObservable(playerId));
+        data.subscribeToPlayerDataUpdates(playerId, gameEventsRepository.getPlayerDataObservable(playerId));
         // onPlayerJoin(newMatchData);
 
         // 내부 DB 갱신
@@ -213,6 +213,7 @@ public class MatchRunnerService {
         data.subscribeToMatchPlayerJoinEvents(gameEventsRepository.getMatchPlayerJoinEventsObservable(matchId));
         data.subscribeToMatchPlayerLeaveEvents(gameEventsRepository.getMatchPlayerLeaveEventsObservable(matchId));
         data.subscribeToMatchStateSwitchEvents(gameEventsRepository.getMatchStateSwitchEventsObservable(matchId));
+        data.subscribeToMatchDataUpdates(matchId, gameEventsRepository.getMatchDataObservable(matchId));
 
         allRunningMatches.put(matchId, data);
     }

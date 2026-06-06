@@ -42,6 +42,12 @@ public class RunningMatch {
     private Map<UUID, Observable<ACK_TYPE>> playerAckObservableCurrent;
     private Map<UUID, Observer<ACK_TYPE>> playerAckObservers;
 
+    private Map<UUID, Observable<PlayerData>> playerDataObservableCurrent;
+    private Map<UUID, Observer<PlayerData>> playerDataObservers;
+
+    private Map<UUID, Observable<MatchData>> matchDataObservableCurrent;
+    private Map<UUID, Observer<MatchData>> matchDataObservers;
+
     public interface GameDataGetMethod<T> {
         Optional<T> getData(UUID id);
     }
@@ -69,8 +75,14 @@ public class RunningMatch {
         this.playerJoinObserver = this::onMatchPlayerJoin;
         this.playerLeaveObserver = this::onMatchPlayerLeave;
 
+        this.playerDataObservableCurrent = new HashMap<>();
+        this.playerDataObservers = new HashMap<>();
+
         this.playerAckObservableCurrent = new HashMap<>();
         this.playerAckObservers = new HashMap<>();
+
+        this.matchDataObservableCurrent = new HashMap<>();
+        this.matchDataObservers = new HashMap<>();
 
         this.currentState = null;
         this.currentStateLogic = null;
@@ -136,6 +148,68 @@ public class RunningMatch {
     }
 
     // Observer 설정 함수들
+    protected void subscribeToMatchDataUpdates(UUID matchId, Observable<MatchData> observable) {
+        matchDataObservers.putIfAbsent(matchId, matchData -> {
+            onMatchDataUpdate(matchId, matchData);
+        });
+        Observer<MatchData> observer = matchDataObservers.getOrDefault(matchId, null);
+
+        if (observer == null) {
+            System.err.printf("[MATCH] RunningMatch::subscribeToMatchDataUpdates(MATCH: %s) | MATCH DATA UPDATES CREATE FAILED!\n", matchId);
+            return;
+        }
+
+        observable.addObserver(observer);
+        matchDataObservableCurrent.put(matchId, observable);
+    }
+
+    protected void unsubscribeToMatchDataUpdates(UUID matchId) {
+        Observer<MatchData> observer = matchDataObservers.getOrDefault(matchId, null);
+        Observable<MatchData> observable = matchDataObservableCurrent.getOrDefault(matchId, null);
+
+        if (observer == null) {
+            System.err.printf("[MATCH] RunningMatch::unsubscribeToMatchDataUpdates(MATCH: %s) | MATCH DATA UPDATES ARE NOT SUBSCRIBED YET! (observer = null)\n", matchId);
+            return;
+        }
+        if (observable == null) {
+            System.err.printf("[MATCH] RunningMatch::unsubscribeToMatchDataUpdates(MATCH: %s) | MATCH DATA UPDATES ARE NOT SUBSCRIBED YET?? (observable = null)\n", matchId);
+            return;
+        }
+
+        observable.removeObserver(observer);
+    }
+
+    protected void subscribeToPlayerDataUpdates(UUID playerId, Observable<PlayerData> observable) {
+        playerDataObservers.putIfAbsent(playerId, playerData -> {
+            onPlayerDataUpdate(matchId, playerData);
+        });
+        Observer<PlayerData> observer = playerDataObservers.getOrDefault(playerId, null);
+
+        if (observer == null) {
+            System.err.printf("[PLR] RunningMatch::subscribeToPlayerDataUpdates(MATCH: %s, PLR: %s) | PLR DATA UPDATES CREATE FAILED!\n", matchId, playerId);
+            return;
+        }
+
+        observable.addObserver(observer);
+        playerDataObservableCurrent.put(matchId, observable);
+    }
+
+    protected void unsubscribeToPlayerDataUpdates(UUID playerId) {
+        Observer<PlayerData> observer = playerDataObservers.getOrDefault(matchId, null);
+        Observable<PlayerData> observable = playerDataObservableCurrent.getOrDefault(matchId, null);
+
+        if (observer == null) {
+            System.err.printf("[PLR] RunningMatch::unsubscribeToPlayerDataUpdates(MATCH: %s, PLR: %s) | PLR DATA UPDATES ARE NOT SUBSCRIBED YET! (observer = null)\n", matchId, playerId);
+            return;
+        }
+        if (observable == null) {
+            System.err.printf("[PLR] RunningMatch::unsubscribeToPlayerDataUpdates(MATCH: %s, PLR: %s) | PLR DATA UPDATES ARE NOT SUBSCRIBED YET?? (observable = null)\n", matchId, playerId);
+            return;
+        }
+
+        observable.removeObserver(observer);
+    }
+
     protected void subscribeToMatchStateSwitchEvents(Observable<MATCH_STATE> observable) {
         observable.addObserver(stateSwitchObserver);
         stateSwitchObservableCurrent = observable;
@@ -275,5 +349,27 @@ public class RunningMatch {
             currentStateLogic = newState.getLogic();
             currentStateLogic.onEnter(this);
         }
+    }
+
+    private void onMatchDataUpdate(UUID matchId, MatchData matchData) {
+        System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s\n", matchId, matchData);
+
+        if (currentStateLogic == null) {
+            System.err.printf("\t[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | STATE IS NULL!\n", matchId);
+            return;
+        }
+
+        // currentStateLogic.onMatchData(this, playerId);
+    }
+
+    private void onPlayerDataUpdate(UUID playerId, PlayerData playerData) {
+        System.out.printf("[PLR] RunningMatch::onPlayerDataUpdate(MATCH: %s, PLR: %s) | %s\n", matchId, playerId, playerData);
+
+        if (currentStateLogic == null) {
+            System.err.printf("\t[PLR] RunningMatch::onPlayerDataUpdate(MATCH: %s, PLR: %s) | STATE IS NULL!\n", matchId, playerId);
+            return;
+        }
+
+        // currentStateLogic.onMatchData(this, playerId);
     }
 }
