@@ -1,6 +1,7 @@
 package team2.mse.ajou.server.domain.perk.service;
 
 import team2.mse.ajou.server.domain.shared.match.PERK;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 import java.util.List;
@@ -15,4 +16,6 @@ public interface IPerkService {
     void putAck(UUID id);
 
     List<PERK> getUnownedPerks(PlayerData playerData);
+
+    void giveRandomPerkChoiceList(MatchData matchData);
 }

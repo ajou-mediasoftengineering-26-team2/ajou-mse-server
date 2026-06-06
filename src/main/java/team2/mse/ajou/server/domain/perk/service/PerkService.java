@@ -13,9 +13,7 @@ import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
 import team2.mse.ajou.server.domain.shared.match.service.MatchService;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Perk data handling service
@@ -88,6 +86,21 @@ public class PerkService implements IPerkService {
         playerDataRepository.save(playerData);
         MatchData updMatchData = matchDataRepository.save(matchData);
         frdbService.setMatch(updMatchData.getId(), updMatchData);
+    }
+
+    @Override
+    public void giveRandomPerkChoiceList(MatchData matchData) {
+        // -> 1] 선택 가능한 모든 perk 목록 불러오기
+        // -> 2] 그 중 (최대) 3개의 랜덤한 것을 전달하기
+        List<PlayerData> players = matchData.getPlayers();
+        for (PlayerData player : players) {
+            List<PERK> availablePerks = new ArrayList<>(getUnownedPerks(player));
+            int returnSz = Math.min(availablePerks.size(), 3);
+
+            Collections.shuffle(availablePerks);
+            player.setPerkChoiceCurrent(null);
+            player.setPerkChoiceList(availablePerks.subList(0, returnSz));
+        }
     }
 
     /**
