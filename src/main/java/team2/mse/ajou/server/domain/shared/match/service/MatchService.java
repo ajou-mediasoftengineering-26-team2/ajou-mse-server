@@ -384,6 +384,15 @@ public class MatchService {
         int attackerIdx = matchData.getAttackerPlayerIdx();
         List<PlayerData> players = matchData.getPlayers();
 
+        if(!matchData.isAttackSuccess()){
+            int defenderIdx = attackerIdx;
+            attackerIdx ^= 1;
+
+            PlayerData temp = players.get(defenderIdx);
+            players.set(defenderIdx, players.get(attackerIdx));
+            players.set(attackerIdx, temp);
+        }
+
         // 초기화를 안해도 될 것 같긴함
         for (int i = 0; i < players.size(); i++) {
             PlayerData player = players.get(i);

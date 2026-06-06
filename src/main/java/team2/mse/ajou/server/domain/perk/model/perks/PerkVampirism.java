@@ -4,7 +4,13 @@ import team2.mse.ajou.server.domain.perk.model.Perk;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.DamageData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * Perk - 흡혈귀
+ * 첫번째 공격 성공시 HP +3 회복
+ * @author Junseo Hwang 202322128
+ */
 public class PerkVampirism extends Perk {
     private final int healValue = 3;
 
@@ -13,20 +19,27 @@ public class PerkVampirism extends Perk {
     }
 
     @Override
-    public void usePerkIfPossible(MatchData matchData) {
-        if (!isAvailable(matchData)) {
+    public void usePerkIfPossible(MatchData matchData, int ownerPlayerIdx) {
+        if (!isAvailable(matchData, ownerPlayerIdx)) {
             return;
         }
 
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
         DamageData damageData = getCurrentDamageData(matchData);
+
+        owner.setHp(owner.getHp() + healValue);
         damageData.addRecoveredHp(healValue);
         damageData.addUsedPerk(perk);
     }
 
     @Override
-    public boolean isAvailable(MatchData matchData) {
-        if(!isInTurn(matchData)) return false;
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
+        if (!isInTurn(matchData)) return false;
+
         DamageData damageData = getCurrentDamageData(matchData);
-        return isAttackSuccess(matchData) && isFirstDamage(damageData);
+        return isAttackSuccess(matchData)
+                && isOwnerAttacker(matchData, ownerPlayerIdx)
+                && getOwner(matchData, ownerPlayerIdx) != null
+                && isFirstDamage(damageData);
     }
 }

@@ -8,6 +8,9 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 import java.util.List;
 
+/**
+ * @author Junseo Hwang 202322128
+ */
 public abstract class Perk implements IPerk {
     protected final PERK perk;
     protected boolean isUsed;
@@ -17,12 +20,32 @@ public abstract class Perk implements IPerk {
     }
 
     @Override
-    public boolean isAvailable(MatchData matchData) {
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
         return false;
     }
 
     protected boolean hasTwoPlayers(MatchData matchData) {
         return matchData != null && matchData.getPlayers() != null && matchData.getPlayers().size() >= 2;
+    }
+
+    protected boolean isValidOwnerIdx(MatchData matchData, int ownerPlayerIdx) {
+        return hasTwoPlayers(matchData)
+                && ownerPlayerIdx >= 0
+                && ownerPlayerIdx < matchData.getPlayers().size();
+    }
+
+    protected PlayerData getOwner(MatchData matchData, int ownerPlayerIdx) {
+        if (!isValidOwnerIdx(matchData, ownerPlayerIdx)) {
+            return null;
+        }
+        return matchData.getPlayers().get(ownerPlayerIdx);
+    }
+
+    protected PlayerData getOpponent(MatchData matchData, int ownerPlayerIdx) {
+        if (!isValidOwnerIdx(matchData, ownerPlayerIdx)) {
+            return null;
+        }
+        return matchData.getPlayers().get(ownerPlayerIdx ^ 1);
     }
 
     protected PlayerData getAttacker(MatchData matchData) {
@@ -36,7 +59,7 @@ public abstract class Perk implements IPerk {
         if (!hasTwoPlayers(matchData)) {
             return -1;
         }
-        return (matchData.getAttackerPlayerIdx())^1;
+        return matchData.getAttackerPlayerIdx() ^ 1;
     }
 
     protected PlayerData getDefender(MatchData matchData) {
@@ -47,37 +70,12 @@ public abstract class Perk implements IPerk {
         return matchData.getPlayers().get(defenderIdx);
     }
 
-    /**
-     * 라운드 시작, 퍽 획득 직후처럼 공격자/방어자로 소유자를 추론할 수 없는 경우 사용합니다.
-     * 호출하는 쪽에서 currentPlayerIdx를 현재 퍽 소유자의 index로 맞춰둔 뒤 호출하면 됩니다.
-     */
-    protected int getOwnerPlayerIdx(MatchData matchData) {
-        if (!hasTwoPlayers(matchData)) {
-            return -1;
-        }
-
-        int ownerIdx = matchData.getCurrentPlayerIdx();
-        if (ownerIdx < 0 || ownerIdx >= matchData.getPlayers().size()) {
-            return matchData.getAttackerPlayerIdx();
-        }
-        return ownerIdx;
+    protected boolean isOwnerAttacker(MatchData matchData, int ownerPlayerIdx) {
+        return matchData != null && matchData.getAttackerPlayerIdx() == ownerPlayerIdx;
     }
 
-    protected PlayerData getOwner(MatchData matchData) {
-        int ownerIdx = getOwnerPlayerIdx(matchData);
-        if (ownerIdx < 0) {
-            return null;
-        }
-        return matchData.getPlayers().get(ownerIdx);
-    }
-
-    protected PlayerData getOpponentOfOwner(MatchData matchData) {
-        int ownerIdx = getOwnerPlayerIdx(matchData);
-        if (ownerIdx < 0) {
-            return null;
-        }
-        int opponentIdx = (ownerIdx + 1) % matchData.getPlayers().size();
-        return matchData.getPlayers().get(opponentIdx);
+    protected boolean isOwnerDefender(MatchData matchData, int ownerPlayerIdx) {
+        return getDefenderPlayerIdx(matchData) == ownerPlayerIdx;
     }
 
     protected DamageData getCurrentDamageData(MatchData matchData) {

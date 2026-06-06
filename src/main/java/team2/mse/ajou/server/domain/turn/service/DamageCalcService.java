@@ -75,8 +75,8 @@ public class DamageCalcService implements IDamageCalcService {
             matchData.addDamageData(damageData);
 
             // Elemental 계산
-            attackerElemental.isAvailable(matchData, attackerIndex);
-            defenderElemental.isAvailable(matchData, defenderIndex);
+            attackerElemental.useElementalIfPossible(matchData, attackerIndex);
+            defenderElemental.useElementalIfPossible(matchData, defenderIndex);
 
             if(damageData.getAttackType() == ATTACK_TYPE.MISS){
                 continue;
@@ -84,10 +84,10 @@ public class DamageCalcService implements IDamageCalcService {
 
             // Perk 계산
             for(IPerk perk : attackerPerkList){
-                perk.usePerkIfPossible(matchData);
+                perk.usePerkIfPossible(matchData, attackerIndex);
             }
             for(IPerk perk : defenderPerkList){
-                perk.usePerkIfPossible(matchData);
+                perk.usePerkIfPossible(matchData, defenderIndex);
             }
 
             // Item 계산
@@ -101,6 +101,7 @@ public class DamageCalcService implements IDamageCalcService {
             damageData.setDamage(Math.max(0, damageData.getDamage()));
 
             defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
+            attacker.setHp(Math.min(attacker.getMaxHp(),attacker.getHp()+damageData.getRecoveredHp()));
             attacker.setCoin(attacker.getCoin()+damageData.getCoin());
         }
 
@@ -119,10 +120,10 @@ public class DamageCalcService implements IDamageCalcService {
 
             // Perk 계산
             for(IPerk perk : attackerPerkList){
-                perk.usePerkIfPossible(matchData);
+                perk.usePerkIfPossible(matchData, attackerIndex);
             }
             for(IPerk perk : defenderPerkList){
-                perk.usePerkIfPossible(matchData);
+                perk.usePerkIfPossible(matchData, defenderIndex);
             }
 
             // Item 계산
@@ -162,12 +163,12 @@ public class DamageCalcService implements IDamageCalcService {
 
         defenderElemental.useElementalIfPossible(matchData, defenderIndex);
         for(IPerk perk : defenderPerkList){
-            perk.usePerkIfPossible(matchData);
+            perk.usePerkIfPossible(matchData, defenderIndex);
         }
         for(IConsumableItem item : defenderItemLIst){
             item.useItemIfPossible(matchData, defenderIndex);
         }
-
+        
         defender.setHp(Math.min(defender.getMaxHp(), defender.getHp()+ defendData.getRecoveredHp()));
         defender.setCoin(defender.getCoin() + defendData.getCoin());
     }

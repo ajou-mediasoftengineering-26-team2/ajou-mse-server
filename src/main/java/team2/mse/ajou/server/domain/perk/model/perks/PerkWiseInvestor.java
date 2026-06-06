@@ -9,31 +9,41 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 import java.util.List;
 
+/**
+ * Perk - 현명한 투자가
+ * 보유 코인 10당 첫번째 공격 데미지 +1
+ * @author Junseo Hwang 202322128
+ */
 public class PerkWiseInvestor extends Perk {
     private final int moduloValue = 10;
-
-    private PlayerData attacker;
 
     public PerkWiseInvestor() {
         super(PERK.WISE_INVESTOR);
     }
 
     @Override
-    public void usePerkIfPossible(MatchData matchData) {
-        if(isAvailable(matchData)) {
-            DamageData damageData = matchData.getDamageDataList().getLast();
-            damageData.addDamage(attacker.getCoin()/moduloValue);
-            damageData.addUsedPerk(perk);
-
-            isUsed = true;
+    public void usePerkIfPossible(MatchData matchData, int ownerPlayerIdx) {
+        if (!isAvailable(matchData, ownerPlayerIdx)) {
+            return;
         }
+
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
+        DamageData damageData = getCurrentDamageData(matchData);
+        damageData.addDamage(owner.getCoin() / moduloValue);
+        damageData.addUsedPerk(perk);
     }
 
     @Override
-    public boolean isAvailable(MatchData matchData) {
-        if(!isInTurn(matchData)) return false;
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
+        if (!isInTurn(matchData)) return false;
 
-        attacker = matchData.getPlayers().get(matchData.getAttackerPlayerIdx());
-        return !isUsed && attacker.getCoin()>moduloValue;
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
+        DamageData damageData = getCurrentDamageData(matchData);
+        return isAttackSuccess(matchData)
+                && isOwnerAttacker(matchData, ownerPlayerIdx)
+                && owner != null
+                && damageData != null
+                && isFirstDamage(damageData)
+                && owner.getCoin() >= moduloValue;
     }
 }

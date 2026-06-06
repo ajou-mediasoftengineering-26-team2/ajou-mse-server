@@ -2,9 +2,12 @@ package team2.mse.ajou.server.domain.shared.match.service;
 
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
+import team2.mse.ajou.server.domain.perk.model.IPerk;
+import team2.mse.ajou.server.domain.perk.service.PerkFactory;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
+import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.service.IDamageCalcService;
@@ -63,6 +66,7 @@ public class MatchTurnCalcService {
         // Has attacking player KO'd the defending player?
         boolean isPlayerKO = false;
 
+        applyPerksInAttackSuccessDecision(matchData, defenceIdx);
         matchData.setAttackSuccess(isAttackSuccess);
 
         // BEGIN DAMAGE CALCULATION LOGIC --------------------------
@@ -80,13 +84,11 @@ public class MatchTurnCalcService {
             // switch attackerIdx and defenceIdx
             damageCalcService.calcDefendEffect(matchData);
 
-            defenceIdx ^= 1;
-            attackerIdx ^= 1;
+
 
             System.out.printf("\t[calculateTurn @ %s] AFTER SWITCH ATTACKER IDX: %d, DEFENDER IDX: %d\n", matchData.getId(), attackerIdx, defenceIdx);
 
-            attackerPlayer = players.get(attackerIdx);
-            defencePlayer = players.get(defenceIdx);
+            
             isPlayerKO = false;
         }
         // END DAMAGE CALCULATION LOGIC --------------------------
@@ -132,6 +134,22 @@ public class MatchTurnCalcService {
             matchData.setCurrentRound(matchData.getCurrentRound() + 1);
             matchData.setCurrentTurn(0);
 //            matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
+        }
+    }
+
+    private void applyPerksInAttackSuccessDecision(MatchData matchData, int defenderIdx) {
+        PlayerData defender = matchData.getPlayers().get(defenderIdx);
+        if (defender.getPerkList() == null) {
+            return;
+        }
+
+        for (PERK perkEnum : defender.getPerkList()) {
+            if (perkEnum != PERK.FLEXIBLE_HANDS && perkEnum != PERK.FLEXIBLE_MIND) {
+                continue;
+            }
+
+            IPerk perk = PerkFactory.createPerk(perkEnum);
+            perk.usePerkIfPossible(matchData, defenderIdx);
         }
     }
 }

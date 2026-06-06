@@ -37,6 +37,22 @@ public class DefendData {
     @Enumerated(EnumType.STRING)
     HAND_ELEMENTAL usedElemental;
 
+    public void addRecoveredHp(int recoveredHp) {
+        this.recoveredHp += recoveredHp;
+    }
+
+    public void addCoin(int coin) {
+        this.coin += coin;
+    }
+
+    public void addUsedPerk(PERK perk) {
+        usedPerks.add(perk);
+    }
+
+    public void addUsedItem(ITEM_CODE itemCode) {
+        usedItemCodes.add(itemCode);
+    }
+
     public void initDefendData()
     {
         recoveredHp = 0;

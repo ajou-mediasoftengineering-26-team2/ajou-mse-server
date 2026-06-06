@@ -5,6 +5,11 @@ import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.DamageData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 
+/**
+ * Perk - 불굴
+ * 한 번에 받는 최대 데미지 5로 제한
+ * @author Junseo Hwang 202322128
+ */
 public class PerkUnyielding extends Perk {
     private final int maxDamage = 5;
 
@@ -13,8 +18,8 @@ public class PerkUnyielding extends Perk {
     }
 
     @Override
-    public void usePerkIfPossible(MatchData matchData) {
-        if (!isAvailable(matchData)) {
+    public void usePerkIfPossible(MatchData matchData, int ownerPlayerIdx) {
+        if (!isAvailable(matchData, ownerPlayerIdx)) {
             return;
         }
 
@@ -24,8 +29,13 @@ public class PerkUnyielding extends Perk {
     }
 
     @Override
-    public boolean isAvailable(MatchData matchData) {
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
+        if (!isInTurn(matchData)) return false;
+
         DamageData damageData = getCurrentDamageData(matchData);
-        return isAttackSuccess(matchData) && damageData != null && damageData.getDamage() > maxDamage;
+        return isAttackSuccess(matchData)
+                && isOwnerDefender(matchData, ownerPlayerIdx)
+                && damageData != null
+                && damageData.getDamage() > maxDamage;
     }
 }

@@ -7,6 +7,10 @@ import team2.mse.ajou.server.domain.shared.match.model.DamageData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * Perk - 집중
+ * 가만히로 공격 성공 시 첫번째 공격 데미지 +3
+ */
 public class PerkFocus extends Perk {
     private final int bonusValue = 3;
 
@@ -15,8 +19,8 @@ public class PerkFocus extends Perk {
     }
 
     @Override
-    public void usePerkIfPossible(MatchData matchData) {
-        if (!isAvailable(matchData)) {
+    public void usePerkIfPossible(MatchData matchData, int ownerPlayerIdx) {
+        if (!isAvailable(matchData, ownerPlayerIdx)) {
             return;
         }
 
@@ -26,14 +30,15 @@ public class PerkFocus extends Perk {
     }
 
     @Override
-    public boolean isAvailable(MatchData matchData) {
-        if(!isInTurn(matchData)) return false;
-        
-        PlayerData attacker = getAttacker(matchData);
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
+        if (!isInTurn(matchData)) return false;
+
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
         DamageData damageData = getCurrentDamageData(matchData);
         return isAttackSuccess(matchData)
-                && attacker != null
-                && attacker.getChoice() == HAND_CHOICE.SHAKE_OVER_HANDS
+                && isOwnerAttacker(matchData, ownerPlayerIdx)
+                && owner != null
+                && owner.getChoice() == HAND_CHOICE.SHAKE_OVER_HANDS
                 && isFirstDamage(damageData);
     }
 }
