@@ -118,14 +118,20 @@ public class TurnService {
         playerDataRepository.save(playerData);
         matchDataRepository.save(matchData);
 
+        System.out.println("RECEIVE TURN ANIMATION END ACK @ " + matchData.getId());
+
         if (isAllTurnAnimationEnd(matchData)) {
             if(matchData.isKo()){
+                System.out.println("\tBOTH TURN ANIMATION END ACK!! (KO STATE) @ " + matchData.getId());
+
                 //일단 스테이트만 넘겨봐
                 matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
                 MatchData updMatchData = matchDataRepository.save(matchData);
                 frdbService.setMatch(updMatchData.getId(), updMatchData);
             }
             else{
+                System.out.println("\tBOTH TURN ANIMATION END ACK!! (NEXT TURN) @ " + matchData.getId());
+
                 matchService.startNextTurn(matchData.getId());
             }
         }
