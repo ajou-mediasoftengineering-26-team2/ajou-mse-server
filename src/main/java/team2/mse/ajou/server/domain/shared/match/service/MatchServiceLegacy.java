@@ -26,8 +26,7 @@ import java.util.concurrent.ScheduledFuture;
  * @author Ahn Yubin / 202021088
  * @author Junseo Hwang 202322128
  */
-@Service
-public class MatchService {
+public class MatchServiceLegacy {
     private final FrdbService frdbService;
     private final MatchDataRepository matchDataRepository;
     private final PlayerDataRepository playerDataRepository;
@@ -41,7 +40,7 @@ public class MatchService {
 
     private final Random attackerRandom;
 
-    public MatchService(FrdbService frdbService, MatchDataRepository matchDataRepository, PlayerDataRepository playerDataRepository, StationRepository stationRepository, MatchTurnCalcService matchTurnCalcService) {
+    public MatchServiceLegacy(FrdbService frdbService, MatchDataRepository matchDataRepository, PlayerDataRepository playerDataRepository, StationRepository stationRepository, MatchTurnCalcService matchTurnCalcService) {
         this.frdbService = frdbService;
         this.matchDataRepository = matchDataRepository;
         this.playerDataRepository = playerDataRepository;
