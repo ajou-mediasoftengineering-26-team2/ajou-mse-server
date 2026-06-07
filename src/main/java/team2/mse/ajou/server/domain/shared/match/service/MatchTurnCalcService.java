@@ -40,7 +40,7 @@ public class MatchTurnCalcService {
         List<PlayerData> players = matchData.getPlayers();
 
         if (players.size() < 2) {
-            //throw new ApiError(5005, "Insufficient players in the match!");
+            // throw new ApiError(5005, "Insufficient players in the match!");
             System.err.printf("[MATCH_TURN_CALC] updateMatchDataForRoundBegin(MATCH: %s) | Insufficient players in the match! (%d players)\n", matchData.getId(), players.size());
             return;
         }
@@ -60,7 +60,7 @@ public class MatchTurnCalcService {
         }
 
         matchData.setAttackerPlayerIdx(attackerIdx);
-        matchData.setAttackSuccess(false);
+        matchData.setAttackSuccess(true);
 
         // DamageList를 초기에 설정해야할지도 모르겠습니다.
         matchData.clearDamageDataList();
@@ -74,8 +74,8 @@ public class MatchTurnCalcService {
      */
     public void updateMatchDataForTurnBegin(MatchData matchData) {
         // 이전 턴의 공격이 실패한 경우 공수 교대...
-        if(!matchData.isAttackSuccess()){
-            matchData.setAttackerPlayerIdx(matchData.getAttackerPlayerIdx()^1);
+        if (!matchData.isAttackSuccess()) {
+            matchData.setAttackerPlayerIdx(matchData.getAttackerPlayerIdx() ^ 1);
         }
 
         List<PlayerData> players = matchData.getPlayers();
@@ -161,10 +161,9 @@ public class MatchTurnCalcService {
             damageCalcService.calcDefendEffect(matchData);
 
 
-
             System.out.printf("\t[calculateTurn @ %s] AFTER SWITCH ATTACKER IDX: %d, DEFENDER IDX: %d\n", matchData.getId(), attackerIdx, defenceIdx);
 
-            
+
             isPlayerKO = false;
         }
         // END DAMAGE CALCULATION LOGIC --------------------------

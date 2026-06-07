@@ -26,14 +26,19 @@ public class ElementalService implements IElementalService {
 
     @Override
     public void putElementalChoice(UUID id, HAND_ELEMENTAL handElemental) {
-        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
-            System.out.printf("[PLR] putElementalChoice(PLR: %s, HAND_ELEMENTAL: %s)\n", id, handElemental);
+        var playerData = gameDataRepository.findPlayerById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + id));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
 
-            playerData.setHandElemental(handElemental);
-            gameDataRepository.savePlayer(playerData);
-        }, () -> {
-            throw new IllegalArgumentException("Not Found: " + id);
-        });
+        System.out.printf("[PLR] putElementalChoice(PLR: %s, HAND_ELEMENTAL: %s)\n", id, handElemental);
+
+        playerData.setHandElemental(handElemental);
+        matchData.updatePlayer(playerData);
+        gameDataRepository.saveMatch(matchData);
+        gameDataRepository.savePlayer(playerData);
+        gameDataRepository.updateFrdbMatchData(matchData);
 
         /*
         PlayerData playerData = playerDataRepository.findById(id)
