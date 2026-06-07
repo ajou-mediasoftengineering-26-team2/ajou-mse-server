@@ -13,7 +13,7 @@ import java.util.List;
 public class GameChoiceFinishedLogic implements MatchStateLogic {
     @Override
     public void onMatchPlayerSelectingStateUpdate(RunningMatch context, List<Boolean> selectingState) {
-        var condition = selectingState.size() >= 2 && selectingState.stream().allMatch(Boolean::booleanValue);
+        var condition = (selectingState.size() >= 2) && selectingState.stream().noneMatch(value -> value);
         System.out.printf("\t[STATE] GameChoiceFinishedLogic::onMatchPlayerSelectingStateUpdate(MATCH: %s) - %s, %b\n", context.getMatchId(), selectingState, condition);
 
         if (condition) {

@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.round.service;
 
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
+import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 
 import java.util.UUID;
@@ -21,6 +22,7 @@ public class RoundService implements IRoundService {
     public void receiveRoundStart(UUID playerId) {
         gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
             playerData.setAckState(ACK_TYPE.ROUND_START_ANIMATION_END);
+            gameDataRepository.savePlayer(playerData);
         }, () -> {
             throw new IllegalArgumentException("Not Found: " + playerId);
         });
@@ -53,11 +55,23 @@ public class RoundService implements IRoundService {
 
     @Override
     public void receiveRoundEnd(UUID playerId) {
-        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
-            playerData.setAckState(ACK_TYPE.ROUND_END_ANIMATION_END);
-        }, () -> {
-            throw new IllegalArgumentException("Not Found: " + playerId);
-        });
+        var playerData = gameDataRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + playerId));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
+
+        if (matchData.getState() != MATCH_STATE.GAME_ROUND_END_PLAYER_KO) {
+            throw new IllegalStateException("Round end animation ACK can be submitted only after player KO!");
+        }
+
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
+
+        playerData.setAckState(ACK_TYPE.ROUND_END_ANIMATION_END);
+        gameDataRepository.savePlayer(playerData);
+
         /*
         PlayerData playerData = playerDataJpaRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + playerId));

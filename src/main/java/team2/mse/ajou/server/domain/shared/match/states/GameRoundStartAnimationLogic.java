@@ -34,7 +34,7 @@ public class GameRoundStartAnimationLogic implements MatchStateLogic {
                 return;
             }
 
-            System.out.printf("\t[STATE] GameRoundStartAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL ACK RECEIVED\n", context.getMatchId());
+            System.out.printf("\t[STATE] GameRoundStartAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL ROUND_START_ANIMATION_END ACK RECEIVED\n", context.getMatchId());
 
             // 턴 시작 시점으로 데이터 초기화
             context.updateMatchDataForTurnBegin(matchData);

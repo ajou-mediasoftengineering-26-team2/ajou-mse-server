@@ -26,6 +26,14 @@ public class PerkService implements IPerkService {
 
     @Override
     public void putPerkChoice(UUID id, PERK perk) {
+        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
+            playerData.setPerkChoiceCurrent(perk);
+            playerData.getPerkList().add(perk);
+
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Not Found: " + id);
+        });
         /*
         PlayerData playerData = playerDataJpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
@@ -47,28 +55,22 @@ public class PerkService implements IPerkService {
 
     @Override
     public void putAck(UUID id) {
-        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
-            if (playerData.getJoinedMatchId() != null) {
-                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresentOrElse(matchData -> {
-                    if (matchData.getState() != MATCH_STATE.GAME_PERK_ITEM_RECEIVING) {
-                        throw new IllegalStateException("Perk/item receive animation ACK can be submitted only after turn result is calculated!");
-                    }
-                }, () -> {
-                    throw new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId());
-                });
-            } else {
-                throw new IllegalStateException("Player is not in match!");
-            }
+        var playerData = gameDataRepository.findPlayerById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + id));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
 
-            if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
-                throw new IllegalStateException("Player is already acknowledged!");
-            }
+        if (matchData.getState() != MATCH_STATE.GAME_PERK_ITEM_RECEIVING) {
+            throw new IllegalStateException("Perk/item receive animation ACK can be submitted only after turn result is calculated!");
+        }
 
-            playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
-            gameDataRepository.savePlayer(playerData);
-        }, () -> {
-            throw new IllegalArgumentException("Player not Found: " + id);
-        });
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
+
+        playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
+        gameDataRepository.savePlayer(playerData);
 
         /*
         PlayerData playerData = playerDataJpaRepository.findById(id)

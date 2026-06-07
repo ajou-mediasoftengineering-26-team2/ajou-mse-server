@@ -34,30 +34,24 @@ public class TurnService {
     public void putPlayerInput(String id, String choice) throws Exception {
         UUID playerId = UUID.fromString(id);
         HAND_CHOICE handChoice = HAND_CHOICE.valueOf(choice);
+        var playerData = gameDataRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + playerId));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
 
-        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
-            if (playerData.getJoinedMatchId() != null) {
-                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresentOrElse(matchData -> {
-                    if (matchData.getState() != MATCH_STATE.GAME_CHOICE_FINISHED) {
-                        throw new IllegalStateException("Choice can be submitted only after the 5-second timer is finished!");
-                    }
-                }, () -> {
-                    throw new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId());
-                });
-            } else {
-                throw new IllegalStateException("Player is not in match!");
-            }
+        if (matchData.getState() != MATCH_STATE.GAME_CHOICE_FINISHED) {
+            throw new IllegalStateException("Choice can be submitted only after the 5-second timer is finished!");
+        }
 
-            if (!playerData.isSelecting()) {
-                throw new IllegalStateException("Player is not selecting!");
-            }
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
 
-            playerData.setSelecting(false);
-            playerData.setChoice(handChoice);
-            gameDataRepository.savePlayer(playerData);
-        }, () -> {
-            throw new IllegalArgumentException("Player not Found: " + playerId);
-        });
+        playerData.setSelecting(false);
+        playerData.setChoice(handChoice);
+
+        gameDataRepository.savePlayer(playerData);
 
         /*
         UUID uuid = UUID.fromString(id);
@@ -108,29 +102,22 @@ public class TurnService {
      */
     public void receiveTurnAnimationEndAck(String id) throws Exception {
         UUID playerId = UUID.fromString(id);
+        var playerData = gameDataRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + playerId));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
 
-        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
-            if (playerData.getJoinedMatchId() != null) {
-                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresentOrElse(matchData -> {
-                    if (matchData.getState() != MATCH_STATE.GAME_TURN_ANIMATION) {
-                        throw new IllegalStateException("Turn animation ACK can be submitted only after turn result is calculated!");
-                    }
-                }, () -> {
-                    throw new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId());
-                });
-            } else {
-                throw new IllegalStateException("Player is not in match!");
-            }
+        if (matchData.getState() != MATCH_STATE.GAME_TURN_ANIMATION) {
+            throw new IllegalStateException("Turn animation ACK can be submitted only after turn result is calculated!");
+        }
 
-            if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
-                throw new IllegalStateException("Player is already acknowledged!");
-            }
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
 
-            playerData.setAckState(ACK_TYPE.TURN_ANIMATION_END);
-            gameDataRepository.savePlayer(playerData);
-        }, () -> {
-            throw new IllegalArgumentException("Player not Found: " + playerId);
-        });
+        playerData.setAckState(ACK_TYPE.TURN_ANIMATION_END);
+        gameDataRepository.savePlayer(playerData);
         /*
         UUID uuid = UUID.fromString(id);
         PlayerData playerData = playerDataJpaRepository.findById(uuid)

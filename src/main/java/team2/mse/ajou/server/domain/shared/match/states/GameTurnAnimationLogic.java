@@ -25,12 +25,12 @@ public class GameTurnAnimationLogic implements MatchStateLogic {
             }
 
             if (matchData.isKo()) {
-                System.out.printf("\t[STATE] GameTurnAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL ACK RECEIVED (KO!!!)\n", context.getMatchId());
+                System.out.printf("\t[STATE] GameTurnAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL TURN_ANIMATION_END ACK RECEIVED (KO!!!)\n", context.getMatchId());
 
                 // 일단 스테이트만 넘겨봐
                 matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
             } else {
-                System.out.printf("\t[STATE] GameTurnAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | NEXT TURN (KO!!!)\n", context.getMatchId());
+                System.out.printf("\t[STATE] GameTurnAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL TURN_ANIMATION_END ACK RECEIVED (NEXT TURN)\n", context.getMatchId());
 
                 // 턴 시작 시점으로 데이터 초기화
                 context.updateMatchDataForTurnBegin(matchData);

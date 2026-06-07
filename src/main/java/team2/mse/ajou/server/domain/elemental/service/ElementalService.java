@@ -1,19 +1,10 @@
 package team2.mse.ajou.server.domain.elemental.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.ack.service.AckService;
-import team2.mse.ajou.server.domain.firebase.service.FrdbRepository;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.model.MatchData;
-import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchServiceLegacy;
-import team2.mse.ajou.server.domain.shared.match.service.MatchTurnCalcService;
 
 import java.util.UUID;
 
@@ -85,11 +76,11 @@ public class ElementalService implements IElementalService {
     public void upgradeElemental(UUID id, HAND_ELEMENTAL handElemental) {
         gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
             // 업그레이드 못하는데 업그레이드 쿼리가 들어온 경우 (he is hacker!!)
-            if(playerData.getCoin() < playerData.getUpgradeCost()) {
+            if (playerData.getCoin() < playerData.getUpgradeCost()) {
                 throw new IllegalArgumentException("Coin is less than Cost: " + id);
             }
 
-            if(playerData.getHandElemental() == HAND_ELEMENTAL.NONE) {
+            if (playerData.getHandElemental() == HAND_ELEMENTAL.NONE) {
                 return;
             }
 
@@ -131,28 +122,22 @@ public class ElementalService implements IElementalService {
 
     @Override
     public void receiveElementalAnimationEndAck(UUID playerId) {
-        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
-            if (playerData.getJoinedMatchId() != null) {
-                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresentOrElse(matchData -> {
-                    if (matchData.getState() != MATCH_STATE.GAME_ELEMENTAL_RECEIVING) {
-                        throw new IllegalStateException("Elemental receive animation ACK can be submitted only after turn result is calculated!");
-                    }
-                }, () -> {
-                    throw new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId());
-                });
-            } else {
-                throw new IllegalStateException("Player is not in match!");
-            }
+        var playerData = gameDataRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + playerId));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
 
-            if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
-                throw new IllegalStateException("Player is already acknowledged!");
-            }
+        if (matchData.getState() != MATCH_STATE.GAME_ELEMENTAL_RECEIVING) {
+            throw new IllegalStateException("Elemental receive animation ACK can be submitted only after turn result is calculated!");
+        }
 
-            playerData.setAckState(ACK_TYPE.ELEMENTAL_RECEIVE_ANIMATION_END);
-            gameDataRepository.savePlayer(playerData);
-        }, () -> {
-            throw new IllegalArgumentException("Player not Found: " + playerId);
-        });
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
+
+        playerData.setAckState(ACK_TYPE.ELEMENTAL_RECEIVE_ANIMATION_END);
+        gameDataRepository.savePlayer(playerData);
 
         /*
         PlayerData playerData = playerDataJpaRepository.findById(playerId)
