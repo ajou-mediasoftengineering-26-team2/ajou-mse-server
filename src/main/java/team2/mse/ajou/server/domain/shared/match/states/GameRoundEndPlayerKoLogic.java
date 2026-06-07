@@ -48,7 +48,6 @@ public class GameRoundEndPlayerKoLogic implements MatchStateLogic {
             // 10초가 지나면 서버는 perk item receiving / elemental receiving 상태가 되도록 타이머 ON
             // 실제 타이머는 각각 `GamePerkChoiceLogic`, `GameElementalChoiceLogic`에서 실행되니 참고부탁...
             context.commitMatchData(matchData);
-            context.commitFrdbData(matchData);
         }
     }
 }
