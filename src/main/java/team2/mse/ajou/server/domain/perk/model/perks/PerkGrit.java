@@ -6,6 +6,11 @@ import team2.mse.ajou.server.domain.shared.match.model.DamageData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * Perk - 근성
+ * 체력이 15 이하일때 받는 데미지 절반(올림)
+ * @author Junseo Hwang 202322128
+ */
 public class PerkGrit extends Perk {
     private final int triggerHp = 15;
 
@@ -14,8 +19,8 @@ public class PerkGrit extends Perk {
     }
 
     @Override
-    public void usePerkIfPossible(MatchData matchData) {
-        if (!isAvailable(matchData)) {
+    public void usePerkIfPossible(MatchData matchData, int ownerPlayerIdx) {
+        if (!isAvailable(matchData, ownerPlayerIdx)) {
             return;
         }
 
@@ -26,15 +31,16 @@ public class PerkGrit extends Perk {
     }
 
     @Override
-    public boolean isAvailable(MatchData matchData) {
-        if(!isInTurn(matchData)) return false;
-        
-        PlayerData defender = getDefender(matchData);
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
+        if (!isInTurn(matchData)) return false;
+
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
         DamageData damageData = getCurrentDamageData(matchData);
         return isAttackSuccess(matchData)
-                && defender != null
+                && isOwnerDefender(matchData, ownerPlayerIdx)
+                && owner != null
                 && damageData != null
                 && damageData.getDamage() > 0
-                && defender.getHp() <= triggerHp;
+                && owner.getHp() <= triggerHp;
     }
 }

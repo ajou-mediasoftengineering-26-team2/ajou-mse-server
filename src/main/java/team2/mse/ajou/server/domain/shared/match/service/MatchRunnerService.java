@@ -31,6 +31,7 @@ import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_ZONE_ID;
  */
 @Service
 public class MatchRunnerService {
+    private final PerkService perkService;
     // 매치 로직 (데이터 리셋, 턴 계산 등) Delegate
     MatchTurnCalcService matchTurnCalcService;
     ItemService itemService;
@@ -54,8 +55,8 @@ public class MatchRunnerService {
             ItemService itemService,
             GameObservablesRepository gameEventsRepository,
             GameDataRepository gameDataRepository,
-            StationRepository stationRepository
-    ) {
+            StationRepository stationRepository,
+            PerkService perkService) {
         this.matchTurnCalcService = matchTurnCalcService;
         this.itemService = itemService;
 
@@ -66,6 +67,7 @@ public class MatchRunnerService {
         this.allRunningMatches = new HashMap<>();
         this.mutex = new ReentrantLock();
         this.scheduler = new SimpleAsyncTaskScheduler();
+        this.perkService = perkService;
     }
 
     @Transactional
@@ -254,11 +256,6 @@ public class MatchRunnerService {
             }
 
             @Override
-            public List<PERK> getAvailablePerks(List<PERK> ownedPerks) {
-                return getUnownedPerks(ownedPerks);
-            }
-
-            @Override
             public void commitMatchData(MatchData data) {
                 mutex.lock();
                 try {
@@ -308,6 +305,11 @@ public class MatchRunnerService {
             @Override
             public void receiveItemForAllPlayers(MatchData matchData) {
                 itemService.giveRandomItem(matchData);
+            }
+
+            @Override
+            public void setPerkChoiceForAllPlayers(MatchData matchData) {
+                perkService.giveRandomPerkChoiceList(matchData);
             }
         });
 

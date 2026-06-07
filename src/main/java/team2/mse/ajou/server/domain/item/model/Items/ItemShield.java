@@ -7,8 +7,8 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- * 보호막: HP 20 이하 시 다음 턴 받는 데미지 0
- * 발동 시 아이템은 즉시 사라지고, 다음 turn 이후 처음 받는 공격 데미지를 0으로 만듭니다.
+ * Item - 보호막
+ * 보호막: HP 20 이하 시 받는 데미지 0
  * @author Junseo Hwang 202322128
  */
 public class ItemShield extends ConsumableItem {
@@ -39,6 +39,7 @@ public class ItemShield extends ConsumableItem {
                 && isOwnerDefender(matchData, ownerPlayerIdx)
                 && owner != null
                 && getCurrentDamageData(matchData) != null
+                && hasItem(owner)
                 && owner.getHp() <= triggerHp;
     }
 }

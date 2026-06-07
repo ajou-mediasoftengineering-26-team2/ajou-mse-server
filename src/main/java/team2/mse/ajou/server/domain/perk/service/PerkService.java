@@ -4,12 +4,11 @@ import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
+import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Perk data handling service
@@ -99,6 +98,21 @@ public class PerkService implements IPerkService {
         MatchData updMatchData = matchDataJPARepository.save(matchData);
         frdbRepository.setMatch(updMatchData.getId(), updMatchData);
          */
+    }
+
+    @Override
+    public void giveRandomPerkChoiceList(MatchData matchData) {
+        // -> 1] 선택 가능한 모든 perk 목록 불러오기
+        // -> 2] 그 중 (최대) 3개의 랜덤한 것을 전달하기
+        List<PlayerData> players = matchData.getPlayers();
+        for (PlayerData player : players) {
+            List<PERK> availablePerks = new ArrayList<>(getUnownedPerks(player));
+            int returnSz = Math.min(availablePerks.size(), 3);
+
+            Collections.shuffle(availablePerks);
+            player.setPerkChoiceCurrent(null);
+            player.setPerkChoiceList(availablePerks.subList(0, returnSz));
+        }
     }
 
     /**

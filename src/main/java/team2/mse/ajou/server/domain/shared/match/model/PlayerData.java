@@ -45,6 +45,10 @@ public class PlayerData {
      */
     private int wins = 0;
     /**
+     * maxHp
+     */
+    private int maxHp = 10;
+    /**
      * Health.
      */
     private int hp = 10;
@@ -114,6 +118,45 @@ public class PlayerData {
      */
     private ZonedDateTime lastUpdated = ZonedDateTime.now();
 
+    private int dodgeCount = 0; // 라운드 시작시에 0으로 초기화해야함
+
+    public List<PERK> getPerkChoiceList() {
+        if (perkChoiceList == null) {
+            return perkChoiceList = new ArrayList<>();
+        }
+        return perkChoiceList;
+    }
+
+    public List<PERK> getPerkList() {
+        if (perkList == null) {
+            return perkList = new ArrayList<>();
+        }
+        return perkList;
+    }
+
+    public List<ITEM_CODE> getItemList() {
+        if (itemList == null) {
+            return itemList = new ArrayList<>();
+        }
+        return itemList;
+    }
+
+    public List<ITEM_CODE> getReceivedItemList() {
+        if (receivedItemList == null) {
+            return receivedItemList = new ArrayList<>();
+        }
+        return receivedItemList;
+    }
+
+    public void updateLastUpdated() {
+        this.lastUpdated = ZonedDateTime.now();
+    }
+
+    /**
+     * `PlayerData`를 Deep copy 합니다.
+     *
+     * @param from
+     */
     public PlayerData(PlayerData from) {
         this.id = from.id;
         this.joinedMatchId = from.joinedMatchId;
@@ -136,9 +179,5 @@ public class PlayerData {
         this.elementalLevel = from.elementalLevel;
         this.upgradeCost = from.upgradeCost;
         this.statusEffectList = new ArrayList<>(from.statusEffectList);
-    }
-
-    public void updateLastUpdated() {
-        this.lastUpdated = ZonedDateTime.now();
     }
 }

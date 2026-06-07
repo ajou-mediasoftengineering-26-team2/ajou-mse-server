@@ -80,11 +80,13 @@ public class MatchData {
     @OrderBy("damageIndex ASC")
     private List<DamageData> damageDataList = new ArrayList<>();
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    private DefendData defendData = new DefendData();
+
     /**
      * Last updated time
      */
     private ZonedDateTime lastUpdated = ZonedDateTime.now();
-
 
     /**
      * Find player by UUID.
@@ -170,6 +172,11 @@ public class MatchData {
         lastUpdated = ZonedDateTime.now();
     }
 
+    /**
+     * `MatchData`를 Deep copy 합니다.
+     *
+     * @param from
+     */
     public MatchData(MatchData from) {
         this.id = from.id;
         this.station = from.station;

@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 @Service
 public class ElementalService implements IElementalService {
-    private final int[] costOfUpgrade = {0, 10, 20, 30, 100, 9999};
+    private final int[] costOfUpgrade = {0, 10, 25, 45, 75, 9999};
 
     private final GameDataRepository gameDataRepository;
 

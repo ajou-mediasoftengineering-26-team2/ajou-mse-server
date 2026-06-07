@@ -130,7 +130,7 @@ public class MatchServiceLegacy {
         }
 
         matchData.setAttackerPlayerIdx(attackerIdx);
-        matchData.setAttackSuccess(false);
+        matchData.setAttackSuccess(true);
 
         // DamageList를 초기에 설정해야할지도 모르겠습니다.
         matchData.clearDamageDataList();
@@ -379,6 +379,10 @@ public class MatchServiceLegacy {
         if (matchData.getState() == MATCH_STATE.END_RESULT || matchData.getState() == MATCH_STATE.END_PLAYER_DISCONNECTED) {
             frdbRepository.setMatch(matchData.getId(), matchData);
             return;
+        }
+
+        if(!matchData.isAttackSuccess()){
+            matchData.setAttackerPlayerIdx(matchData.getAttackerPlayerIdx()^1);
         }
 
         int attackerIdx = matchData.getAttackerPlayerIdx();

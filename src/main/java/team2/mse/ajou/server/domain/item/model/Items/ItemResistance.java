@@ -7,7 +7,8 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- * 저항: HP 20 이하 시 이번 라운드 받는 데미지 -2
+ * Item - 저항
+ * HP 20 이하 시 이번 턴 받는 데미지 -2
  * @author Junseo Hwang 202322128
  */
 public class ItemResistance extends ConsumableItem {
@@ -29,7 +30,7 @@ public class ItemResistance extends ConsumableItem {
             return;
         }
 
-        damageData.setDamage(Math.max(0, damageData.getDamage() - reduceDamage));
+        damageData.setDamage(damageData.getDamage() - reduceDamage);
         damageData.addUsedItem(itemCode);
         used = true;
         //이번 턴 모든 데미지 -1 해야해서 일단 소모하지 않음

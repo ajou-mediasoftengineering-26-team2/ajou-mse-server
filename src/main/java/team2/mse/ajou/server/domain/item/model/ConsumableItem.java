@@ -122,15 +122,13 @@ public abstract class ConsumableItem implements IConsumableItem {
     /**
      * 아이템으로 플레이어 hp 회복
      * @param player
-     * @param damageData
      * @param healValue
      */
-    protected void heal(PlayerData player, DamageData damageData, int healValue) {
-        if(player == null || damageData == null){
+    protected void heal(PlayerData player, int healValue) {
+        if(player == null){
             return;
         }
 
-        player.setHp(player.getHp() + healValue);
-        damageData.addRecoveredHp(healValue);
+        player.setHp(Math.min(player.getMaxHp(),player.getHp() + healValue));
     }
 }

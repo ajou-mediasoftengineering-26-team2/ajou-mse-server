@@ -1,6 +1,7 @@
 package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.Data;
+import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.DamageData;
@@ -15,6 +16,7 @@ public class FrdbDamageData {
     private int coin;
     private int recoveredHp;
     private ATTACK_TYPE attackType;
+    private HAND_ELEMENTAL handElemental;
     private List<ITEM_CODE> usedItems;
     private List<PERK> usedPerks;
     private List<STATUS_EFFECT> statusEffects;
@@ -28,6 +30,7 @@ public class FrdbDamageData {
         data.setCoin(damageData.getCoin());
         data.setRecoveredHp(damageData.getRecoveredHp());
         data.setAttackType(damageData.getAttackType());
+        data.setHandElemental(damageData.getHandElemental());
         data.setUsedItems(damageData.getUsedItems());
         data.setUsedPerks(damageData.getUsedPerks());
         data.setStatusEffects(damageData.getStatusEffects());

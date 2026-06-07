@@ -6,14 +6,19 @@ import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * Perk - 유연한 손
+ * 왼손으로 오른손, 오른손으로 왼손 방어 가능
+ * @author Junseo Hwang 202322128
+ */
 public class PerkFlexibleHands extends Perk {
     public PerkFlexibleHands() {
         super(PERK.FLEXIBLE_HANDS);
     }
 
     @Override
-    public void usePerkIfPossible(MatchData matchData) {
-        if (!isAvailable(matchData)) {
+    public void usePerkIfPossible(MatchData matchData, int ownerPlayerIdx) {
+        if (!isAvailable(matchData, ownerPlayerIdx)) {
             return;
         }
 
@@ -21,14 +26,17 @@ public class PerkFlexibleHands extends Perk {
     }
 
     @Override
-    public boolean isAvailable(MatchData matchData) {
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
+        if (!isInTurn(matchData)) return false;
+
         PlayerData attacker = getAttacker(matchData);
-        PlayerData defender = getDefender(matchData);
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
 
         return isAttackSuccess(matchData)
+                && isOwnerDefender(matchData, ownerPlayerIdx)
                 && attacker != null
-                && defender != null
-                && isLeftRightPair(attacker.getChoice(), defender.getChoice());
+                && owner != null
+                && isLeftRightPair(attacker.getChoice(), owner.getChoice());
     }
 
     private boolean isLeftRightPair(HAND_CHOICE attackerChoice, HAND_CHOICE defenderChoice) {

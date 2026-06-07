@@ -7,6 +7,9 @@ import team2.mse.ajou.server.domain.shared.match.PERK;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Junseo Hwang 202322128
+ */
 public class PerkFactory {
 
     public static IPerk createPerk(PERK perk) {
@@ -29,6 +32,10 @@ public class PerkFactory {
 
     public static List<IPerk> createPerkList(List<PERK> perkEnumList) {
         List<IPerk> perkList = new ArrayList<>();
+
+        if (perkEnumList == null) {
+            return perkList;
+        }
 
         for (PERK perk : perkEnumList) {
             perkList.add(createPerk(perk));

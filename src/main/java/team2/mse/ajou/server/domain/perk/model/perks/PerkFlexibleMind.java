@@ -6,14 +6,19 @@ import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * Perk - 유연한 손
+ * 찌르기로 가만히, 가만히로 찌르기 방어 가능
+ * @author Junseo Hwang 202322128
+ */
 public class PerkFlexibleMind extends Perk {
     public PerkFlexibleMind() {
         super(PERK.FLEXIBLE_MIND);
     }
 
     @Override
-    public void usePerkIfPossible(MatchData matchData) {
-        if (!isAvailable(matchData)) {
+    public void usePerkIfPossible(MatchData matchData, int ownerPlayerIdx) {
+        if (!isAvailable(matchData, ownerPlayerIdx)) {
             return;
         }
 
@@ -21,14 +26,17 @@ public class PerkFlexibleMind extends Perk {
     }
 
     @Override
-    public boolean isAvailable(MatchData matchData) {
+    public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
+        if (!isInTurn(matchData)) return false;
+
         PlayerData attacker = getAttacker(matchData);
-        PlayerData defender = getDefender(matchData);
+        PlayerData owner = getOwner(matchData, ownerPlayerIdx);
 
         return isAttackSuccess(matchData)
+                && isOwnerDefender(matchData, ownerPlayerIdx)
                 && attacker != null
-                && defender != null
-                && isInsertShakePair(attacker.getChoice(), defender.getChoice());
+                && owner != null
+                && isInsertShakePair(attacker.getChoice(), owner.getChoice());
     }
 
     private boolean isInsertShakePair(HAND_CHOICE attackerChoice, HAND_CHOICE defenderChoice) {

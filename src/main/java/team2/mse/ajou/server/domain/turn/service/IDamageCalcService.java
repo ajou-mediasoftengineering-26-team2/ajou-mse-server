@@ -9,5 +9,5 @@ import java.util.List;
 
 public interface IDamageCalcService {
     void calcDamageList(MatchData matchData);
-    List<DefendEffect> calcDefendList(MatchData matchData);
+    void calcDefendEffect(MatchData matchData);
 }

@@ -5,7 +5,6 @@ import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -38,17 +37,11 @@ public class GameRoundEndPlayerKoLogic implements MatchStateLogic {
             } else {
                 // perk 선택의 경우, 두 플레이어 모두 선택지 리스트 생성
                 matchData.setState(MATCH_STATE.GAME_PERK_CHOICE);
-                var players = matchData.getPlayers();
+                context.updateMatchDataForSetPerkChoice(matchData);
 
-                // -> 1] 선택 가능한 모든 perk 목록 불러오기
-                // -> 2] 그 중 (최대) 3개의 랜덤한 것을 전달하기
-                for (PlayerData player : players) {
-                    var availablePerks = context.getAvailablePerks(player.getPerkList());
-                    int returnSz = Math.min(availablePerks.size(), 3);
-
-                    Collections.shuffle(availablePerks);
-                    player.setPerkChoiceCurrent(null);
-                    player.setPerkChoiceList(availablePerks.subList(0, returnSz));
+                // 회피 횟수 0으로 초기화
+                for (PlayerData player : matchData.getPlayers()) {
+                    player.setDodgeCount(0);
                 }
             }
 

@@ -7,7 +7,8 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- * 응급 치료: HP 15 이하 시 즉시 HP +20 회복
+ * Item - 응급치료
+ * HP 15 이하 시 즉시 HP +20 회복
  * @author Junseo Hwang 202322128
  */
 public class ItemEmergencyTreatment extends ConsumableItem {
@@ -27,7 +28,7 @@ public class ItemEmergencyTreatment extends ConsumableItem {
         PlayerData owner = getOwner(matchData, ownerPlayerIdx);
         DamageData damageData = getCurrentDamageData(matchData);
 
-        heal(owner, damageData, healValue);
+        heal(owner, healValue);
         consumeItem(owner, damageData);
     }
 

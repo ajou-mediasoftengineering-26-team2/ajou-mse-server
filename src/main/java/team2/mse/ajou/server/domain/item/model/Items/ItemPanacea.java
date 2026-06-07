@@ -8,7 +8,8 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.STATUS_EFFECT;
 
 /**
- * 만병통치: 상태이상 있을 시 모든 상태이상 해제
+ * Item - 만병통치
+ * 상태이상 있을 시 모든 상태이상 해제
  * @author Junseo Hwang 202322128
  */
 public class ItemPanacea extends ConsumableItem {

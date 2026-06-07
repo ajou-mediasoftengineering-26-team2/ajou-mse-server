@@ -59,13 +59,13 @@ public class RunningMatch {
 
         void receiveItemForAllPlayers(MatchData matchData);
 
+        void setPerkChoiceForAllPlayers(MatchData matchData);
+
         ScheduledFuture<?> setTimerAndRun(UUID matchId, int seconds, Runnable callback);
 
         Optional<MatchData> getMatchData(UUID id);
 
         Optional<PlayerData> getPlayerData(UUID id);
-
-        List<PERK> getAvailablePerks(List<PERK> ownedPerks);
 
         void commitMatchData(MatchData data);
 
@@ -154,10 +154,6 @@ public class RunningMatch {
         return matchDataDelegateMethod.getPlayerData(playerId);
     }
 
-    public List<PERK> getAvailablePerks(List<PERK> ownedPerks) {
-        return matchDataDelegateMethod.getAvailablePerks(ownedPerks);
-    }
-
     public void commitPlayerData(PlayerData playerData) {
         matchDataDelegateMethod.commitPlayerData(playerData);
     }
@@ -211,6 +207,10 @@ public class RunningMatch {
 
     public void updateMatchDataForItemReceiving(MatchData matchData) {
         matchDataDelegateMethod.receiveItemForAllPlayers(matchData);
+    }
+
+    public void updateMatchDataForSetPerkChoice(MatchData matchData) {
+        matchDataDelegateMethod.setPerkChoiceForAllPlayers(matchData);
     }
 
     // Observer 설정 함수들

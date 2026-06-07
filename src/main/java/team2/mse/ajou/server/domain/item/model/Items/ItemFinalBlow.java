@@ -7,8 +7,8 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- * 최후의 일격: HP 5 이하 시 다음 공격 데미지 2배
- * 현재 데미지 구조에서는 다중 타격 공격의 첫 번째 damageData에만 적용합니다.
+ * Item - 최후의 일격
+ * HP 5 이하 시 다음 첫번째 공격 데미지 2배
  * @author Junseo Hwang 202322128
  */
 public class ItemFinalBlow extends ConsumableItem {
