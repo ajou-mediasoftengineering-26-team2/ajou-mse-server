@@ -7,7 +7,8 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- * 도주: HP 5 이하 시 즉시 HP +10, 코인 +5
+ * Item - 도주
+ * HP 5 이하 시 즉시 HP +10, 코인 +5
  * @author Junseo Hwang 202322128
  */
 public class ItemEscape extends ConsumableItem {
@@ -28,9 +29,8 @@ public class ItemEscape extends ConsumableItem {
         PlayerData owner = getOwner(matchData, ownerPlayerIdx);
         DamageData damageData = getCurrentDamageData(matchData);
 
-        heal(owner, damageData, healValue);
+        heal(owner, healValue);
         owner.setCoin(owner.getCoin() + coinValue);
-        damageData.addCoin(coinValue);
         consumeItem(owner, damageData);
     }
 
