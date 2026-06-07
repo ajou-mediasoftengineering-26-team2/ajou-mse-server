@@ -19,8 +19,10 @@ public class RoundService implements IRoundService {
 
     @Override
     public void receiveRoundStart(UUID playerId) {
-        gameDataRepository.findPlayerById(playerId).ifPresent(playerData -> {
+        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
             playerData.setAckState(ACK_TYPE.ROUND_START_ANIMATION_END);
+        }, () -> {
+            throw new IllegalArgumentException("Not Found: " + playerId);
         });
         /*
         PlayerData playerData = playerDataJpaRepository.findById(playerId)
@@ -51,8 +53,10 @@ public class RoundService implements IRoundService {
 
     @Override
     public void receiveRoundEnd(UUID playerId) {
-        gameDataRepository.findPlayerById(playerId).ifPresent(playerData -> {
+        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
             playerData.setAckState(ACK_TYPE.ROUND_END_ANIMATION_END);
+        }, () -> {
+            throw new IllegalArgumentException("Not Found: " + playerId);
         });
         /*
         PlayerData playerData = playerDataJpaRepository.findById(playerId)

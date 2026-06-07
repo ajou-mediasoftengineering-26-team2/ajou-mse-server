@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.shared.match.states;
 
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
+import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
@@ -57,6 +58,11 @@ public interface MatchStateLogic {
 
     @Transactional
     default void onMatchPlayerAckStateUpdate(RunningMatch context, List<ACK_TYPE> ackState) {
+        /* NO-OP */
+    }
+
+    @Transactional
+    default void onMatchPlayerSelectingStateUpdate(RunningMatch context, List<Boolean> selectingState) {
         /* NO-OP */
     }
 

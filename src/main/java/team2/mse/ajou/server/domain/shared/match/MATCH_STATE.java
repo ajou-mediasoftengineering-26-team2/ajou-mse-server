@@ -47,12 +47,12 @@ public enum MATCH_STATE {
     /**
      * 인게임: 클라이언트가 공격/방어 애니메이션 재생 중
      */
-    GAME_TURN_ANIMATION(new LobbyWaitingStateLogic()),
+    GAME_TURN_ANIMATION(new GameTurnAnimationLogic()),
     // Ingame: end of a single round (caused by player KO)
     /**
      * 인게임: 한 라운드 끝. 플레이어 사망
      */
-    GAME_ROUND_END_PLAYER_KO(new LobbyWaitingStateLogic()),
+    GAME_ROUND_END_PLAYER_KO(new GameRoundEndPlayerKoLogic()),
 
     // round
     /**

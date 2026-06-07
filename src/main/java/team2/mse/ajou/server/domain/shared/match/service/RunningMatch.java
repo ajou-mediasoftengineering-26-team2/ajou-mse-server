@@ -2,9 +2,9 @@ package team2.mse.ajou.server.domain.shared.match.service;
 
 import lombok.Getter;
 import lombok.Setter;
-import team2.mse.ajou.server.domain.firebase.FrdbConstants;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
+import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.states.MatchStateLogic;
@@ -50,41 +50,33 @@ public class RunningMatch {
     private Map<UUID, Observable<MatchData>> matchDataObservableCurrent;
     private Map<UUID, Observer<MatchData>> matchDataObservers;
 
-    public interface GameDataGetMethod<T> {
-        Optional<T> getData(UUID id);
-    }
-
-    public interface GameDataSetMethod<T> {
-        void setData(T data);
-    }
-
-    public interface TimerSetMethod {
-        ScheduledFuture<?> set(UUID matchId, int seconds, Runnable callback);
-    }
-
-    public interface MatchDataUpdateMethod {
+    public interface MatchDataDelegateMethod {
         void updateMatchDataForRoundBegin(MatchData matchData);
 
         void updateMatchDataForTurnBegin(MatchData matchData);
 
         void calculateTurn(MatchData matchData);
+
+        void receiveItemForAllPlayers(MatchData matchData);
+
+        ScheduledFuture<?> setTimerAndRun(UUID matchId, int seconds, Runnable callback);
+
+        Optional<MatchData> getMatchData(UUID id);
+
+        Optional<PlayerData> getPlayerData(UUID id);
+
+        List<PERK> getAvailablePerks(List<PERK> ownedPerks);
+
+        void commitMatchData(MatchData data);
+
+        void commitPlayerData(PlayerData data);
+
+        void commitFrdbData(MatchData matchData);
     }
 
     // `RunningMatch` -> 외부 (`MatchRunnerService`)로 나가는 콜백. 예를 들어 데이터 가져오기, 데이터 수정 후 확정(?), state 변경 등
     @Setter
-    private GameDataGetMethod<MatchData> matchDataGetMethod;
-    @Setter
-    private GameDataGetMethod<PlayerData> playerDataGetMethod;
-    @Setter
-    private GameDataSetMethod<MatchData> matchDataCommitMethod;
-    @Setter
-    private GameDataSetMethod<PlayerData> playerDataCommitMethod;
-    @Setter
-    private GameDataSetMethod<MatchData> matchFrdbCommitMethod;
-    @Setter
-    private TimerSetMethod matchSetTimerMethod;
-    @Setter
-    private MatchDataUpdateMethod matchDataUpdateMethod;
+    private MatchDataDelegateMethod matchDataDelegateMethod;
 
     public RunningMatch() {
         this.stateSwitchObservableCurrent = null;
@@ -110,13 +102,7 @@ public class RunningMatch {
         this.matchId = null;
         this.timerHandle = null;
 
-        this.matchDataGetMethod = null;
-        this.matchDataCommitMethod = null;
-        this.playerDataGetMethod = null;
-        this.playerDataCommitMethod = null;
-        this.matchFrdbCommitMethod = null;
-        this.matchSetTimerMethod = null;
-        this.matchDataUpdateMethod = null;
+        this.matchDataDelegateMethod = null;
     }
 
     /**
@@ -161,23 +147,27 @@ public class RunningMatch {
     // State에서 불러지는 데이터 조회/설정 콜백 함수들
     // `RunningMatch` 내에서 리포지토리를 바로 DI 및 참조하기보단 외부에서 값을 받아서 넣어주는 방식으로 작동합니다. 안그럼 너무 많은 곳에서 리포지토리를 직접적으로 참조하는 문제가 발생하겠지요...
     public Optional<MatchData> getMatchData(UUID matchId) {
-        return matchDataGetMethod.getData(matchId);
+        return matchDataDelegateMethod.getMatchData(matchId);
     }
 
     public Optional<PlayerData> getPlayerData(UUID playerId) {
-        return playerDataGetMethod.getData(playerId);
+        return matchDataDelegateMethod.getPlayerData(playerId);
+    }
+
+    public List<PERK> getAvailablePerks(List<PERK> ownedPerks) {
+        return matchDataDelegateMethod.getAvailablePerks(ownedPerks);
     }
 
     public void commitPlayerData(PlayerData playerData) {
-        playerDataCommitMethod.setData(playerData);
+        matchDataDelegateMethod.commitPlayerData(playerData);
     }
 
     public void commitMatchData(MatchData matchData) {
-        matchDataCommitMethod.setData(matchData);
+        matchDataDelegateMethod.commitMatchData(matchData);
     }
 
     public void commitFrdbData(MatchData matchData) {
-        matchFrdbCommitMethod.setData(matchData);
+        matchDataDelegateMethod.commitFrdbData(matchData);
     }
 
     public boolean setTimerAndRun(int seconds, Runnable callback) {
@@ -186,7 +176,7 @@ public class RunningMatch {
             return false;
         }
 
-        timerHandle = matchSetTimerMethod.set(matchId, seconds, callback);
+        timerHandle = matchDataDelegateMethod.setTimerAndRun(matchId, seconds, callback);
 
         if (timerHandle == null) {
             System.err.printf("[MATCH] RunningMatch::setTimerAndRun(MATCH: %s) | TIMER SET FAILED!\n", matchId);
@@ -208,15 +198,19 @@ public class RunningMatch {
     }
 
     public void updateMatchDataForRoundBegin(MatchData matchData) {
-        matchDataUpdateMethod.updateMatchDataForRoundBegin(matchData);
+        matchDataDelegateMethod.updateMatchDataForRoundBegin(matchData);
     }
 
     public void updateMatchDataForTurnBegin(MatchData matchData) {
-        matchDataUpdateMethod.updateMatchDataForTurnBegin(matchData);
+        matchDataDelegateMethod.updateMatchDataForTurnBegin(matchData);
     }
 
     public void updateMatchDataForCalculateTurn(MatchData matchData) {
-        matchDataUpdateMethod.calculateTurn(matchData);
+        matchDataDelegateMethod.calculateTurn(matchData);
+    }
+
+    public void updateMatchDataForItemReceiving(MatchData matchData) {
+        matchDataDelegateMethod.receiveItemForAllPlayers(matchData);
     }
 
     // Observer 설정 함수들
@@ -249,6 +243,13 @@ public class RunningMatch {
 
             return value.getPlayers().stream().map(PlayerData::getAckState).toList();
         });
+        var matchPlayerSelectingObserver = new FlowMappedObservable<MatchData, List<Boolean>>(List.of(), true, true, true, value -> {
+            if (value == null) {
+                return null;
+            }
+
+            return value.getPlayers().stream().map(PlayerData::isSelecting).toList();
+        });
         var matchPlayerListObserver = new FlowMappedObservable<MatchData, List<PlayerData>>(List.of(), true, true, true, value -> {
             if (value == null) {
                 return null;
@@ -259,11 +260,13 @@ public class RunningMatch {
 
         matchStateObserver.addObserver(this::onMatchStateSwitch);
         matchPlayerAckObserver.addObserver(this::onMatchPlayerAckStateUpdate);
+        matchPlayerSelectingObserver.addObserver(this::onMatchPlayerSelectingStateUpdate);
         matchPlayerListObserver.addObserver(this::onMatchPlayerListUpdate);
 
         observable.addDownstreamObservable(matchStateObserver);
         observable.addDownstreamObservable(matchPlayerAckObserver);
         observable.addDownstreamObservable(matchPlayerListObserver);
+        observable.addDownstreamObservable(matchPlayerSelectingObserver);
     }
 
     protected void unsubscribeToMatchDataUpdates(UUID matchId) {
@@ -481,15 +484,26 @@ public class RunningMatch {
         currentStateLogic.onMatchPlayerAckStateUpdate(this, ackState);
     }
 
-    private void onMatchDataUpdate(UUID matchId, MatchData matchData) {
-        if (matchData == null) {
-            System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | <NULL>\n", matchId);
-        } else {
-            System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s, %s\n", matchId, matchData.getState(), FrdbConstants.TIME_FORMATTER.format(matchData.getLastUpdated()));
+    private void onMatchPlayerSelectingStateUpdate(List<Boolean> selectingState) {
+        System.out.printf("[MATCH] RunningMatch::onMatchPlayerSelectingStateUpdate(MATCH: %s) | %s\n", matchId, selectingState);
+
+        if (currentStateLogic == null) {
+            System.err.printf("\t[MATCH] RunningMatch::onMatchPlayerSelectingStateUpdate(MATCH: %s) | STATE IS NULL!\n", matchId);
+            return;
         }
+
+        currentStateLogic.onMatchPlayerSelectingStateUpdate(this, selectingState);
+    }
+
+    private void onMatchDataUpdate(UUID matchId, MatchData matchData) {
+        // if (matchData == null) {
+        //     System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | <NULL>\n", matchId);
+        // } else {
+        //     System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s, %s\n", matchId, matchData.getState(), FrdbConstants.TIME_FORMATTER.format(matchData.getLastUpdated()));
+        // }
     }
 
     private void onPlayerDataUpdate(UUID playerId, PlayerData playerData) {
-        System.out.printf("[PLR] RunningMatch::onPlayerDataUpdate(MATCH: %s, PLR: %s) | %s\n", matchId, playerId, playerData);
+        // System.out.printf("[PLR] RunningMatch::onPlayerDataUpdate(MATCH: %s, PLR: %s) | %s\n", matchId, playerId, playerData);
     }
 }

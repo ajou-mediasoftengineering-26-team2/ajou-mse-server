@@ -1,19 +1,11 @@
 package team2.mse.ajou.server.domain.turn.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.firebase.service.FrdbRepository;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.model.MatchData;
-import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchServiceLegacy;
-import team2.mse.ajou.server.domain.shared.match.service.MatchTurnCalcService;
+import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -24,23 +16,10 @@ import java.util.UUID;
  */
 @Service
 public class TurnService {
-    private final PlayerDataJpaRepository playerDataJpaRepository;
-    private final MatchDataJpaRepository matchDataJPARepository;
-    private final MatchTurnCalcService matchTurnCalcService;
-    private final MatchServiceLegacy matchService;
-    private final FrdbRepository frdbRepository;
+    private final GameDataRepository gameDataRepository;
 
-    @Autowired
-    public TurnService(PlayerDataJpaRepository playerDataJpaRepository,
-                       MatchDataJpaRepository matchDataJPARepository,
-                       MatchTurnCalcService matchTurnCalcService,
-                       MatchServiceLegacy matchService,
-                       FrdbRepository frdbRepository) {
-        this.playerDataJpaRepository = playerDataJpaRepository;
-        this.matchDataJPARepository = matchDataJPARepository;
-        this.matchTurnCalcService = matchTurnCalcService;
-        this.matchService = matchService;
-        this.frdbRepository = frdbRepository;
+    public TurnService(GameDataRepository gameDataRepository) {
+        this.gameDataRepository = gameDataRepository;
     }
 
     /**
@@ -53,6 +32,34 @@ public class TurnService {
      * @throws Exception
      */
     public void putPlayerInput(String id, String choice) throws Exception {
+        UUID playerId = UUID.fromString(id);
+        HAND_CHOICE handChoice = HAND_CHOICE.valueOf(choice);
+
+        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
+            if (playerData.getJoinedMatchId() != null) {
+                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresentOrElse(matchData -> {
+                    if (matchData.getState() != MATCH_STATE.GAME_CHOICE_FINISHED) {
+                        throw new IllegalStateException("Choice can be submitted only after the 5-second timer is finished!");
+                    }
+                }, () -> {
+                    throw new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId());
+                });
+            } else {
+                throw new IllegalStateException("Player is not in match!");
+            }
+
+            if (!playerData.isSelecting()) {
+                throw new IllegalStateException("Player is not selecting!");
+            }
+
+            playerData.setSelecting(false);
+            playerData.setChoice(handChoice);
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Player not Found: " + playerId);
+        });
+
+        /*
         UUID uuid = UUID.fromString(id);
         PlayerData playerData = playerDataJpaRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
@@ -87,6 +94,7 @@ public class TurnService {
             // Clients should observe damageList / hp / isAttackSuccess and play result animation.
             frdbRepository.setMatch(updMatchData.getId(), updMatchData);
         }
+        */
     }
 
 
@@ -99,6 +107,31 @@ public class TurnService {
      * @throws Exception
      */
     public void receiveTurnAnimationEndAck(String id) throws Exception {
+        UUID playerId = UUID.fromString(id);
+
+        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
+            if (playerData.getJoinedMatchId() != null) {
+                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresentOrElse(matchData -> {
+                    if (matchData.getState() != MATCH_STATE.GAME_TURN_ANIMATION) {
+                        throw new IllegalStateException("Turn animation ACK can be submitted only after turn result is calculated!");
+                    }
+                }, () -> {
+                    throw new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId());
+                });
+            } else {
+                throw new IllegalStateException("Player is not in match!");
+            }
+
+            if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+                throw new IllegalStateException("Player is already acknowledged!");
+            }
+
+            playerData.setAckState(ACK_TYPE.TURN_ANIMATION_END);
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Player not Found: " + playerId);
+        });
+        /*
         UUID uuid = UUID.fromString(id);
         PlayerData playerData = playerDataJpaRepository.findById(uuid)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
@@ -136,23 +169,6 @@ public class TurnService {
                 matchService.startNextTurn(matchData.getId());
             }
         }
-    }
-
-    private boolean isAllChoiceSubmitted(MatchData matchData) {
-        List<PlayerData> players = matchData.getPlayers();
-        if (players.size() != 2) return false;
-        for (PlayerData player : players) {
-            if (player.isSelecting()) return false;
-        }
-        return true;
-    }
-
-    private boolean isAllTurnAnimationEnd(MatchData matchData) {
-        List<PlayerData> players = matchData.getPlayers();
-        if (players.size() != 2) return false;
-        for (PlayerData player : players) {
-            if (player.getAckState() != ACK_TYPE.TURN_ANIMATION_END) return false;
-        }
-        return true;
+         */
     }
 }

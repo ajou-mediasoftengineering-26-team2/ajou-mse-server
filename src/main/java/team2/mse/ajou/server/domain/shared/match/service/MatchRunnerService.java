@@ -5,16 +5,19 @@ import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.firebase.FrdbConstants;
+import team2.mse.ajou.server.domain.item.service.ItemService;
+import team2.mse.ajou.server.domain.perk.service.PerkService;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
+import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
+import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -30,6 +33,7 @@ import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_ZONE_ID;
 public class MatchRunnerService {
     // 매치 로직 (데이터 리셋, 턴 계산 등) Delegate
     MatchTurnCalcService matchTurnCalcService;
+    ItemService itemService;
 
     // 현재 관리중인 (i.e. 옵저버가 돌아가는) 매치들
     Map<UUID, RunningMatch> allRunningMatches;
@@ -47,11 +51,13 @@ public class MatchRunnerService {
 
     public MatchRunnerService(
             MatchTurnCalcService matchTurnCalcService,
+            ItemService itemService,
             GameObservablesRepository gameEventsRepository,
             GameDataRepository gameDataRepository,
             StationRepository stationRepository
     ) {
         this.matchTurnCalcService = matchTurnCalcService;
+        this.itemService = itemService;
 
         this.gameEventsRepository = gameEventsRepository;
         this.gameDataRepository = gameDataRepository;
@@ -205,64 +211,85 @@ public class MatchRunnerService {
         var data = new RunningMatch();
 
         // 매치 데이터 설정
-        // 데이터 가져오기 등 옵저버 연결
-        data.setMatchDataGetMethod(gameDataRepository::findMatchById);
-        data.setPlayerDataGetMethod(gameDataRepository::findPlayerById);
-        data.setMatchDataCommitMethod((matchData) -> {
-            mutex.lock();
-            try {
+        // 데이터 가져오기 등 Delegate 함수 연결
+        data.setMatchDataDelegateMethod(new RunningMatch.MatchDataDelegateMethod() {
+            @Override
+            public ScheduledFuture<?> setTimerAndRun(UUID matchId, int seconds, Runnable callback) {
+                var matchData = gameDataRepository.findMatchById(matchId).orElse(null);
+
+                if (matchData == null) {
+                    System.err.printf("[MATCH] MatchRunnerService::setTimer(MATCH: %s) | MATCH DOES NOT EXIST IN DB!\n", matchId);
+                    return null;
+                }
+
+                ZonedDateTime currentTime = ZonedDateTime.now(TIME_ZONE_ID);
+                ZonedDateTime endTime = currentTime.plusSeconds(seconds);
+
+                var timerHandle = scheduler.schedule(callback, endTime.toInstant());
+                matchData.setCountdownStartTime(currentTime);
+                matchData.setCountdownSec(seconds);
+
                 gameDataRepository.saveMatch(matchData);
-                // gameDataRepository.updateFrdbMatchData(matchData);
-            } finally {
-                mutex.unlock();
-            }
-        });
-        data.setPlayerDataCommitMethod((playerData) -> {
-            mutex.lock();
-            try {
-                gameDataRepository.savePlayer(playerData);
-                // gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresent(gameDataRepository::updateFrdbMatchData);
-            } finally {
-                mutex.unlock();
-            }
-        });
-        data.setMatchFrdbCommitMethod((matchData) -> {
-            mutex.lock();
-            try {
                 gameDataRepository.updateFrdbMatchData(matchData);
-            } finally {
-                mutex.unlock();
+
+                System.out.printf(
+                        "[MATCH] MatchRunnerService::setTimer(MATCH: %s (%s), SECS: %d, %s -> %s)\n",
+                        matchId,
+                        matchData.getState(),
+                        seconds,
+                        FrdbConstants.TIME_FORMATTER.format(currentTime),
+                        FrdbConstants.TIME_FORMATTER.format(endTime)
+                );
+                return timerHandle;
             }
-        });
-        data.setMatchSetTimerMethod((updateMatchId, seconds, callback) -> {
-            var matchData = gameDataRepository.findMatchById(updateMatchId).orElse(null);
 
-            if (matchData == null) {
-                System.err.printf("[MATCH] MatchRunnerService::setTimer(MATCH: %s) | MATCH DOES NOT EXIST IN DB!\n", matchId);
-                return null;
+            @Override
+            public Optional<MatchData> getMatchData(UUID id) {
+                return gameDataRepository.findMatchById(id);
             }
 
-            ZonedDateTime currentTime = ZonedDateTime.now(TIME_ZONE_ID);
-            ZonedDateTime endTime = currentTime.plusSeconds(seconds);
+            @Override
+            public Optional<PlayerData> getPlayerData(UUID id) {
+                return gameDataRepository.findPlayerById(id);
+            }
 
-            var timerHandle = scheduler.schedule(callback, endTime.toInstant());
-            matchData.setCountdownStartTime(currentTime);
-            matchData.setCountdownSec(seconds);
+            @Override
+            public List<PERK> getAvailablePerks(List<PERK> ownedPerks) {
+                return getUnownedPerks(ownedPerks);
+            }
 
-            gameDataRepository.saveMatch(matchData);
-            gameDataRepository.updateFrdbMatchData(matchData);
+            @Override
+            public void commitMatchData(MatchData data) {
+                mutex.lock();
+                try {
+                    gameDataRepository.saveMatch(data);
+                    // gameDataRepository.updateFrdbMatchData(matchData);
+                } finally {
+                    mutex.unlock();
+                }
+            }
 
-            System.out.printf(
-                    "[MATCH] MatchRunnerService::setTimer(MATCH: %s (%s), SECS: %d, %s -> %s)\n",
-                    matchId,
-                    matchData.getState(),
-                    seconds,
-                    FrdbConstants.TIME_FORMATTER.format(currentTime),
-                    FrdbConstants.TIME_FORMATTER.format(endTime)
-            );
-            return timerHandle;
-        });
-        data.setMatchDataUpdateMethod(new RunningMatch.MatchDataUpdateMethod() {
+            @Override
+            public void commitPlayerData(PlayerData data) {
+                mutex.lock();
+                try {
+                    gameDataRepository.savePlayer(data);
+                    // gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresent(gameDataRepository::updateFrdbMatchData);
+                } finally {
+                    mutex.unlock();
+                }
+            }
+
+            @Override
+            public void commitFrdbData(MatchData data) {
+                mutex.lock();
+                try {
+                    gameDataRepository.updateFrdbMatchData(data);
+                } finally {
+                    mutex.unlock();
+                }
+            }
+
             @Override
             public void updateMatchDataForRoundBegin(MatchData matchData) {
                 matchTurnCalcService.updateMatchDataForRoundBegin(matchData);
@@ -276,6 +303,11 @@ public class MatchRunnerService {
             @Override
             public void calculateTurn(MatchData matchData) {
                 matchTurnCalcService.calculateTurn(matchData);
+            }
+
+            @Override
+            public void receiveItemForAllPlayers(MatchData matchData) {
+                itemService.giveRandomItem(matchData);
             }
         });
 
@@ -300,5 +332,11 @@ public class MatchRunnerService {
         }
 
         allRunningMatches.remove(matchId);
+    }
+
+    private List<PERK> getUnownedPerks(List<PERK> ownedPerks) {
+        return Arrays.stream(PERK.values())
+                .filter(perk -> !ownedPerks.contains(perk))
+                .toList();
     }
 }

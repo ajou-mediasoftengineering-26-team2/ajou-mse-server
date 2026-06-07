@@ -15,8 +15,9 @@ public class GamePlayerChoiceLogic implements MatchStateLogic {
         // 플레이어 입력 (5초 제한)
         context.setTimerAndRun(5, () -> {
             context.getMatchData(context.getMatchId()).ifPresent(newMatchData -> {
-                System.out.printf("\t[STATE] GamePlayerChoiceLogic::setTimerAndRun | PLAYER INPUT TIMER END! - %s\n", newMatchData.getId());
+                System.out.printf("\t[STATE] GamePlayerChoiceLogic::setTimerAndRun(MATCH: %s) | PLAYER INPUT TIMER END!\n", newMatchData.getId());
 
+                // 여기서 호출되는 `calculateTurn()` 은 `GAME_CHOICE_FINISHED` 로 상태 전이해주는듯..?
                 context.updateMatchDataForCalculateTurn(newMatchData);
                 context.commitMatchData(newMatchData);
                 context.commitFrdbData(newMatchData);

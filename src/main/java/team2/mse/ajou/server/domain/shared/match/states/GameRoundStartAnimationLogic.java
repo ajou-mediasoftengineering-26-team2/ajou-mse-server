@@ -25,7 +25,7 @@ public class GameRoundStartAnimationLogic implements MatchStateLogic {
     @Override
     public void onMatchPlayerAckStateUpdate(RunningMatch context, List<ACK_TYPE> ackState) {
         var condition = ackState.size() >= 2 && ackState.stream().allMatch(ack -> ack == ACK_TYPE.ROUND_START_ANIMATION_END);
-        System.out.printf("\t[STATE] GameRoundStartAnimationLogic::onMatchPlayerAckStateUpdate(%s)\n", ackState);
+        System.out.printf("\t[STATE] GameRoundStartAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) - %s\n", context.getMatchId(), ackState);
 
         if (condition) {
             var matchData = context.getMatchData(context.getMatchId()).orElse(null);
@@ -34,7 +34,7 @@ public class GameRoundStartAnimationLogic implements MatchStateLogic {
                 return;
             }
 
-            System.out.printf("\t[STATE] GameRoundStartAnimationLogic::onMatchPlayerAckStateUpdate | ALL ACK RECEIVED\n");
+            System.out.printf("\t[STATE] GameRoundStartAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL ACK RECEIVED\n", context.getMatchId());
 
             // 턴 시작 시점으로 데이터 초기화
             context.updateMatchDataForTurnBegin(matchData);
