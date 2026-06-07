@@ -25,14 +25,32 @@ public class PerkService implements IPerkService {
 
     @Override
     public void putPerkChoice(UUID id, PERK perk) {
-        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
-            playerData.setPerkChoiceCurrent(perk);
-            playerData.getPerkList().add(perk);
+        var playerData = gameDataRepository.findPlayerById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + id));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
 
-            gameDataRepository.savePlayer(playerData);
-        }, () -> {
-            throw new IllegalArgumentException("Not Found: " + id);
-        });
+        if (matchData.getState() != MATCH_STATE.GAME_PERK_ITEM_RECEIVING) {
+            throw new IllegalStateException("Perk/item receive animation ACK can be submitted only after turn result is calculated!");
+        }
+
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
+
+        System.out.printf("[PLR] putPerkChoice(PLR: %s, PERK: %s)\n", id, perk);
+
+        playerData.setPerkChoiceCurrent(perk);
+        playerData.getPerkList().add(perk);
+
+        matchData.updatePlayer(playerData);
+
+        gameDataRepository.savePlayer(playerData);
+        // gameDataRepository.saveMatch(matchData);
+        // gameDataRepository.updateFrdbMatchData(matchData);
+        // gameDataRepository.savePlayer(playerData);
+
         /*
         PlayerData playerData = playerDataJpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));

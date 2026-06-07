@@ -27,6 +27,8 @@ public class ElementalService implements IElementalService {
     @Override
     public void putElementalChoice(UUID id, HAND_ELEMENTAL handElemental) {
         gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
+            System.out.printf("[PLR] putElementalChoice(PLR: %s, HAND_ELEMENTAL: %s)\n", id, handElemental);
+
             playerData.setHandElemental(handElemental);
             gameDataRepository.savePlayer(playerData);
         }, () -> {
@@ -75,6 +77,8 @@ public class ElementalService implements IElementalService {
     @Override
     public void upgradeElemental(UUID id, HAND_ELEMENTAL handElemental) {
         gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
+            System.out.printf("[PLR] upgradeElemental(PLR: %s, HAND_ELEMENTAL: %s)\n", id, handElemental);
+
             // 업그레이드 못하는데 업그레이드 쿼리가 들어온 경우 (he is hacker!!)
             if (playerData.getCoin() < playerData.getUpgradeCost()) {
                 throw new IllegalArgumentException("Coin is less than Cost: " + id);
