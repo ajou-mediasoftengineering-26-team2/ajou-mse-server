@@ -20,5 +20,10 @@ public enum HAND_CHOICE {
     INSERT_BETWEEN_HANDS,
     /**Shake
      * 가만히 */
-    SHAKE_OVER_HANDS;
+    SHAKE_OVER_HANDS,
+    /**
+     * forbidden behavior
+     * 시청역에서 금지된 행동
+     */
+    FORBIDDEN_BEHAVIOR
 }

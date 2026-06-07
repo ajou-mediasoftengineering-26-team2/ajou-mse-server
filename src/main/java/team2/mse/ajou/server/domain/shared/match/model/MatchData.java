@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
+import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.events.MatchDataJpaListener;
 
@@ -73,6 +74,11 @@ public class MatchData {
      * List of players joined in this match.
      */
     private boolean ko = false;
+
+    /**
+     * 시청역에서 금지된 행동
+     */
+    private HAND_CHOICE forbiddenBehavior;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
@@ -198,6 +204,7 @@ public class MatchData {
         this.attackerPlayerIdx = from.attackerPlayerIdx;
         this.isAttackSuccess = from.isAttackSuccess;
         this.ko = from.ko;
+        this.forbiddenBehavior = from.forbiddenBehavior;
         this.players = new ArrayList<>(from.players.stream().map(PlayerData::new).toList());
         this.damageDataList = new ArrayList<>(from.damageDataList.stream().map(DamageData::new).toList());
     }

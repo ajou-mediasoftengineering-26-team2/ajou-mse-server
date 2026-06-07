@@ -1,6 +1,7 @@
 package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.Data;
+import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.DamageData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
@@ -28,6 +29,7 @@ public class FrdbMatchData {
     private int currentTurn;
     private int currentRound;
     private boolean isAttackSuccess;
+    private HAND_CHOICE forbiddenBehavior;
     private Map<String, FrdbPlayerData> players;
     private List<FrdbDamageData> damageList;
 
@@ -51,6 +53,7 @@ public class FrdbMatchData {
         data.setCurrentRound(matchData.getCurrentRound());
         data.setAttackSuccess(matchData.isAttackSuccess());
         data.setPlayers(players);
+        data.setForbiddenBehavior(matchData.getForbiddenBehavior());
 
         data.setDamageList(
                 matchData.getDamageDataList()
