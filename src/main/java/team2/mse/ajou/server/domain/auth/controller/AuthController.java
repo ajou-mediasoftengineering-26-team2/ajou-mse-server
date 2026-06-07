@@ -2,11 +2,13 @@ package team2.mse.ajou.server.domain.auth.controller;
 
 import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.domain.auth.model.*;
+import team2.mse.ajou.server.domain.shared.ack.model.PutAckRequest;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
 import team2.mse.ajou.server.domain.auth.service.AuthService;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * User login/authentication API endpoints.
@@ -79,5 +81,29 @@ public class AuthController {
     public GetAllPlayersResponse getAllPlayers() {
         List<PlayerData> playerData = playerDataJpaRepository.findAll();
         return new GetAllPlayersResponse(playerData);
+    }
+
+    /**
+     * [테스트용] ACK 테스트
+     *
+     * @return Response body
+     */
+    @PutMapping("/ack")
+    public void putAckTest(@RequestBody PutAckTestRequest req){
+        UUID playerId = UUID.fromString(req.playerId());
+
+        authService.putAckTest(playerId, req);
+    }
+
+    /**
+     * Request DTO for Ack.
+     * @param playerId Player UUID.
+     *
+     * @author Junseo Hwang 202322128
+     */
+    public record PutAckTestRequest(
+            String playerId,
+            String ack
+    ) {
     }
 }

@@ -5,7 +5,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
+import team2.mse.ajou.server.domain.auth.controller.AuthController;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
+import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
@@ -20,7 +22,7 @@ import java.util.UUID;
 @Service
 public class AuthService {
     // private final PlayerDataJpaRepository playerDataJpaRepository;
-    // private final MatchServiceLegacy matchService;
+    //private final MatchServiceLegacy matchService;
     private final GameDataRepository gameDataRepository;
     private final MatchRunnerService matchRunnerService;
 
@@ -147,7 +149,6 @@ public class AuthService {
 
     /**
      * (내부용) 강제 로그아웃
-     *
      * @param playerId
      */
     private void forceLogout(UUID playerId) {
@@ -157,7 +158,6 @@ public class AuthService {
 
     /**
      * (내부용) 닉네임 체크 & 강제 로그인
-     *
      * @param username
      * @return
      */
@@ -185,5 +185,19 @@ public class AuthService {
      */
     private boolean isUsernameValid(@NonNull String username) {
         return !username.isEmpty();
+    }
+
+    @Transactional
+    public void putAckTest(UUID playerId, AuthController.PutAckTestRequest req) {
+        var playerData = gameDataRepository.findPlayerById(playerId).orElse(null);
+
+        if (playerData == null) {
+            return;
+        }
+
+        var ack = ACK_TYPE.valueOf(req.ack());
+
+        playerData.setAckState(ack);
+        gameDataRepository.savePlayer(playerData);
     }
 }
