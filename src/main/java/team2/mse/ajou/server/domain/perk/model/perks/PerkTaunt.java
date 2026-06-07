@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.perk.model.perks;
 
 import team2.mse.ajou.server.domain.perk.model.Perk;
 import team2.mse.ajou.server.domain.shared.match.PERK;
+import team2.mse.ajou.server.domain.shared.match.model.DefendData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
@@ -23,8 +24,10 @@ public class PerkTaunt extends Perk {
             return;
         }
 
+        DefendData defendData = matchData.getDefendData();
         PlayerData opponent = getOpponent(matchData, ownerPlayerIdx);
         opponent.setHp(Math.max(0, opponent.getHp() - damageValue));
+        defendData.addUsedPerk(perk);
     }
 
     @Override

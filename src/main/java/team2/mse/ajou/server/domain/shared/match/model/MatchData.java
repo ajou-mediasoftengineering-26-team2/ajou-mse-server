@@ -207,5 +207,6 @@ public class MatchData {
         this.forbiddenBehavior = from.forbiddenBehavior;
         this.players = new ArrayList<>(from.players.stream().map(PlayerData::new).toList());
         this.damageDataList = new ArrayList<>(from.damageDataList.stream().map(DamageData::new).toList());
+        this.defendData = new DefendData();
     }
 }
