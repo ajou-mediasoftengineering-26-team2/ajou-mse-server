@@ -35,6 +35,6 @@ public class ElementalWater extends Elemental {
                 && isDefenseSuccess(matchData)
                 && isOwnerDefender(matchData, ownerPlayerIdx)
                 && hasElemental(owner)
-                && getCurrentDamageData(matchData) != null;
+                && matchData.getDefendData() != null;
     }
 }

@@ -56,7 +56,6 @@ public class ElementalPoison extends Elemental {
 
         return isInTurn(matchData)
                 && isAttackSuccess(matchData)
-                && isOwnerDefender(matchData, ownerPlayerIdx)
                 && hasElemental(owner)
                 && opponent != null
                 && damageData != null

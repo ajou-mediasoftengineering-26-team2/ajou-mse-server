@@ -27,7 +27,6 @@ public class PerkVampirism extends Perk {
         PlayerData owner = getOwner(matchData, ownerPlayerIdx);
         DamageData damageData = getCurrentDamageData(matchData);
 
-        owner.setHp(owner.getHp() + healValue);
         damageData.addRecoveredHp(healValue);
         damageData.addUsedPerk(perk);
     }

@@ -103,6 +103,13 @@ public class DamageCalcService implements IDamageCalcService {
             defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
             attacker.setHp(Math.min(attacker.getMaxHp(),attacker.getHp()+damageData.getRecoveredHp()));
             attacker.setCoin(attacker.getCoin()+damageData.getCoin());
+
+            // 죽으면 중단
+            if (defender.getHp() <= 0) {
+                removeResistance(defenderItemLIst, defender);
+                damageData.setKo(true);
+                return;
+            }
         }
 
         // Burning 상태이상시 BurnDamage
@@ -115,8 +122,8 @@ public class DamageCalcService implements IDamageCalcService {
             matchData.addDamageData(damageData);
 
             // Elemental 계산
-            attackerElemental.isAvailable(matchData, attackerIndex);
-            defenderElemental.isAvailable(matchData, defenderIndex);
+            attackerElemental.useElementalIfPossible(matchData, attackerIndex);
+            defenderElemental.useElementalIfPossible(matchData, defenderIndex);
 
             // Perk 계산
             for(IPerk perk : attackerPerkList){
@@ -138,15 +145,15 @@ public class DamageCalcService implements IDamageCalcService {
 
             defender.setHp(Math.max(0,defender.getHp()-damageData.getDamage()));
             attacker.setCoin(attacker.getCoin()+damageData.getCoin());
-        }
 
-        // 사용한  ItemResistance 제거 (얘만 턴 전체 적용이라 이렇게 됨;;)
-        for(IConsumableItem item : defenderItemLIst){
-            if(item instanceof ItemResistance resistance){
-                if(!resistance.isUsed()) continue;
-                defender.getItemList().remove(resistance.getItemCode());
+            if (defender.getHp() <= 0) {
+                removeResistance(defenderItemLIst, defender);
+                damageData.setKo(true);
+                return;
             }
         }
+
+        removeResistance(defenderItemLIst, defender);
     }
 
     @Override
@@ -171,5 +178,15 @@ public class DamageCalcService implements IDamageCalcService {
         
         defender.setHp(Math.min(defender.getMaxHp(), defender.getHp()+ defendData.getRecoveredHp()));
         defender.setCoin(defender.getCoin() + defendData.getCoin());
+    }
+
+    // 사용한  ItemResistance 제거 (얘만 턴 전체 적용이라 이렇게 됨;;)
+    private void removeResistance(List<IConsumableItem> defenderItemLIst, PlayerData defender) {
+        for(IConsumableItem item : defenderItemLIst){
+            if(item instanceof ItemResistance resistance){
+                if(!resistance.isUsed()) continue;
+                defender.getItemList().remove(resistance.getItemCode());
+            }
+        }
     }
 }
