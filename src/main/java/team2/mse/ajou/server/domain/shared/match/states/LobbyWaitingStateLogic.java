@@ -48,7 +48,7 @@ public class LobbyWaitingStateLogic implements MatchStateLogic {
 
             System.out.printf("\t[STATE] LobbyWaitingStateLogic::onPlayerJoin | START GAME WITH PLAYERS: %s\n", playersFormatted);
             matchData.setState(MATCH_STATE.LOBBY_START_COUNTDOWN);
-            context.commitMatchData(matchData);
+            context.commitFrdbData(matchData);
         }
     }
 }

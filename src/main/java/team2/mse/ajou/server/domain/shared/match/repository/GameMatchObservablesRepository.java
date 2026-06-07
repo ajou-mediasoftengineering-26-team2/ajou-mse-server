@@ -56,9 +56,8 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
 
     @Override
     public void sendMatchDataUpdate(MatchData matchData) {
-        var copyMatchData = new MatchData(matchData);
         var observable = fetchOrCreateMatchDataObservable(matchData.getId());
-        observable.updateValue(copyMatchData);
+        observable.updateValue(matchData);
     }
 
     @Override
@@ -91,9 +90,8 @@ public class GameMatchObservablesRepository implements GameObservablesRepository
 
     @Override
     public void sendPlayerDataUpdate(PlayerData playerData) {
-        var copyPlayerData = new PlayerData(playerData);
         var observable = fetchOrCreatePlayerDataObservable(playerData.getId());
-        observable.updateValue(copyPlayerData);
+        observable.updateValue(playerData);
     }
 
     @Override

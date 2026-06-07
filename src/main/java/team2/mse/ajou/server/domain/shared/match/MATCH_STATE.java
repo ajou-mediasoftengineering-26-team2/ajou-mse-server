@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.shared.match;
 
 
 import jakarta.persistence.Transient;
+import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
 import team2.mse.ajou.server.domain.shared.match.states.LobbyStartCountdownStateLogic;
 import team2.mse.ajou.server.domain.shared.match.states.LobbyWaitingStateLogic;
 import team2.mse.ajou.server.domain.shared.match.states.MatchStateLogic;
@@ -48,7 +49,19 @@ public enum MATCH_STATE {
      * 라운드 시작
      * 동전 던지기 등의 애니메이션
      */
-    GAME_ROUND_START_ANIMATION(new LobbyWaitingStateLogic()),
+    GAME_ROUND_START_ANIMATION(new MatchStateLogic() {
+        @Override
+        public void onEnter(RunningMatch context) {
+            MatchStateLogic.super.onEnter(context);
+
+            context.getMatchData(context.getMatchId()).ifPresent(matchData -> {
+                for (var playerData: matchData.getPlayers()) {
+                    playerData.setHp(44);
+                }
+                context.commitFrdbData(matchData);
+            });
+        }
+    }),
 
     // turn
     // Ingame: player move selection

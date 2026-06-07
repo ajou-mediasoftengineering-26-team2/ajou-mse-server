@@ -66,6 +66,8 @@ public class RunningMatch {
     private GameDataSetMethod<MatchData> matchDataCommitMethod;
     @Setter
     private GameDataSetMethod<PlayerData> playerDataCommitMethod;
+    @Setter
+    private GameDataSetMethod<MatchData> matchFrdbCommitMethod;
 
     public RunningMatch() {
         this.stateSwitchObservableCurrent = null;
@@ -95,6 +97,7 @@ public class RunningMatch {
         this.matchDataCommitMethod = null;
         this.playerDataGetMethod = null;
         this.playerDataCommitMethod = null;
+        this.matchFrdbCommitMethod = null;
     }
 
     /**
@@ -152,6 +155,10 @@ public class RunningMatch {
 
     public void commitMatchData(MatchData matchData) {
         matchDataCommitMethod.setData(matchData);
+    }
+
+    public void commitFrdbData(MatchData matchData) {
+        matchFrdbCommitMethod.setData(matchData);
     }
 
     // Observer 설정 함수들

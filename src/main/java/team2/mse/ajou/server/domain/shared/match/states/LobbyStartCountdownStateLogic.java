@@ -26,7 +26,7 @@ public class LobbyStartCountdownStateLogic implements MatchStateLogic {
 
             System.out.printf("\t[STATE] LobbyStartCountdownStateLogic::onMatchPlayerAckStateUpdate | ALL ACK RECEIVED\n");
             matchData.setState(MATCH_STATE.GAME_ROUND_START_ANIMATION);
-            context.commitMatchData(matchData);
+            context.commitFrdbData(matchData);
         }
     }
 }

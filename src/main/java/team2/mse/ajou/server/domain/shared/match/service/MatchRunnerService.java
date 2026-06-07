@@ -195,7 +195,7 @@ public class MatchRunnerService {
             mutex.lock();
             try {
                 gameDataRepository.saveMatch(matchData);
-                gameDataRepository.updateFrdbMatchData(matchData);
+                // gameDataRepository.updateFrdbMatchData(matchData);
             } finally {
                 mutex.unlock();
             }
@@ -204,7 +204,15 @@ public class MatchRunnerService {
             mutex.lock();
             try {
                 gameDataRepository.savePlayer(playerData);
-                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresent(gameDataRepository::updateFrdbMatchData);
+                // gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresent(gameDataRepository::updateFrdbMatchData);
+            } finally {
+                mutex.unlock();
+            }
+        });
+        data.setMatchFrdbCommitMethod((matchData) -> {
+            mutex.lock();
+            try {
+                gameDataRepository.updateFrdbMatchData(matchData);
             } finally {
                 mutex.unlock();
             }
