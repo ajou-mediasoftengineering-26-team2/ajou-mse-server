@@ -1,8 +1,10 @@
 package team2.mse.ajou.server.domain.firebase.model;
 
 import lombok.Data;
+import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.DamageData;
+import team2.mse.ajou.server.domain.shared.match.model.DefendData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 
 import java.util.List;
@@ -28,8 +30,10 @@ public class FrdbMatchData {
     private int currentTurn;
     private int currentRound;
     private boolean isAttackSuccess;
+    private HAND_CHOICE forbiddenBehavior;
     private Map<String, FrdbPlayerData> players;
     private List<FrdbDamageData> damageList;
+    private FrdbDefendData defendData;
 
     // 내부적인 LobbyData -> FRDB 로비 정보 변환
     public static FrdbMatchData from(MatchData matchData) {
@@ -51,6 +55,7 @@ public class FrdbMatchData {
         data.setCurrentRound(matchData.getCurrentRound());
         data.setAttackSuccess(matchData.isAttackSuccess());
         data.setPlayers(players);
+        data.setForbiddenBehavior(matchData.getForbiddenBehavior());
 
         data.setDamageList(
                 matchData.getDamageDataList()
@@ -58,6 +63,7 @@ public class FrdbMatchData {
                         .map(FrdbDamageData::from)
                         .toList()
         );
+        data.setDefendData(FrdbDefendData.from(matchData.getDefendData()));
 
         return data;
     }

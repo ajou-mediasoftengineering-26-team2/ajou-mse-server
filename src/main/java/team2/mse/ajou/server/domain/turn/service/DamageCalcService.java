@@ -8,14 +8,12 @@ import team2.mse.ajou.server.domain.item.model.Items.ItemResistance;
 import team2.mse.ajou.server.domain.item.service.ItemFactory;
 import team2.mse.ajou.server.domain.perk.model.IPerk;
 import team2.mse.ajou.server.domain.perk.service.PerkFactory;
-import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.STATUS_EFFECT;
 import team2.mse.ajou.server.domain.shared.match.model.DefendData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.model.DamageData;
-import team2.mse.ajou.server.domain.turn.model.DefendEffect;
 
 import java.util.ArrayList;
 import java.util.List;

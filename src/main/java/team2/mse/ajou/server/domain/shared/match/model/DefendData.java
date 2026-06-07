@@ -23,8 +23,8 @@ public class DefendData {
     @GeneratedValue
     private Long id;
 
-    int recoveredHp;
-    int coin;
+    int recoveredHp = 0;
+    int coin = 5;
 
     @ElementCollection
     @Enumerated(EnumType.STRING)

@@ -10,6 +10,8 @@ import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+import team2.mse.ajou.server.domain.subway.model.stations.IStation;
+import team2.mse.ajou.server.domain.subway.model.stations.StationFactory;
 import team2.mse.ajou.server.domain.turn.service.IDamageCalcService;
 
 import java.util.List;
@@ -51,7 +53,14 @@ public class MatchTurnCalcService {
         // Reset HP and turn state. (Both players!!)
         for (int i = 0; i < players.size(); i++) {
             PlayerData player = players.get(i);
-            player.setHp(10);
+
+            // 스테이션 로직 적용 (강남, 홍대입구, 시청)
+            IStation station = StationFactory.createStation(matchData.getStation());
+            if(station != null) {
+                station.applyIfPossible(matchData);
+            }
+
+            player.setHp(player.getMaxHp());
             player.setFinalWinner(false);
             player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
             player.setAckState(ACK_TYPE.NO_ACK);
@@ -128,6 +137,12 @@ public class MatchTurnCalcService {
 
         System.out.printf("\t[calculateTurn @ %s] BEFORE ATTACKER IDX: %d, DEFENDER IDX: %d\n", matchData.getId(), attackerIdx, defenceIdx);
 
+        // 스테이션 로직 적용 (시청) - 플레이어들의 선택을 받아오기전에 금지된 행동을 선택함을 감지
+        IStation station = StationFactory.createStation(matchData.getStation());
+        if(station != null) {
+            station.applyIfPossible(matchData);
+        }
+
         // Attacking player reference.
         PlayerData attackerPlayer = players.get(attackerIdx);
         HAND_CHOICE attackerChoice = attackerPlayer.getChoice();
@@ -144,6 +159,8 @@ public class MatchTurnCalcService {
 
         isAttackSuccess = matchData.isAttackSuccess();
         matchData.setAttackSuccess(isAttackSuccess);
+
+        if(attackerChoice == HAND_CHOICE.FORBIDDEN_BEHAVIOR) isAttackSuccess = false;
 
         // BEGIN DAMAGE CALCULATION LOGIC --------------------------
         // TODO: ADD ON-DAMAGE PERK EFFECTS ETC
