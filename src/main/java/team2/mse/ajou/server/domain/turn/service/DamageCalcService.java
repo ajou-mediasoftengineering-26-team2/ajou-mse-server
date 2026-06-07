@@ -104,11 +104,8 @@ public class DamageCalcService implements IDamageCalcService {
             attacker.setHp(Math.min(attacker.getMaxHp(),attacker.getHp()+damageData.getRecoveredHp()));
             attacker.setCoin(attacker.getCoin()+damageData.getCoin());
 
-            // 죽으면 중단
             if (defender.getHp() <= 0) {
-                removeResistance(defenderItemLIst, defender);
                 damageData.setKo(true);
-                return;
             }
         }
 
@@ -147,9 +144,7 @@ public class DamageCalcService implements IDamageCalcService {
             attacker.setCoin(attacker.getCoin()+damageData.getCoin());
 
             if (defender.getHp() <= 0) {
-                removeResistance(defenderItemLIst, defender);
                 damageData.setKo(true);
-                return;
             }
         }
 
