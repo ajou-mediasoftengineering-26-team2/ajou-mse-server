@@ -12,5 +12,5 @@ import java.util.UUID;
  * @author Ahn Yubin / 202021088
  */
 @Repository
-public interface MatchDataRepository extends JpaRepository<MatchData, UUID> {
+public interface MatchDataJpaRepository extends JpaRepository<MatchData, UUID> {
 }

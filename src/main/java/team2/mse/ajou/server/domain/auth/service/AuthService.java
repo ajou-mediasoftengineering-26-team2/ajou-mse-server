@@ -5,11 +5,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
-import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchService;
+import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
 
 import java.util.UUID;
 
@@ -20,12 +19,15 @@ import java.util.UUID;
  */
 @Service
 public class AuthService {
-    private final PlayerDataRepository playerDataRepository;
-    private final MatchService matchService;
+    private final GameDataRepository gameDataRepository;
+    private final MatchRunnerService matchRunnerService;
 
-    public AuthService(PlayerDataRepository playerDataRepository, MatchService matchService) {
-        this.playerDataRepository = playerDataRepository;
-        this.matchService = matchService;
+    public AuthService(
+            GameDataRepository gameDataRepository,
+            MatchRunnerService matchRunnerService
+    ) {
+        this.gameDataRepository = gameDataRepository;
+        this.matchRunnerService = matchRunnerService;
     }
 
     /**
@@ -47,7 +49,7 @@ public class AuthService {
             int wow = 10 / 0; // ArithmeticException is thrown here
         }
 
-        MatchData lobby = null;
+        UUID matchId = null;
         UUID playerId = null;
 
         try {
@@ -57,22 +59,22 @@ public class AuthService {
                 throw new ApiError(4000, "Username unavailable.");
             }
 
-            MatchData previousLobby = matchService.getOpenMatch();
+            UUID previousLobby = matchRunnerService.findOpenMatch();
 
             if (previousLobby != null) {
-                lobby = previousLobby;
+                matchId = previousLobby;
             } else {
                 // Create a new lobby/match if there's no lobby to join
-                lobby = matchService.createMatch();
+                matchId = matchRunnerService.createNewMatch();
             }
 
             // If `createMatch()` fails, then we have problem finding lobbies to join. Mostly a bug.
-            if (lobby == null) {
+            if (matchId == null) {
                 throw new ApiError(5001, "Failed to search for lobby.");
             }
 
             // Same thing goes for `joinMatch()` failing.
-            boolean result = matchService.joinMatch(playerId, lobby.getId());
+            boolean result = matchRunnerService.joinPlayerToMatch(playerId, matchId);
             if (!result) {
                 throw new ApiError(5002, "Failed to enter lobby.");
             }
@@ -84,13 +86,13 @@ public class AuthService {
             throw err;
         }
 
-        if (lobby == null) { // This is theoretically un-reachable condition. But just in case.
+        if (matchId == null) { // This is theoretically un-reachable condition. But just in case.
             throw new ApiError(5000, "Lobby error. (FATAL ERROR!! CALL YUBIN)");
         }
 
         return new LoginAndJoinResult(
                 playerId,
-                lobby.getId()
+                matchId
         );
     }
 
@@ -105,17 +107,17 @@ public class AuthService {
             throw ApiError.INVALID_PARAMETER;
         }
 
+        // 1] 이미 플레이어가 매치에 입장해있는 상태면 내보내기.
         // 1] Log out player if they are currently in match first.
-        MatchData lobby = matchService.findMatchByPlayerId(playerId);
-        if (lobby != null) {
-            matchService.leaveMatch(playerId, lobby.getId());
-        }
+        var joinedMatch = gameDataRepository.findMatchByJoinedPlayerId(playerId);
+        joinedMatch.ifPresent(matchData -> matchRunnerService.leavePlayerFromMatch(playerId, matchData.getId()));
 
+        // 2] 플레이어 로그인시에만 로그아웃.
         // 2] Log out player if they are currently are.
-        if (!isPlayerLoggedIn(playerId)) {
-            throw new ApiError(4001, "User not logged in.");
+        if (gameDataRepository.isPlayerExistsById(playerId)) {
+            forceLogout(playerId);
+            // throw new ApiError(4001, "User not logged in.");
         }
-        forceLogout(playerId);
 
         System.out.printf("Player `%s` left the game!\n", playerId);
     }
@@ -134,27 +136,37 @@ public class AuthService {
         if (!isUsernameValid(playerName)) {
             return false;
         }
-        return !playerDataRepository.existsByUsername(playerName);
+        return !gameDataRepository.isPlayerExistsByUsername(playerName);
     }
 
+    /**
+     * (내부용) 강제 로그아웃
+     *
+     * @param playerId
+     */
     private void forceLogout(UUID playerId) {
-        playerDataRepository.deleteById(playerId);
-        System.out.println("LOGOUT FOR `%s`".formatted(playerId));
+        gameDataRepository.deletePlayerById(playerId);
+        System.out.printf("[PLR: %s] PLAYER LOGOUT~~~~!!\n", playerId);
     }
 
+    /**
+     * (내부용) 닉네임 체크 & 강제 로그인
+     *
+     * @param username
+     * @return
+     */
     private UUID forceLogin(String username) {
         if (!checkPlayerNameAvailable(username)) {
             throw new IllegalArgumentException("Username unavailable.");
         }
 
         PlayerData playerData = new PlayerData();
-        // FIXME: Add player ready button in the lobby / waiting screen
+        // TODO: Add player ready button in the lobby / waiting screen
         playerData.setReady(true);
-
         playerData.setUsername(username);
 
-        PlayerData res = playerDataRepository.save(playerData);
-        // System.out.println("SAVING PLAYERINFO FOR `%s`".formatted(res.getId()));
+        PlayerData res = gameDataRepository.savePlayer(playerData);
+        System.out.printf("[PLR: %s] PLAYER LOGIN~~~~!!\n", res.getId());
 
         return res.getId();
     }
@@ -167,15 +179,5 @@ public class AuthService {
      */
     private boolean isUsernameValid(@NonNull String username) {
         return !username.isEmpty();
-    }
-
-    /**
-     * Checks whether player with given ID is currently logged in.
-     *
-     * @param playerId Player UUID.
-     * @return Whether given player is logged in.
-     */
-    private boolean isPlayerLoggedIn(UUID playerId) {
-        return playerDataRepository.existsById(playerId);
     }
 }

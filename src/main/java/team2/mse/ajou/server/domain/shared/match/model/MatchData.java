@@ -2,9 +2,10 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.turn.model.DefendEffect;
+import team2.mse.ajou.server.domain.shared.match.events.MatchDataJpaListener;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -17,6 +18,8 @@ import java.util.UUID;
  * @author Ahn Yubin / 202021088
  */
 @Entity
+@EntityListeners({MatchDataJpaListener.class})
+@NoArgsConstructor
 @Getter
 @Setter
 public class MatchData {
@@ -70,7 +73,7 @@ public class MatchData {
      */
     private boolean ko = false;
 
-    @OneToMany(fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
@@ -79,6 +82,11 @@ public class MatchData {
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private DefendData defendData = new DefendData();
+
+    /**
+     * Last updated time
+     */
+    private ZonedDateTime lastUpdated = ZonedDateTime.now();
 
     /**
      * Find player by UUID.
@@ -153,9 +161,36 @@ public class MatchData {
 
     @Transient
     public void clearDamageDataList() {
-        if(damageDataList == null) {
+        if (damageDataList == null) {
             damageDataList = new ArrayList<>();
         }
         damageDataList.clear();
+    }
+
+    @Transient
+    public void updateLastUpdated() {
+        lastUpdated = ZonedDateTime.now();
+    }
+
+    /**
+     * `MatchData`를 Deep copy 합니다.
+     *
+     * @param from
+     */
+    public MatchData(MatchData from) {
+        this.id = from.id;
+        this.station = from.station;
+        this.countdownStartTime = from.countdownStartTime;
+        this.countdownSec = from.countdownSec;
+        this.state = from.state;
+        this.winnerPlayerIdx = from.winnerPlayerIdx;
+        this.currentTurn = from.currentTurn;
+        this.currentRound = from.currentRound;
+        this.currentPlayerIdx = from.currentPlayerIdx;
+        this.attackerPlayerIdx = from.attackerPlayerIdx;
+        this.isAttackSuccess = from.isAttackSuccess;
+        this.ko = from.ko;
+        this.players = new ArrayList<>(from.players.stream().map(PlayerData::new).toList());
+        this.damageDataList = new ArrayList<>(from.damageDataList.stream().map(DamageData::new).toList());
     }
 }

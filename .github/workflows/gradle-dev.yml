@@ -1,22 +1,15 @@
-# GitHub Actions for CI/CD.
+# GitHub Actions for CI/CD. (Development server!)
 # Ahn Yubin / 202021088
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-# This workflow will build a Java project with Gradle and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-gradle
+name: (DEV SERVER) Build with Gradle & Deploy to development environment
 
-name: Build with Gradle & Deploy to development environment
-
-# Only run deploy on `deploy-dev` branch
+# Only run deploy on `deploy-test` branch
 on:
   push:
-    branches: [ "deploy-dev" ]
+    branches: [ "deploy-test" ]
   pull_request:
     types: "closed"
-    branches: [ "deploy-dev" ]
+    branches: [ "deploy-test" ]
 
 jobs:
   build:
@@ -50,15 +43,18 @@ jobs:
     - name: Application secret 생성
       run: |
         touch ./src/main/resources/application-secrets.properties
-        echo 'spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:3306/ajou_mse_2026?createDatabaseIfNotExist=true' >> ./src/main/resources/application-secrets.properties
-        echo "spring.datasource.username=${{ secrets.SECRET_MYSQL_USER }}" >> ./src/main/resources/application-secrets.properties
-        echo "spring.datasource.password=${{ secrets.SECRET_MYSQL_PASSWORD }}" >> ./src/main/resources/application-secrets.properties
-        echo "external.api.key=${{ secrets.SECRET_SUBWAY_API_KEY }}" >> ./src/main/resources/application-secrets.properties
+        echo ' ' >> ./src/main/resources/application-secrets.properties
+        
+        touch ./src/main/resources/application-secrets-dev.properties
+        echo 'spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:3306/ajou_mse_2026_dev?createDatabaseIfNotExist=true' >> ./src/main/resources/application-secrets-dev.properties
+        echo "spring.datasource.username=${{ secrets.SECRET_MYSQL_USER }}" >> ./src/main/resources/application-secrets-dev.properties
+        echo "spring.datasource.password=${{ secrets.SECRET_MYSQL_PASSWORD }}" >> ./src/main/resources/application-secrets-dev.properties
+        echo "external.api.key=${{ secrets.SECRET_SUBWAY_API_KEY }}" >> ./src/main/resources/application-secrets-dev.properties
 
     - name: Firebase secret 생성
       run: |
-        touch ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
-        echo '${{ secrets.SECRET_FIREBASE_SERVICE_ACCOUNT }}' >> ./src/main/resources/ajou-mse-firebase-adminsdk-fbsvc-1dee6ea80f.json
+        touch ./src/main/resources/ajou-mse-firebase-dev.json
+        echo '${{ secrets.SECRET_FIREBASE_SERVICE_ACCOUNT_DEV }}' >> ./src/main/resources/ajou-mse-firebase-dev.json
 
     # Set up JDK for build
     - name: JDK 25 설정하기
@@ -73,9 +69,9 @@ jobs:
       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
     - name: Gradle Wrapper로 프로젝트 빌드
-      run: ./gradlew jibBuildTar -PIS_GITHUB_CI_CD=true -Dspring.profiles.active=deploy
+      run: ./gradlew jibBuildTar -PIS_GITHUB_CI_CD=true -Dspring.profiles.active=dev
     
-    # SCP the built image to Amazon EC2, in `~/deploy` directory. ( `~/deploy` -> `/home/dolce/deploy` )
+    # SCP the built image to Amazon EC2, in `~/deploys-dev` directory. ( `~/deploy` -> `/home/dolce/deploys-dev` )
     - name: 빌드한 Docker (.tar 이미지 + docker-compose.yml) 파일 SCP로 EC2 머신에 넘기기
       uses: appleboy/scp-action@v1
       with:
@@ -83,7 +79,7 @@ jobs:
         username: "dolce" # 이름이 돌쇠래요 껄껄껄
         key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
         source: build/jib-image.tar, build/mysql_root_password.txt, build/mysql_user.txt, build/mysql_password.txt, docker-compose.yaml
-        target: /home/dolce/deploys
+        target: /home/dolce/deploys-dev
 
     # Use SSH to "manually" load & run Docker images
     - name: EC2에 SSH로 접속해 실행하기
@@ -92,14 +88,14 @@ jobs:
         host: ${{ secrets.SERVER_HOST }}
         username: "dolce"
         key: ${{ secrets.SSH_KEY_DEPLOYMENT }}
-        # ~/deploys 로 이동
+        # ~/deploys-dev 로 이동
         # docker에 받아온 이미지 파일 로드
         # docker compose로 docker-compose.yml 내용대로 docker 실행
         # 안쓰이는 이미지 파일 버리기
         script: |
-          cd /home/dolce/deploys
+          cd /home/dolce/deploys-dev
           docker load -i ./build/jib-image.tar
-          docker compose --profile deploy --profile deploy-db up -d
+          docker compose --profile dev --profile dev-db up -d
           docker image prune -f
 
     # Un-allow this CI/CD runner to access Amazon EC2 instance

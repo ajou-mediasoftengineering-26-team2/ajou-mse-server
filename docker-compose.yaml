@@ -4,6 +4,8 @@ services:
   mysql-db:
     image: mysql
     container_name: mse-2026-mysql-db
+    profiles:
+      - deploy-db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: /run/secrets/SECRET_MYSQL_ROOT_PASSWORD
@@ -19,8 +21,36 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
-#    networks:
-#      - ajou-mse-2026-backend
+    #    networks:
+    #      - ajou-mse-2026-backend
+    healthcheck: # Wait for MySQL to run
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$(cat /run/secrets/SECRET_MYSQL_USER)", "-p$$(cat /run/secrets/SECRET_MYSQL_PASSWORD)" ]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+
+  mysql-db-dev:
+    image: mysql
+    container_name: mse-2026-mysql-db-dev
+    profiles:
+      - dev-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: /run/secrets/SECRET_MYSQL_ROOT_PASSWORD
+      MYSQL_USER_FILE: /run/secrets/SECRET_MYSQL_USER
+      MYSQL_PASSWORD_FILE: /run/secrets/SECRET_MYSQL_PASSWORD
+      MYSQL_DATABASE: ajou_mse_2026_dev
+    secrets:
+      - SECRET_MYSQL_ROOT_PASSWORD
+      - SECRET_MYSQL_USER
+      - SECRET_MYSQL_PASSWORD
+    ports:
+      - "3307:3306"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
+    #    networks:
+    #      - ajou-mse-2026-backend
     healthcheck: # Wait for MySQL to run
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u$$(cat /run/secrets/SECRET_MYSQL_USER)", "-p$$(cat /run/secrets/SECRET_MYSQL_PASSWORD)" ]
       interval: 10s
@@ -45,6 +75,26 @@ services:
     environment:
       MYSQL_HOST: mse-2026-mysql-db
       SPRING_PROFILES_ACTIVE: docker
+
+  mse-server-dev:
+    container_name: mse-2026-backend-dev
+    profiles:
+      - dev
+    depends_on:
+      mysql-db-dev:
+        condition: service_healthy
+    image: ajou-mse/server-dev
+    tty: true
+    restart: always
+    ports:
+      - "8088:8088"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/share/zoneinfo/Asia/Seoul:/etc/timezone:ro
+    environment:
+      MYSQL_HOST: mse-2026-mysql-db-dev
+      SPRING_PROFILES_ACTIVE: docker
+
 secrets:
   SECRET_MYSQL_ROOT_PASSWORD:
     file: ./build/mysql_root_password.txt

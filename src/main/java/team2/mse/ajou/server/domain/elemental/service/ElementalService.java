@@ -1,17 +1,10 @@
 package team2.mse.ajou.server.domain.elemental.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.ack.service.AckService;
-import team2.mse.ajou.server.domain.firebase.service.FrdbService;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
-import team2.mse.ajou.server.domain.shared.match.model.MatchData;
-import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchService;
-import team2.mse.ajou.server.domain.shared.match.service.MatchTurnCalcService;
+import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
+import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 
 import java.util.UUID;
 
@@ -25,28 +18,21 @@ import java.util.UUID;
 public class ElementalService implements IElementalService {
     private final int[] costOfUpgrade = {0, 10, 25, 45, 75, 9999};
 
-    private final PlayerDataRepository playerDataRepository;
-    private final MatchDataRepository matchDataRepository;
-    private final MatchService matchService;
-    private final FrdbService frdbService;
-    private final AckService ackService;
+    private final GameDataRepository gameDataRepository;
 
-    @Autowired
-    public ElementalService(PlayerDataRepository playerDataRepository,
-                            MatchDataRepository matchDataRepository,
-                            MatchTurnCalcService matchTurnCalcService,
-                            MatchService matchService,
-                            FrdbService frdbService,
-                            AckService ackService) {
-        this.playerDataRepository = playerDataRepository;
-        this.matchDataRepository = matchDataRepository;
-        this.matchService = matchService;
-        this.frdbService = frdbService;
-        this.ackService = ackService;
+    public ElementalService(GameDataRepository gameDataRepository) {
+        this.gameDataRepository = gameDataRepository;
     }
 
     @Override
     public void putElementalChoice(UUID id, HAND_ELEMENTAL handElemental) {
+        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
+            playerData.setHandElemental(handElemental);
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Not Found: " + id);
+        });
+
         /*
         PlayerData playerData = playerDataRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("Not Found: "+id));
@@ -71,26 +57,46 @@ public class ElementalService implements IElementalService {
         MatchData updMatchData = matchDataRepository.save(matchData);
 
         frdbService.setMatch(updMatchData.getId(), updMatchData);
-         */
 
-        PlayerData playerData = playerDataRepository.findById(id)
+        PlayerData playerData = playerDataJpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
-        MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
+        MatchData matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         playerData.setHandElemental(handElemental);
         matchData.updatePlayer(playerData);
 
-        playerDataRepository.save(playerData);
-        MatchData updMatchData = matchDataRepository.save(matchData);
-        frdbService.setMatch(updMatchData.getId(), updMatchData);
+        playerDataJpaRepository.save(playerData);
+        MatchData updMatchData = matchDataJPARepository.save(matchData);
+        frdbRepository.setMatch(updMatchData.getId(), updMatchData);
+         */
     }
 
     @Override
     public void upgradeElemental(UUID id, HAND_ELEMENTAL handElemental) {
-        PlayerData playerData = playerDataRepository.findById(id)
+        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
+            // 업그레이드 못하는데 업그레이드 쿼리가 들어온 경우 (he is hacker!!)
+            if (playerData.getCoin() < playerData.getUpgradeCost()) {
+                throw new IllegalArgumentException("Coin is less than Cost: " + id);
+            }
+
+            if (playerData.getHandElemental() == HAND_ELEMENTAL.NONE) {
+                return;
+            }
+
+            playerData.setCoin(playerData.getCoin() - playerData.getUpgradeCost());
+            playerData.setElementalLevel(playerData.getElementalLevel() + 1);
+            playerData.setUpgradeCost(costOfUpgrade[playerData.getElementalLevel()]);
+
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Not Found: " + id);
+        });
+
+        /*
+        PlayerData playerData = playerDataJpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
-        MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
+        MatchData matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         // 업그레이드 못하는데 업그레이드 쿼리가 들어온 경우 (he is hacker!!)
@@ -108,17 +114,36 @@ public class ElementalService implements IElementalService {
 
         matchData.updatePlayer(playerData);
 
-        playerDataRepository.save(playerData);
-        MatchData updMatchData = matchDataRepository.save(matchData);
-        frdbService.setMatch(updMatchData.getId(), updMatchData);
+        playerDataJpaRepository.save(playerData);
+        MatchData updMatchData = matchDataJPARepository.save(matchData);
+        frdbRepository.setMatch(updMatchData.getId(), updMatchData);
+         */
     }
 
     @Override
     public void receiveElementalAnimationEndAck(UUID playerId) {
-        PlayerData playerData = playerDataRepository.findById(playerId)
+        var playerData = gameDataRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + playerId));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
+
+        if (matchData.getState() != MATCH_STATE.GAME_ELEMENTAL_RECEIVING) {
+            throw new IllegalStateException("Elemental receive animation ACK can be submitted only after turn result is calculated!");
+        }
+
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
+
+        playerData.setAckState(ACK_TYPE.ELEMENTAL_RECEIVE_ANIMATION_END);
+        gameDataRepository.savePlayer(playerData);
+
+        /*
+        PlayerData playerData = playerDataJpaRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + playerId));
 
-        MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
+        MatchData matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         playerData.setAckState(ACK_TYPE.ELEMENTAL_RECEIVE_ANIMATION_END);
@@ -132,9 +157,10 @@ public class ElementalService implements IElementalService {
             matchService.initializeMatchRound(matchData);
         }
 
-        playerDataRepository.save(playerData);
-        MatchData updMatchData = matchDataRepository.save(matchData);
-        frdbService.setMatch(updMatchData.getId(), updMatchData);
+        playerDataJpaRepository.save(playerData);
+        MatchData updMatchData = matchDataJPARepository.save(matchData);
+        frdbRepository.setMatch(updMatchData.getId(), updMatchData);
+        */
     }
 
 }

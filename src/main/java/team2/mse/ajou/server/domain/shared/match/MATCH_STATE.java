@@ -1,6 +1,10 @@
 package team2.mse.ajou.server.domain.shared.match;
 
 
+import jakarta.persistence.Transient;
+import team2.mse.ajou.server.domain.shared.match.states.*;
+import team2.mse.ajou.server.domain.shared.states.GameChoiceFinishedLogic;
+
 import java.util.List;
 
 /**
@@ -11,95 +15,103 @@ import java.util.List;
  */
 public enum MATCH_STATE {
     // Lobby: before match
-    /** 대기 화면: 게임 시작 전 */
-    LOBBY_WAITING,
+    /**
+     * 대기 화면: 게임 시작 전
+     */
+    LOBBY_WAITING(new LobbyWaitingStateLogic()),
     // Lobby: game start countdown
-    /** 대기 화면: 게임 시작 카운트다운 */
-    LOBBY_START_COUNTDOWN,
-
-    // match
     /**
-     * 매치 시작
-     * 이번역은 ~역 입니다. 등의 애니메이션 출력
+     * 대기 화면: 게임 시작 카운트다운
      */
-    MATCH_START,
-    /**
-     * 매치 종료
-     * 결과 출력
-     */
-    MATCH_END_RESULT,
-    /**
-     * 매치 종료
-     * 플레이어 빡종
-     */
-    MATCH_END_PLAYER_DISCONNECTED,
+    LOBBY_START_COUNTDOWN(new LobbyStartCountdownStateLogic()),
 
     // round
     /**
      * 라운드 시작
      * 동전 던지기 등의 애니메이션
      */
-    GAME_ROUND_START_ANIMATION,
+    GAME_ROUND_START_ANIMATION(new GameRoundStartAnimationLogic()),
 
     // turn
     // Ingame: player move selection
-    /** 인게임: 두 플레이어 손 선택 */
-    GAME_PLAYER_CHOICE,
+    /**
+     * 인게임: 두 플레이어 손 선택
+     */
+    GAME_PLAYER_CHOICE(new GamePlayerChoiceLogic()),
     // Ingame:
-    /** 인게임: 두 플레이어 손 선택완료 후 결과 출력중 */
-    GAME_CHOICE_FINISHED,
+    /**
+     * 인게임: 두 플레이어 손 선택완료 후 결과 출력중
+     */
+    GAME_CHOICE_FINISHED(new GameChoiceFinishedLogic()),
     // Ingame:
-    /** 인게임: 클라이언트가 공격/방어 애니메이션 재생 중*/
-    GAME_TURN_ANIMATION,
+    /**
+     * 인게임: 클라이언트가 공격/방어 애니메이션 재생 중
+     */
+    GAME_TURN_ANIMATION(new GameTurnAnimationLogic()),
     // Ingame: end of a single round (caused by player KO)
-    /** 인게임: 한 라운드 끝. 플레이어 사망 */
-    GAME_ROUND_END_PLAYER_KO,
+    /**
+     * 인게임: 한 라운드 끝. 플레이어 사망
+     */
+    GAME_ROUND_END_PLAYER_KO(new GameRoundEndPlayerKoLogic()),
 
     // round
     /**
      * 플레이어가 hand elemental 선택중
      */
-    GAME_ELEMENTAL_CHOICE,
+    GAME_ELEMENTAL_CHOICE(new GameElementalChoiceLogic()),
     /**
      * 플레이어가 elemental 받는 애니메이션 재생중
      */
-    GAME_ELEMENTAL_RECEIVING,
+    GAME_ELEMENTAL_RECEIVING(new GameElementalReceivingLogic()),
 
-    /** 플레이어가 perk 선택 중*/
-    GAME_PERK_CHOICE,
-    /** 클라이언트가 perk, 아이템 받는 애니메이션 재생 중*/
-    GAME_PERK_ITEM_RECEIVING,
+    /**
+     * 플레이어가 perk 선택 중
+     */
+    GAME_PERK_CHOICE(new GamePerkChoiceLogic()),
+    /**
+     * 클라이언트가 perk, 아이템 받는 애니메이션 재생 중
+     */
+    GAME_PERK_ITEM_RECEIVING(new GamePerkItemReceivingLogic()),
 
 
     // Game over: show results
-    /** 게임 끝: 정상. 결과화면 */
-    END_RESULT,
+    /**
+     * 게임 끝: 정상. 결과화면
+     */
+    END_RESULT(new EndResultLogic()),
     // Game over: player disconnected mid-match etc.
-    /** 게임 끝: 플레이어 빡종 */
-    END_PLAYER_DISCONNECTED;
+    /**
+     * 게임 끝: 플레이어 빡종
+     */
+    // TODO: 추가 로직 구현
+    END_PLAYER_DISCONNECTED(new MatchStateLogic() {
+
+    });
 
     /**
      * Determines whether this state is considered "in-game".
+     *
      * @return In game?
      */
     public boolean isIngame() {
         return List.of(
-                    MATCH_STATE.GAME_ROUND_START_ANIMATION,
-                    MATCH_STATE.GAME_PLAYER_CHOICE,
-                    MATCH_STATE.GAME_CHOICE_FINISHED,
-                    MATCH_STATE.GAME_TURN_ANIMATION,
-                    MATCH_STATE.GAME_ROUND_END_PLAYER_KO,
+                        MATCH_STATE.GAME_ROUND_START_ANIMATION,
+                        MATCH_STATE.GAME_PLAYER_CHOICE,
+                        MATCH_STATE.GAME_CHOICE_FINISHED,
+                        MATCH_STATE.GAME_TURN_ANIMATION,
+                        MATCH_STATE.GAME_ROUND_END_PLAYER_KO,
 
-                    MATCH_STATE.GAME_ELEMENTAL_CHOICE,
-                    MATCH_STATE.GAME_ELEMENTAL_RECEIVING,
-                    MATCH_STATE.GAME_PERK_CHOICE,
-                    MATCH_STATE.GAME_PERK_ITEM_RECEIVING
+                        MATCH_STATE.GAME_ELEMENTAL_CHOICE,
+                        MATCH_STATE.GAME_ELEMENTAL_RECEIVING,
+                        MATCH_STATE.GAME_PERK_CHOICE,
+                        MATCH_STATE.GAME_PERK_ITEM_RECEIVING
                 )
                 .contains(this);
     }
 
     /**
      * Determines whether this state is considered "receiving item".
+     *
      * @return Receiving items?
      */
     public boolean isReceivingItems() {
@@ -108,5 +120,16 @@ public enum MATCH_STATE {
                         MATCH_STATE.GAME_ELEMENTAL_RECEIVING
                 )
                 .contains(this);
+    }
+
+    @Transient
+    private final MatchStateLogic logic;
+
+    private MATCH_STATE(MatchStateLogic logic) {
+        this.logic = logic;
+    }
+
+    public MatchStateLogic getLogic() {
+        return logic;
     }
 }

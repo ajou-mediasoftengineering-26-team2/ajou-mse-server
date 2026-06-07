@@ -2,10 +2,12 @@ package team2.mse.ajou.server.domain.shared.match.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import team2.mse.ajou.server.domain.item.service.ItemFactory;
+import lombok.NoArgsConstructor;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.*;
+import team2.mse.ajou.server.domain.shared.match.events.PlayerDataJpaListener;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +19,8 @@ import java.util.UUID;
  * @author Junseo Hwang / 202322128
  */
 @Entity
+@EntityListeners({PlayerDataJpaListener.class})
+@NoArgsConstructor
 @Data
 public class PlayerData {
     @Id
@@ -109,33 +113,71 @@ public class PlayerData {
 
     private List<STATUS_EFFECT> statusEffectList = new ArrayList<>();
 
+    /**
+     * Last updated time
+     */
+    private ZonedDateTime lastUpdated = ZonedDateTime.now();
+
     private int dodgeCount = 0; // 라운드 시작시에 0으로 초기화해야함
 
     public List<PERK> getPerkChoiceList() {
-        if(perkChoiceList == null) {
+        if (perkChoiceList == null) {
             return perkChoiceList = new ArrayList<>();
         }
         return perkChoiceList;
     }
 
     public List<PERK> getPerkList() {
-        if(perkList == null) {
+        if (perkList == null) {
             return perkList = new ArrayList<>();
         }
         return perkList;
     }
 
     public List<ITEM_CODE> getItemList() {
-        if(itemList == null) {
+        if (itemList == null) {
             return itemList = new ArrayList<>();
         }
         return itemList;
     }
 
     public List<ITEM_CODE> getReceivedItemList() {
-        if(receivedItemList == null) {
+        if (receivedItemList == null) {
             return receivedItemList = new ArrayList<>();
         }
         return receivedItemList;
+    }
+
+    public void updateLastUpdated() {
+        this.lastUpdated = ZonedDateTime.now();
+    }
+
+    /**
+     * `PlayerData`를 Deep copy 합니다.
+     *
+     * @param from
+     */
+    public PlayerData(PlayerData from) {
+        this.id = from.id;
+        this.joinedMatchId = from.joinedMatchId;
+        this.username = from.username;
+        this.ackState = from.ackState;
+        this.wins = from.wins;
+        this.hp = from.hp;
+        this.isReady = from.isReady;
+        this.isAttacking = from.isAttacking;
+        this.isSelecting = from.isSelecting;
+        this.isFinalWinner = from.isFinalWinner;
+        this.choice = from.choice;
+        this.handElemental = from.handElemental;
+        this.perkList = new ArrayList<>(from.perkList);
+        this.perkChoiceList = new ArrayList<>(from.perkChoiceList);
+        this.perkChoiceCurrent = from.perkChoiceCurrent;
+        this.receivedItemList = new ArrayList<>(from.receivedItemList);
+        this.itemList = new ArrayList<>(from.itemList);
+        this.coin = from.coin;
+        this.elementalLevel = from.elementalLevel;
+        this.upgradeCost = from.upgradeCost;
+        this.statusEffectList = new ArrayList<>(from.statusEffectList);
     }
 }

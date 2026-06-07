@@ -3,7 +3,7 @@ package team2.mse.ajou.server.test.controller;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
 import team2.mse.ajou.server.test.model.TestResponse;
 
 
@@ -22,12 +22,12 @@ import java.util.UUID;
 @AllArgsConstructor
 public class DBTestController
 {
-    private final PlayerDataRepository playerDataRepository;
+    private final PlayerDataJpaRepository playerDataJpaRepository;
 
     @GetMapping("/player/{id}")
     public TestResponse getChoiceByID(@PathVariable String id){
         UUID uuid = UUID.fromString(id);
-        PlayerData player = playerDataRepository.findById(uuid)
+        PlayerData player = playerDataJpaRepository.findById(uuid)
                 .orElseThrow(()-> new IllegalArgumentException("Not Found: " +id));
 
         return new TestResponse(

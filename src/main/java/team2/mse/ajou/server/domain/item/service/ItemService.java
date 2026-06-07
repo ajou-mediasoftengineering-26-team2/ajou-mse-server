@@ -1,17 +1,11 @@
 package team2.mse.ajou.server.domain.item.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.ack.service.AckService;
-import team2.mse.ajou.server.domain.firebase.service.FrdbService;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchService;
-import team2.mse.ajou.server.domain.shared.match.service.MatchTurnCalcService;
+import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 
 import java.util.*;
 
@@ -20,23 +14,10 @@ import java.util.*;
  */
 @Service
 public class ItemService implements IItemService {
-    private final PlayerDataRepository playerDataRepository;
-    private final MatchDataRepository matchDataRepository;
-    private final FrdbService frdbService;
-    private final AckService ackService;
-    private final MatchService matchService;
+    private final GameDataRepository gameDataRepository;
 
-    @Autowired
-    public ItemService(PlayerDataRepository playerDataRepository,
-                       MatchDataRepository matchDataRepository,
-                       MatchTurnCalcService matchTurnCalcService,
-                       MatchService matchService,
-                       FrdbService frdbService, AckService ackService) {
-        this.playerDataRepository = playerDataRepository;
-        this.matchDataRepository = matchDataRepository;
-        this.frdbService = frdbService;
-        this.ackService = ackService;
-        this.matchService = matchService;
+    public ItemService(GameDataRepository gameDataRepository) {
+        this.gameDataRepository = gameDataRepository;
     }
 
     /**
@@ -63,14 +44,8 @@ public class ItemService implements IItemService {
                 player.getItemList().add(item);
             }
             player.setReceivedItemList(receivingItemList);
-
-            matchData.updatePlayer(player);
-            // playerDataRepository.save(player);
+            // matchData.updatePlayer(player);
         }
-
-        // matchData.setState(MATCH_STATE.GAME_PERK_ITEM_RECEIVING);
-        // matchDataRepository.save(matchData);
-        // frdbService.setMatch(matchId, matchData);
     }
 
     /**
@@ -80,9 +55,27 @@ public class ItemService implements IItemService {
      */
     @Override
     public void receiveItemAnimationEndAck(UUID playerId) {
-        PlayerData playerData = playerDataRepository.findById(playerId)
+        var playerData = gameDataRepository.findPlayerById(playerId)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + playerId));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
+
+        if (!matchData.getState().isReceivingItems()) {
+            throw new IllegalStateException("Item/perk/elemental receive animation ACK can be submitted only after turn result is calculated!");
+        }
+
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
+
+        playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
+        gameDataRepository.savePlayer(playerData);
+
+        /*
+        PlayerData playerData = playerDataJpaRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + playerId));
-        MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
+        MatchData matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         if (!matchData.getState().isReceivingItems()) {
@@ -102,13 +95,10 @@ public class ItemService implements IItemService {
             matchService.initializeMatchRound(matchData);
         }
 
-        playerDataRepository.saveAll(matchData.getPlayers());
-        MatchData updMatchData = matchDataRepository.save(matchData);
-        frdbService.setMatch(updMatchData.getId(), updMatchData);
-    }
-
-    private boolean isAllItemAnimationEnd(MatchData matchData) {
-        return ackService.isAllAckReceived(matchData, ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
+        playerDataJpaRepository.saveAll(matchData.getPlayers());
+        MatchData updMatchData = matchDataJPARepository.save(matchData);
+        frdbRepository.setMatch(updMatchData.getId(), updMatchData);
+         */
     }
 
     private List<ITEM_CODE> getUnownedItem(PlayerData playerData) {
@@ -131,10 +121,5 @@ public class ItemService implements IItemService {
         Collections.shuffle(unownedItems);
 
         return unownedItems;
-//        // 없는 아이템 중 랜덤 선택
-//        int randomIndex = ThreadLocalRandom.current().nextInt(unownedItems.size());
-//        ITEM_CODE randomCode = unownedItems.get(randomIndex);
-//
-//        return randomCode;
     }
 }

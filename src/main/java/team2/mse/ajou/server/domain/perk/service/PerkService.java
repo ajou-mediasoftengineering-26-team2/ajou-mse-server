@@ -1,17 +1,12 @@
 package team2.mse.ajou.server.domain.perk.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.ack.service.AckService;
-import team2.mse.ajou.server.domain.firebase.service.FrdbService;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.MatchDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchService;
+import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 
 import java.util.*;
 
@@ -22,29 +17,26 @@ import java.util.*;
  */
 @Service
 public class PerkService implements IPerkService {
-    private final PlayerDataRepository playerDataRepository;
-    private final MatchDataRepository matchDataRepository;
-    private final MatchService matchService;
-    private final FrdbService frdbService;
-    private final AckService ackService;
+    private final GameDataRepository gameDataRepository;
 
-    @Autowired
-    public PerkService(PlayerDataRepository playerDataRepository,
-                       MatchDataRepository matchDataRepository,
-                       MatchService matchService,
-                       FrdbService frdbService, AckService ackService) {
-        this.playerDataRepository = playerDataRepository;
-        this.matchDataRepository = matchDataRepository;
-        this.matchService = matchService;
-        this.frdbService = frdbService;
-        this.ackService = ackService;
+    public PerkService(GameDataRepository gameDataRepository) {
+        this.gameDataRepository = gameDataRepository;
     }
 
     @Override
     public void putPerkChoice(UUID id, PERK perk) {
-        PlayerData playerData = playerDataRepository.findById(id)
+        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
+            playerData.setPerkChoiceCurrent(perk);
+            playerData.getPerkList().add(perk);
+
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Not Found: " + id);
+        });
+        /*
+        PlayerData playerData = playerDataJpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
-        MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
+        MatchData matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         playerData.setPerkChoiceCurrent(perk);
@@ -52,18 +44,37 @@ public class PerkService implements IPerkService {
 
         matchData.updatePlayer(playerData);
 
-        playerDataRepository.save(playerData);
-        matchDataRepository.save(matchData);
+        playerDataJpaRepository.save(playerData);
+        matchDataJPARepository.save(matchData);
 
         // MatchData updMatchData = matchDataRepository.save(matchData);
         // frdbService.setMatch(updMatchData.getId(), updMatchData);
+         */
     }
 
     @Override
     public void putAck(UUID id) {
-        PlayerData playerData = playerDataRepository.findById(id)
+        var playerData = gameDataRepository.findPlayerById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Player Not Found: " + id));
+        UUID matchId = playerData.getJoinedMatchId();
+        var matchData = gameDataRepository.findMatchById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + matchId));
+
+        if (matchData.getState() != MATCH_STATE.GAME_PERK_ITEM_RECEIVING) {
+            throw new IllegalStateException("Perk/item receive animation ACK can be submitted only after turn result is calculated!");
+        }
+
+        if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+            throw new IllegalStateException("Player is already acknowledged!");
+        }
+
+        playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
+        gameDataRepository.savePlayer(playerData);
+
+        /*
+        PlayerData playerData = playerDataJpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
-        MatchData matchData = matchDataRepository.findById(playerData.getJoinedMatchId())
+        MatchData matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId())
                 .orElseThrow(() -> new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId()));
 
         playerData.setAckState(ACK_TYPE.ITEM_RECEIVE_ANIMATION_END);
@@ -83,9 +94,10 @@ public class PerkService implements IPerkService {
             matchService.initializeMatchRound(matchData);
         }
 
-        playerDataRepository.save(playerData);
-        MatchData updMatchData = matchDataRepository.save(matchData);
-        frdbService.setMatch(updMatchData.getId(), updMatchData);
+        playerDataJpaRepository.save(playerData);
+        MatchData updMatchData = matchDataJPARepository.save(matchData);
+        frdbRepository.setMatch(updMatchData.getId(), updMatchData);
+         */
     }
 
     @Override
