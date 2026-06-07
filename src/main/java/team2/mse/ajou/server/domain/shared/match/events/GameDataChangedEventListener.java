@@ -6,8 +6,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import team2.mse.ajou.server.domain.shared.match.model.MatchData;
-import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
 
@@ -34,6 +32,9 @@ public class GameDataChangedEventListener {
         gameDataRepository.findMatchById(event.matchId()).ifPresent(matchData -> {
             // var copyMatchData = new MatchData(matchData);
             gameObservablesRepository.sendMatchDataUpdate(matchData);
+
+            // 플레이어 DB도 갱신
+            // gameObservablesRepository.saveAll(matchData.getPlayers());
         });
     }
 
@@ -46,6 +47,21 @@ public class GameDataChangedEventListener {
         gameDataRepository.findPlayerById(event.playerId()).ifPresent(playerData -> {
             // var copyPlayerData = new PlayerData(playerData);
             gameObservablesRepository.sendPlayerDataUpdate(playerData);
+            //
+            // UUID joinedMatchId = playerData.getJoinedMatchId();
+            // ZonedDateTime updateTime = ZonedDateTime.now();
+            //
+            // // 매치 DB도 갱신
+            // if (joinedMatchId != null) {
+            //     gameDataRepository.findMatchById(joinedMatchId).ifPresent(matchData -> {
+            //         System.out.println("sideeffect (player data), match state is " + matchData.getState() + " @ " + matchData.getLastUpdated() + " VS " + updateTime);
+            //         if (updateTime.isAfter(matchData.getLastUpdated())) {
+            //             System.out.println("\t(update!!)");
+            //             matchData.updateLastUpdated();
+            //         }
+            //     });
+            //     System.out.println("sideeffect end :)");
+            // }
         });
     }
 }

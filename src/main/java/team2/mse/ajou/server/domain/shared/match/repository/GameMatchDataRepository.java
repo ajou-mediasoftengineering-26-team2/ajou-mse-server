@@ -71,11 +71,19 @@ public class GameMatchDataRepository implements GameDataRepository {
     @Override
     public MatchData saveMatch(MatchData data) {
         data.updateLastUpdated();
+
+        MatchData matchData = matchDataJpaRepository.save(data);
+
+        // 플레이어 DB도 갱신
+        playerDataJpaRepository.saveAll(matchData.getPlayers());
+
         return matchDataJpaRepository.save(data);
     }
 
     @Override
     public PlayerData savePlayer(PlayerData data) {
+        data.updateLastUpdated();
+
         PlayerData playerData = playerDataJpaRepository.save(data);
         UUID joinedMatchId = playerData.getJoinedMatchId();
 

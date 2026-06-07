@@ -19,21 +19,15 @@ import java.util.UUID;
  */
 @Service
 public class AuthService {
-    // private final PlayerDataJpaRepository playerDataJpaRepository;
-    // private final MatchServiceLegacy matchService;
     private final GameDataRepository gameDataRepository;
     private final MatchRunnerService matchRunnerService;
 
     public AuthService(
-            // PlayerDataJpaRepository playerDataJpaRepository,
             GameDataRepository gameDataRepository,
-            // MatchServiceLegacy matchService,
             MatchRunnerService matchRunnerService
     ) {
         this.gameDataRepository = gameDataRepository;
         this.matchRunnerService = matchRunnerService;
-        // this.playerDataJpaRepository = playerDataJpaRepository;
-        // this.matchService = matchService;
     }
 
     /**

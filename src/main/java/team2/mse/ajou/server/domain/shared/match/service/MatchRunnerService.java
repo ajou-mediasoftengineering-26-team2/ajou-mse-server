@@ -28,6 +28,9 @@ import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_ZONE_ID;
  */
 @Service
 public class MatchRunnerService {
+    // 매치 로직 (데이터 리셋, 턴 계산 등) Delegate
+    MatchTurnCalcService matchTurnCalcService;
+
     // 현재 관리중인 (i.e. 옵저버가 돌아가는) 매치들
     Map<UUID, RunningMatch> allRunningMatches;
 
@@ -43,10 +46,13 @@ public class MatchRunnerService {
     private final ReentrantLock mutex;
 
     public MatchRunnerService(
+            MatchTurnCalcService matchTurnCalcService,
             GameObservablesRepository gameEventsRepository,
             GameDataRepository gameDataRepository,
             StationRepository stationRepository
     ) {
+        this.matchTurnCalcService = matchTurnCalcService;
+
         this.gameEventsRepository = gameEventsRepository;
         this.gameDataRepository = gameDataRepository;
         this.stationRepository = stationRepository;
@@ -247,13 +253,30 @@ public class MatchRunnerService {
             gameDataRepository.updateFrdbMatchData(matchData);
 
             System.out.printf(
-                    "[MATCH] MatchRunnerService::setTimer(MATCH: %s, SECS: %d, %s -> %s)\n",
+                    "[MATCH] MatchRunnerService::setTimer(MATCH: %s (%s), SECS: %d, %s -> %s)\n",
                     matchId,
+                    matchData.getState(),
                     seconds,
                     FrdbConstants.TIME_FORMATTER.format(currentTime),
                     FrdbConstants.TIME_FORMATTER.format(endTime)
             );
             return timerHandle;
+        });
+        data.setMatchDataUpdateMethod(new RunningMatch.MatchDataUpdateMethod() {
+            @Override
+            public void updateMatchDataForRoundBegin(MatchData matchData) {
+                matchTurnCalcService.updateMatchDataForRoundBegin(matchData);
+            }
+
+            @Override
+            public void updateMatchDataForTurnBegin(MatchData matchData) {
+                matchTurnCalcService.updateMatchDataForTurnBegin(matchData);
+            }
+
+            @Override
+            public void calculateTurn(MatchData matchData) {
+                matchTurnCalcService.calculateTurn(matchData);
+            }
         });
 
         // 플레이어 입장 등 매치 단위 옵저버 연결

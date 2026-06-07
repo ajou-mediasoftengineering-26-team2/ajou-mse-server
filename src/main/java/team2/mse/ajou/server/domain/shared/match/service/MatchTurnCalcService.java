@@ -10,6 +10,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.service.IDamageCalcService;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Match turn/game logic calculation handling service.
@@ -19,10 +20,75 @@ import java.util.List;
  */
 @Service
 public class MatchTurnCalcService {
+    private final Random attackerRandom;
     private final IDamageCalcService damageCalcService;
+
     public MatchTurnCalcService(IDamageCalcService damageCalcService) {
         this.damageCalcService = damageCalcService;
+        this.attackerRandom = new Random(System.currentTimeMillis());
     }
+
+    /**
+     * 주어진 `MatchData`를 라운드 시작 상태로 수정시킵니다.
+     *
+     * @param matchData Match data to be modified.
+     */
+    public void updateMatchDataForRoundBegin(MatchData matchData) {
+        List<PlayerData> players = matchData.getPlayers();
+
+        if (players.size() < 2) {
+            throw new ApiError(5005, "Insufficient players in the match!");
+        }
+
+        // Random player attacks
+        int attackerIdx = attackerRandom.nextInt(0, players.size());
+
+        // Reset HP and turn state. (Both players!!)
+        for (int i = 0; i < players.size(); i++) {
+            PlayerData player = players.get(i);
+            player.setHp(10);
+            player.setFinalWinner(false);
+            player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
+            player.setAckState(ACK_TYPE.NO_ACK);
+            player.setSelecting(true);
+            player.setAttacking(i == attackerIdx);
+        }
+
+        matchData.setAttackerPlayerIdx(attackerIdx);
+        matchData.setAttackSuccess(false);
+
+        // DamageList를 초기에 설정해야할지도 모르겠습니다.
+        matchData.clearDamageDataList();
+        matchData.setState(MATCH_STATE.GAME_ROUND_START_ANIMATION);
+    }
+
+    /**
+     * 주어진 `MatchData`를 턴 시작 상태로 수정시킵니다.
+     *
+     * @param matchData Match data to be modified.
+     */
+    public void updateMatchDataForTurnBegin(MatchData matchData) {
+        List<PlayerData> players = matchData.getPlayers();
+        int attackerIdx = matchData.getAttackerPlayerIdx();
+
+        for (int i = 0; i < players.size(); i++) {
+            PlayerData player = players.get(i);
+            player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
+            player.setAckState(ACK_TYPE.NO_ACK);
+            player.setSelecting(true);
+            player.setAttacking(i == attackerIdx);
+
+            if (matchData.getCurrentTurn() == 0) {
+                player.getStatusEffectList().clear();
+            }
+        }
+
+        matchData.setState(MATCH_STATE.GAME_PLAYER_CHOICE);
+        matchData.clearDamageDataList();
+        matchData.setAttackSuccess(false);
+        matchData.setKo(false);
+    }
+
     /**
      * Calculates a single turn from given `MatchData`.
      * choice 상태에서 5초가 끝나면 finished 상태로 전환합니다.
@@ -91,7 +157,7 @@ public class MatchTurnCalcService {
         // Update player datas
         for (PlayerData player : players) {
             player.setSelecting(false);
-            //player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
+            // player.setChoice(HAND_CHOICE.SHAKE_OVER_HANDS);
             player.setAckState(ACK_TYPE.NO_ACK);
         }
         attackerPlayer.setAttacking(true);
@@ -125,7 +191,7 @@ public class MatchTurnCalcService {
             }
 
             matchData.setWinnerPlayerIdx(winnerPlayerIdx);
-            //TODO: 라운드를 다른 곳에서 바꿔야 할 수 도..
+            // TODO: 라운드를 다른 곳에서 바꿔야 할 수 도..
             matchData.setCurrentRound(matchData.getCurrentRound() + 1);
             matchData.setCurrentTurn(0);
 //            matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);

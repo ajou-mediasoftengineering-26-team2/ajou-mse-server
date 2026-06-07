@@ -2,10 +2,8 @@ package team2.mse.ajou.server.domain.shared.match;
 
 
 import jakarta.persistence.Transient;
-import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
-import team2.mse.ajou.server.domain.shared.match.states.LobbyStartCountdownStateLogic;
-import team2.mse.ajou.server.domain.shared.match.states.LobbyWaitingStateLogic;
-import team2.mse.ajou.server.domain.shared.match.states.MatchStateLogic;
+import team2.mse.ajou.server.domain.shared.match.states.*;
+import team2.mse.ajou.server.domain.shared.states.GameChoiceFinishedLogic;
 
 import java.util.List;
 
@@ -27,53 +25,24 @@ public enum MATCH_STATE {
      */
     LOBBY_START_COUNTDOWN(new LobbyStartCountdownStateLogic()),
 
-    // match
-    /**
-     * 매치 시작
-     * 이번역은 ~역 입니다. 등의 애니메이션 출력
-     */
-    MATCH_START(new LobbyWaitingStateLogic()),
-    /**
-     * 매치 종료
-     * 결과 출력
-     */
-    MATCH_END_RESULT(new LobbyWaitingStateLogic()),
-    /**
-     * 매치 종료
-     * 플레이어 빡종
-     */
-    MATCH_END_PLAYER_DISCONNECTED(new LobbyWaitingStateLogic()),
-
     // round
     /**
      * 라운드 시작
      * 동전 던지기 등의 애니메이션
      */
-    GAME_ROUND_START_ANIMATION(new MatchStateLogic() {
-        @Override
-        public void onEnter(RunningMatch context) {
-            MatchStateLogic.super.onEnter(context);
-
-            context.getMatchData(context.getMatchId()).ifPresent(matchData -> {
-                for (var playerData: matchData.getPlayers()) {
-                    playerData.setHp(44);
-                }
-                context.commitFrdbData(matchData);
-            });
-        }
-    }),
+    GAME_ROUND_START_ANIMATION(new GameRoundStartAnimationLogic()),
 
     // turn
     // Ingame: player move selection
     /**
      * 인게임: 두 플레이어 손 선택
      */
-    GAME_PLAYER_CHOICE(new LobbyWaitingStateLogic()),
+    GAME_PLAYER_CHOICE(new GamePlayerChoiceLogic()),
     // Ingame:
     /**
      * 인게임: 두 플레이어 손 선택완료 후 결과 출력중
      */
-    GAME_CHOICE_FINISHED(new LobbyWaitingStateLogic()),
+    GAME_CHOICE_FINISHED(new GameChoiceFinishedLogic()),
     // Ingame:
     /**
      * 인게임: 클라이언트가 공격/방어 애니메이션 재생 중

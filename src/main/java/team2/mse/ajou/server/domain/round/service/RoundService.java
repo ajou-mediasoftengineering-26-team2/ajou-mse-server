@@ -1,54 +1,28 @@
 package team2.mse.ajou.server.domain.round.service;
 
 import org.springframework.stereotype.Service;
-import team2.mse.ajou.server.domain.ack.service.AckService;
-import team2.mse.ajou.server.domain.firebase.service.FrdbRepository;
-import team2.mse.ajou.server.domain.item.service.IItemService;
-import team2.mse.ajou.server.domain.perk.service.IPerkService;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
-import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.PERK;
-import team2.mse.ajou.server.domain.shared.match.model.MatchData;
-import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchServiceLegacy;
+import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * @author Junseo Hwang 202322128
  */
 @Service
 public class RoundService implements IRoundService {
-    private final AckService ackService;
-    private final PlayerDataJpaRepository playerDataJpaRepository;
-    private final MatchDataJpaRepository matchDataJPARepository;
-    private final FrdbRepository frdbRepository;
-    private final MatchServiceLegacy matchService;
-    private final IItemService itemService;
-    private final IPerkService perkService;
+    private final GameDataRepository gameDataRepository;
 
-    public RoundService(AckService ackService,
-                        PlayerDataJpaRepository playerDataJpaRepository,
-                        MatchDataJpaRepository matchDataJPARepository,
-                        MatchServiceLegacy matchService,
-                        FrdbRepository frdbRepository, IItemService itemService, IPerkService perkService) {
-        this.ackService = ackService;
-        this.playerDataJpaRepository = playerDataJpaRepository;
-        this.matchDataJPARepository = matchDataJPARepository;
-        this.frdbRepository = frdbRepository;
-        this.matchService = matchService;
-        this.itemService = itemService;
-        this.perkService = perkService;
+    public RoundService(GameDataRepository gameDataRepository) {
+        this.gameDataRepository = gameDataRepository;
     }
 
     @Override
     public void receiveRoundStart(UUID playerId) {
+        gameDataRepository.findPlayerById(playerId).ifPresent(playerData -> {
+            playerData.setAckState(ACK_TYPE.ROUND_START_ANIMATION_END);
+        });
+        /*
         PlayerData playerData = playerDataJpaRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + playerId));
 
@@ -72,10 +46,15 @@ public class RoundService implements IRoundService {
 
             matchService.startNextTurn(matchData.getId());
         }
+        */
     }
 
     @Override
     public void receiveRoundEnd(UUID playerId) {
+        gameDataRepository.findPlayerById(playerId).ifPresent(playerData -> {
+            playerData.setAckState(ACK_TYPE.ROUND_END_ANIMATION_END);
+        });
+        /*
         PlayerData playerData = playerDataJpaRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + playerId));
         UUID matchId = playerData.getJoinedMatchId();
@@ -166,5 +145,6 @@ public class RoundService implements IRoundService {
 
             System.out.printf("Countdown BEGIN for match `%s`\n", matchId);
         }
+        */
     }
 }

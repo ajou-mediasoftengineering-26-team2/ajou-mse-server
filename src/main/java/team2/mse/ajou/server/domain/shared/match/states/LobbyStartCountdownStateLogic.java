@@ -1,10 +1,8 @@
 package team2.mse.ajou.server.domain.shared.match.states;
 
-import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -42,11 +40,13 @@ public class LobbyStartCountdownStateLogic implements MatchStateLogic {
         if (!players.isEmpty()) {
             System.out.printf("\t[STATE] LobbyStartCountdownStateLogic::onPlayerLeave(%s) | PLAYER LEFT, CANCELLING TIMER AND REVERTING TO WAITING! - %s\n", playerId, matchData.getId());
             matchData.setState(MATCH_STATE.LOBBY_WAITING);
+            context.commitMatchData(matchData);
             context.commitFrdbData(matchData);
             context.cancelTimer();
         } else {
             System.out.printf("\t[STATE] LobbyStartCountdownStateLogic::onPlayerLeave(%s) | ALL PLAYERS LEFT, ENDING GAME! - %s\n", playerId, matchData.getId());
             matchData.setState(MATCH_STATE.END_PLAYER_DISCONNECTED);
+            context.commitMatchData(matchData);
             context.commitFrdbData(matchData);
             context.cancelTimer();
         }

@@ -7,6 +7,7 @@ import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.*;
 import team2.mse.ajou.server.domain.shared.match.events.PlayerDataJpaListener;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -108,6 +109,11 @@ public class PlayerData {
 
     private List<STATUS_EFFECT> statusEffectList = new ArrayList<>();
 
+    /**
+     * Last updated time
+     */
+    private ZonedDateTime lastUpdated = ZonedDateTime.now();
+
     public PlayerData(PlayerData from) {
         this.id = from.id;
         this.joinedMatchId = from.joinedMatchId;
@@ -130,5 +136,9 @@ public class PlayerData {
         this.elementalLevel = from.elementalLevel;
         this.upgradeCost = from.upgradeCost;
         this.statusEffectList = new ArrayList<>(from.statusEffectList);
+    }
+
+    public void updateLastUpdated() {
+        this.lastUpdated = ZonedDateTime.now();
     }
 }

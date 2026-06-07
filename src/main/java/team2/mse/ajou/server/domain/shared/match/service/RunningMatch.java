@@ -62,6 +62,14 @@ public class RunningMatch {
         ScheduledFuture<?> set(UUID matchId, int seconds, Runnable callback);
     }
 
+    public interface MatchDataUpdateMethod {
+        void updateMatchDataForRoundBegin(MatchData matchData);
+
+        void updateMatchDataForTurnBegin(MatchData matchData);
+
+        void calculateTurn(MatchData matchData);
+    }
+
     // `RunningMatch` -> 외부 (`MatchRunnerService`)로 나가는 콜백. 예를 들어 데이터 가져오기, 데이터 수정 후 확정(?), state 변경 등
     @Setter
     private GameDataGetMethod<MatchData> matchDataGetMethod;
@@ -75,6 +83,8 @@ public class RunningMatch {
     private GameDataSetMethod<MatchData> matchFrdbCommitMethod;
     @Setter
     private TimerSetMethod matchSetTimerMethod;
+    @Setter
+    private MatchDataUpdateMethod matchDataUpdateMethod;
 
     public RunningMatch() {
         this.stateSwitchObservableCurrent = null;
@@ -106,6 +116,7 @@ public class RunningMatch {
         this.playerDataCommitMethod = null;
         this.matchFrdbCommitMethod = null;
         this.matchSetTimerMethod = null;
+        this.matchDataUpdateMethod = null;
     }
 
     /**
@@ -194,6 +205,18 @@ public class RunningMatch {
         timerHandle.cancel(false);
         timerHandle = null;
         return true;
+    }
+
+    public void updateMatchDataForRoundBegin(MatchData matchData) {
+        matchDataUpdateMethod.updateMatchDataForRoundBegin(matchData);
+    }
+
+    public void updateMatchDataForTurnBegin(MatchData matchData) {
+        matchDataUpdateMethod.updateMatchDataForTurnBegin(matchData);
+    }
+
+    public void updateMatchDataForCalculateTurn(MatchData matchData) {
+        matchDataUpdateMethod.calculateTurn(matchData);
     }
 
     // Observer 설정 함수들
@@ -462,7 +485,7 @@ public class RunningMatch {
         if (matchData == null) {
             System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | <NULL>\n", matchId);
         } else {
-            System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s, %s\n", matchId, matchData.getState(), FrdbConstants.TIME_FORMATTER.format(matchData.getCountdownStartTime()));
+            System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s, %s\n", matchId, matchData.getState(), FrdbConstants.TIME_FORMATTER.format(matchData.getLastUpdated()));
         }
     }
 
