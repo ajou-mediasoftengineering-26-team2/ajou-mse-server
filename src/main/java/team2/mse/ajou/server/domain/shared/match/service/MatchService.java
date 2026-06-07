@@ -130,7 +130,7 @@ public class MatchService {
         }
 
         matchData.setAttackerPlayerIdx(attackerIdx);
-        matchData.setAttackSuccess(false);
+        matchData.setAttackSuccess(true);
 
         // DamageList를 초기에 설정해야할지도 모르겠습니다.
         matchData.clearDamageDataList();
