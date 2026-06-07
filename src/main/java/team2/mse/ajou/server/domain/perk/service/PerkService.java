@@ -39,15 +39,14 @@ public class PerkService implements IPerkService {
             throw new IllegalStateException("Player is already acknowledged!");
         }
 
-        System.out.printf("[PLR] putPerkChoice(PLR: %s, PERK: %s)\n", id, perk);
-
         playerData.setPerkChoiceCurrent(perk);
         playerData.getPerkList().add(perk);
-
-        matchData.updatePlayer(playerData);
-
-        gameDataRepository.savePlayer(playerData);
+        
+        // matchData.updatePlayer(playerData);
         // gameDataRepository.saveMatch(matchData);
+        gameDataRepository.savePlayer(playerData);
+
+        System.out.printf("[PLR] putPerkChoice(PLR: %s, PERK: %s) -> %s\n", id, perk, playerData.getPerkList());
         // gameDataRepository.updateFrdbMatchData(matchData);
         // gameDataRepository.savePlayer(playerData);
 
