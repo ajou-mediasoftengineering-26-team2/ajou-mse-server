@@ -1,18 +1,24 @@
 package team2.mse.ajou.server.domain.shared.match.service;
 
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import team2.mse.ajou.server.domain.firebase.FrdbConstants;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
+import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_ZONE_ID;
 
 /**
  * 매치를 관리하며, 매치에서 사용하는 Observer 연결, 타이머 관리 등 로직을 실행하는 서비스.
@@ -30,6 +36,9 @@ public class MatchRunnerService {
     private final GameDataRepository gameDataRepository;
     private final StationRepository stationRepository;
 
+    // 매치별 타이머 실행용 TaskScheduler
+    private final TaskScheduler scheduler;
+
     // 뮤텍스
     private final ReentrantLock mutex;
 
@@ -44,6 +53,7 @@ public class MatchRunnerService {
 
         this.allRunningMatches = new HashMap<>();
         this.mutex = new ReentrantLock();
+        this.scheduler = new SimpleAsyncTaskScheduler();
     }
 
     @Transactional
@@ -132,6 +142,7 @@ public class MatchRunnerService {
         // 플레이어 입장 이벤트 발행 & ACK 등 플레이어 단위 옵저버 추가 연결
         // Send match join event & Connect observers.
         gameEventsRepository.sendMatchPlayerJoinEvent(matchId, playerId);
+        data.subscribeToPlayerAckEvents(playerId, gameEventsRepository.getPlayerAckEventsObservable(playerId));
         data.subscribeToPlayerDataUpdates(playerId, gameEventsRepository.getPlayerDataObservable(playerId));
 
         // 내부 DB 갱신
@@ -217,10 +228,39 @@ public class MatchRunnerService {
                 mutex.unlock();
             }
         });
+        data.setMatchSetTimerMethod((updateMatchId, seconds, callback) -> {
+            var matchData = gameDataRepository.findMatchById(updateMatchId).orElse(null);
+
+            if (matchData == null) {
+                System.err.printf("[MATCH] MatchRunnerService::setTimer(MATCH: %s) | MATCH DOES NOT EXIST IN DB!\n", matchId);
+                return null;
+            }
+
+            ZonedDateTime currentTime = ZonedDateTime.now(TIME_ZONE_ID);
+            ZonedDateTime endTime = currentTime.plusSeconds(seconds);
+
+            var timerHandle = scheduler.schedule(callback, endTime.toInstant());
+            matchData.setCountdownStartTime(currentTime);
+            matchData.setCountdownSec(seconds);
+
+            gameDataRepository.saveMatch(matchData);
+            gameDataRepository.updateFrdbMatchData(matchData);
+
+            System.out.printf(
+                    "[MATCH] MatchRunnerService::setTimer(MATCH: %s, SECS: %d, %s -> %s)\n",
+                    matchId,
+                    seconds,
+                    FrdbConstants.TIME_FORMATTER.format(currentTime),
+                    FrdbConstants.TIME_FORMATTER.format(endTime)
+            );
+            return timerHandle;
+        });
 
         // 플레이어 입장 등 매치 단위 옵저버 연결
         // Connect observers.
         data.connectMatch(matchId);
+        data.subscribeToMatchPlayerJoinEvents(gameEventsRepository.getMatchPlayerJoinEventsObservable(matchId));
+        data.subscribeToMatchPlayerLeaveEvents(gameEventsRepository.getMatchPlayerLeaveEventsObservable(matchId));
         data.subscribeToMatchDataUpdates(matchId, gameEventsRepository.getMatchDataObservable(matchId));
 
         allRunningMatches.put(matchId, data);

@@ -120,10 +120,10 @@ public class AuthService {
 
         // 2] 플레이어 로그인시에만 로그아웃.
         // 2] Log out player if they are currently are.
-        if (!gameDataRepository.isPlayerExistsById(playerId)) {
-            throw new ApiError(4001, "User not logged in.");
+        if (gameDataRepository.isPlayerExistsById(playerId)) {
+            forceLogout(playerId);
+            // throw new ApiError(4001, "User not logged in.");
         }
-        forceLogout(playerId);
 
         System.out.printf("Player `%s` left the game!\n", playerId);
     }

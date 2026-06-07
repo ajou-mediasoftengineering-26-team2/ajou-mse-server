@@ -1,5 +1,6 @@
 package team2.mse.ajou.server.domain.firebase;
 
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -9,5 +10,6 @@ import java.time.format.DateTimeFormatter;
  */
 public final class FrdbConstants {
     public static final String TIME_FORMAT_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-    public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_FORMAT_PATTERN);
+    public final static ZoneId TIME_ZONE_ID = ZoneId.of("Asia/Seoul");
+    public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern(TIME_FORMAT_PATTERN).withZone(TIME_ZONE_ID);
 }

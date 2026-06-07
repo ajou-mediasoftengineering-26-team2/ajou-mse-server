@@ -433,23 +433,25 @@ public class MatchServiceLegacy {
      * @return Whether it was successful.
      */
     public boolean setCountdownForMatch(MatchData matchData, Runnable callback, int seconds) {
-        ScheduledFuture<?> handlePrev = countdownSchedulers.getOrDefault(matchData.getId(), null);
+        return false;
 
-        if (handlePrev != null && !handlePrev.isDone()) {
-            return false;
-        }
-
-        ZonedDateTime currentTime = ZonedDateTime.now(),
-                when = currentTime.plusSeconds(seconds);
-
-        System.out.println("COUNTDOWN MATCH " + matchData.getId() + " @ " + currentTime);
-
-        ScheduledFuture<?> handle = scheduler.schedule(callback, when.toInstant());
-        matchData.setCountdownStartTime(currentTime);
-        matchData.setCountdownSec(seconds);
-
-        countdownSchedulers.put(matchData.getId(), handle);
-        return true;
+        // ScheduledFuture<?> handlePrev = countdownSchedulers.getOrDefault(matchData.getId(), null);
+        //
+        // if (handlePrev != null && !handlePrev.isDone()) {
+        //     return false;
+        // }
+        //
+        // ZonedDateTime currentTime = ZonedDateTime.now(),
+        //         when = currentTime.plusSeconds(seconds);
+        //
+        // System.out.println("COUNTDOWN MATCH " + matchData.getId() + " @ " + currentTime);
+        //
+        // ScheduledFuture<?> handle = scheduler.schedule(callback, when.toInstant());
+        // matchData.setCountdownStartTime(currentTime);
+        // matchData.setCountdownSec(seconds);
+        //
+        // countdownSchedulers.put(matchData.getId(), handle);
+        // return true;
     }
 
     /**

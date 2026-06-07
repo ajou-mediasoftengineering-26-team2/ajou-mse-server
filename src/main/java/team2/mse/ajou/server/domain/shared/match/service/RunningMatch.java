@@ -2,6 +2,7 @@ package team2.mse.ajou.server.domain.shared.match.service;
 
 import lombok.Getter;
 import lombok.Setter;
+import team2.mse.ajou.server.domain.firebase.FrdbConstants;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
@@ -57,7 +58,11 @@ public class RunningMatch {
         void setData(T data);
     }
 
-    // `RunningMatch` -> 외부로 나가는 콜백. 예를 들어 데이터 가져오기, 데이터 수정 후 확정(?), state 변경 등
+    public interface TimerSetMethod {
+        ScheduledFuture<?> set(UUID matchId, int seconds, Runnable callback);
+    }
+
+    // `RunningMatch` -> 외부 (`MatchRunnerService`)로 나가는 콜백. 예를 들어 데이터 가져오기, 데이터 수정 후 확정(?), state 변경 등
     @Setter
     private GameDataGetMethod<MatchData> matchDataGetMethod;
     @Setter
@@ -68,6 +73,8 @@ public class RunningMatch {
     private GameDataSetMethod<PlayerData> playerDataCommitMethod;
     @Setter
     private GameDataSetMethod<MatchData> matchFrdbCommitMethod;
+    @Setter
+    private TimerSetMethod matchSetTimerMethod;
 
     public RunningMatch() {
         this.stateSwitchObservableCurrent = null;
@@ -98,6 +105,7 @@ public class RunningMatch {
         this.playerDataGetMethod = null;
         this.playerDataCommitMethod = null;
         this.matchFrdbCommitMethod = null;
+        this.matchSetTimerMethod = null;
     }
 
     /**
@@ -139,7 +147,7 @@ public class RunningMatch {
         this.timerHandle = null;
     }
 
-    // 데이터 조회/설정 콜백 함수들
+    // State에서 불러지는 데이터 조회/설정 콜백 함수들
     // `RunningMatch` 내에서 리포지토리를 바로 DI 및 참조하기보단 외부에서 값을 받아서 넣어주는 방식으로 작동합니다. 안그럼 너무 많은 곳에서 리포지토리를 직접적으로 참조하는 문제가 발생하겠지요...
     public Optional<MatchData> getMatchData(UUID matchId) {
         return matchDataGetMethod.getData(matchId);
@@ -159,6 +167,33 @@ public class RunningMatch {
 
     public void commitFrdbData(MatchData matchData) {
         matchFrdbCommitMethod.setData(matchData);
+    }
+
+    public boolean setTimerAndRun(int seconds, Runnable callback) {
+        if (timerHandle != null && !timerHandle.isDone()) {
+            System.err.printf("[MATCH] RunningMatch::setTimerAndRun(MATCH: %s) | TIMER ALREADY SET AND RUNNING!\n", matchId);
+            return false;
+        }
+
+        timerHandle = matchSetTimerMethod.set(matchId, seconds, callback);
+
+        if (timerHandle == null) {
+            System.err.printf("[MATCH] RunningMatch::setTimerAndRun(MATCH: %s) | TIMER SET FAILED!\n", matchId);
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean cancelTimer() {
+        if (timerHandle == null) {
+            // System.err.printf("[MATCH] RunningMatch::cancelTimer(MATCH: %s) | TIMER NOT SET!\n", matchId);
+            return false;
+        }
+
+        timerHandle.cancel(false);
+        timerHandle = null;
+        return true;
     }
 
     // Observer 설정 함수들
@@ -236,7 +271,7 @@ public class RunningMatch {
         }
 
         observable.addObserver(observer);
-        playerDataObservableCurrent.put(matchId, observable);
+        playerDataObservableCurrent.put(playerId, observable);
     }
 
     protected void unsubscribeToPlayerDataUpdates(UUID playerId) {
@@ -424,7 +459,11 @@ public class RunningMatch {
     }
 
     private void onMatchDataUpdate(UUID matchId, MatchData matchData) {
-        System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s\n", matchId, matchData != null ? matchData.getState() : matchData);
+        if (matchData == null) {
+            System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | <NULL>\n", matchId);
+        } else {
+            System.out.printf("[MATCH] RunningMatch::onMatchDataUpdate(MATCH: %s) | %s, %s\n", matchId, matchData.getState(), FrdbConstants.TIME_FORMATTER.format(matchData.getCountdownStartTime()));
+        }
     }
 
     private void onPlayerDataUpdate(UUID playerId, PlayerData playerData) {
