@@ -58,32 +58,35 @@ public enum MATCH_STATE {
     /**
      * 플레이어가 hand elemental 선택중
      */
-    GAME_ELEMENTAL_CHOICE(new LobbyWaitingStateLogic()),
+    GAME_ELEMENTAL_CHOICE(new GameElementalChoiceLogic()),
     /**
      * 플레이어가 elemental 받는 애니메이션 재생중
      */
-    GAME_ELEMENTAL_RECEIVING(new LobbyWaitingStateLogic()),
+    GAME_ELEMENTAL_RECEIVING(new GameElementalReceivingLogic()),
 
     /**
      * 플레이어가 perk 선택 중
      */
-    GAME_PERK_CHOICE(new LobbyWaitingStateLogic()),
+    GAME_PERK_CHOICE(new GamePerkChoiceLogic()),
     /**
      * 클라이언트가 perk, 아이템 받는 애니메이션 재생 중
      */
-    GAME_PERK_ITEM_RECEIVING(new LobbyWaitingStateLogic()),
+    GAME_PERK_ITEM_RECEIVING(new GamePerkItemReceivingLogic()),
 
 
     // Game over: show results
     /**
      * 게임 끝: 정상. 결과화면
      */
-    END_RESULT(new LobbyWaitingStateLogic()),
+    END_RESULT(new EndResultLogic()),
     // Game over: player disconnected mid-match etc.
     /**
      * 게임 끝: 플레이어 빡종
      */
-    END_PLAYER_DISCONNECTED(new LobbyWaitingStateLogic());
+    // TODO: 추가 로직 구현
+    END_PLAYER_DISCONNECTED(new MatchStateLogic() {
+
+    });
 
     /**
      * Determines whether this state is considered "in-game".

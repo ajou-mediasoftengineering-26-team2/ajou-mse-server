@@ -6,8 +6,10 @@ import team2.mse.ajou.server.domain.ack.service.AckService;
 import team2.mse.ajou.server.domain.firebase.service.FrdbRepository;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
+import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
+import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
 import team2.mse.ajou.server.domain.shared.match.service.MatchServiceLegacy;
@@ -25,28 +27,21 @@ import java.util.UUID;
 public class ElementalService implements IElementalService {
     private final int[] costOfUpgrade = {0, 10, 20, 30, 100, 9999};
 
-    private final PlayerDataJpaRepository playerDataJpaRepository;
-    private final MatchDataJpaRepository matchDataJPARepository;
-    private final MatchServiceLegacy matchService;
-    private final FrdbRepository frdbRepository;
-    private final AckService ackService;
+    private final GameDataRepository gameDataRepository;
 
-    @Autowired
-    public ElementalService(PlayerDataJpaRepository playerDataJpaRepository,
-                            MatchDataJpaRepository matchDataJPARepository,
-                            MatchTurnCalcService matchTurnCalcService,
-                            MatchServiceLegacy matchService,
-                            FrdbRepository frdbRepository,
-                            AckService ackService) {
-        this.playerDataJpaRepository = playerDataJpaRepository;
-        this.matchDataJPARepository = matchDataJPARepository;
-        this.matchService = matchService;
-        this.frdbRepository = frdbRepository;
-        this.ackService = ackService;
+    public ElementalService(GameDataRepository gameDataRepository) {
+        this.gameDataRepository = gameDataRepository;
     }
 
     @Override
     public void putElementalChoice(UUID id, HAND_ELEMENTAL handElemental) {
+        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
+            playerData.setHandElemental(handElemental);
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Not Found: " + id);
+        });
+
         /*
         PlayerData playerData = playerDataRepository.findById(id)
                 .orElseThrow(()-> new IllegalArgumentException("Not Found: "+id));
@@ -71,7 +66,6 @@ public class ElementalService implements IElementalService {
         MatchData updMatchData = matchDataRepository.save(matchData);
 
         frdbService.setMatch(updMatchData.getId(), updMatchData);
-         */
 
         PlayerData playerData = playerDataJpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
@@ -84,10 +78,31 @@ public class ElementalService implements IElementalService {
         playerDataJpaRepository.save(playerData);
         MatchData updMatchData = matchDataJPARepository.save(matchData);
         frdbRepository.setMatch(updMatchData.getId(), updMatchData);
+         */
     }
 
     @Override
     public void upgradeElemental(UUID id, HAND_ELEMENTAL handElemental) {
+        gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
+            // 업그레이드 못하는데 업그레이드 쿼리가 들어온 경우 (he is hacker!!)
+            if(playerData.getCoin() < playerData.getUpgradeCost()) {
+                throw new IllegalArgumentException("Coin is less than Cost: " + id);
+            }
+
+            if(playerData.getHandElemental() == HAND_ELEMENTAL.NONE) {
+                return;
+            }
+
+            playerData.setCoin(playerData.getCoin() - playerData.getUpgradeCost());
+            playerData.setElementalLevel(playerData.getElementalLevel() + 1);
+            playerData.setUpgradeCost(costOfUpgrade[playerData.getElementalLevel()]);
+
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Not Found: " + id);
+        });
+
+        /*
         PlayerData playerData = playerDataJpaRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + id));
         MatchData matchData = matchDataJPARepository.findById(playerData.getJoinedMatchId())
@@ -111,10 +126,35 @@ public class ElementalService implements IElementalService {
         playerDataJpaRepository.save(playerData);
         MatchData updMatchData = matchDataJPARepository.save(matchData);
         frdbRepository.setMatch(updMatchData.getId(), updMatchData);
+         */
     }
 
     @Override
     public void receiveElementalAnimationEndAck(UUID playerId) {
+        gameDataRepository.findPlayerById(playerId).ifPresentOrElse(playerData -> {
+            if (playerData.getJoinedMatchId() != null) {
+                gameDataRepository.findMatchById(playerData.getJoinedMatchId()).ifPresentOrElse(matchData -> {
+                    if (matchData.getState() != MATCH_STATE.GAME_ELEMENTAL_RECEIVING) {
+                        throw new IllegalStateException("Elemental receive animation ACK can be submitted only after turn result is calculated!");
+                    }
+                }, () -> {
+                    throw new IllegalArgumentException("Match Not Found: " + playerData.getJoinedMatchId());
+                });
+            } else {
+                throw new IllegalStateException("Player is not in match!");
+            }
+
+            if (playerData.getAckState() != ACK_TYPE.NO_ACK) {
+                throw new IllegalStateException("Player is already acknowledged!");
+            }
+
+            playerData.setAckState(ACK_TYPE.ELEMENTAL_RECEIVE_ANIMATION_END);
+            gameDataRepository.savePlayer(playerData);
+        }, () -> {
+            throw new IllegalArgumentException("Player not Found: " + playerId);
+        });
+
+        /*
         PlayerData playerData = playerDataJpaRepository.findById(playerId)
                 .orElseThrow(() -> new IllegalArgumentException("Not Found: " + playerId));
 
@@ -135,6 +175,7 @@ public class ElementalService implements IElementalService {
         playerDataJpaRepository.save(playerData);
         MatchData updMatchData = matchDataJPARepository.save(matchData);
         frdbRepository.setMatch(updMatchData.getId(), updMatchData);
+        */
     }
 
 }

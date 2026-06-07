@@ -29,7 +29,7 @@ public class GameRoundEndPlayerKoLogic implements MatchStateLogic {
                 return;
             }
 
-            System.out.printf("\t[STATE] GameRoundEndPlayerKoLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL ACK RECEIVED\n", context.getMatchId());
+            System.out.printf("\t[STATE] GameRoundEndPlayerKoLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL ROUND_END_ANIMATION_END ACK RECEIVED\n", context.getMatchId());
 
             boolean isElementalChoice = matchData.getCurrentRound() == 1;
 
@@ -54,35 +54,6 @@ public class GameRoundEndPlayerKoLogic implements MatchStateLogic {
 
             // 10초가 지나면 서버는 perk item receiving / elemental receiving 상태가 되도록 타이머 ON
             // 실제 타이머는 각각 `GamePerkChoiceLogic`, `GameElementalChoiceLogic`에서 실행되니 참고부탁...
-            MATCH_STATE nextState = isElementalChoice ? MATCH_STATE.GAME_ELEMENTAL_RECEIVING : MATCH_STATE.GAME_PERK_ITEM_RECEIVING;
-
-            context.setTimerAndRun(10, () -> {
-                System.out.printf("\t[STATE] GameRoundEndPlayerKoLogic::setTimerAndRun(MATCH: %s) | ITEM RECEIVING TIMER END!\n", context.getMatchId());
-
-                context.getMatchData(context.getMatchId()).ifPresent(countdownMatchData -> {
-                    // "이때 perk(elemental)과 item이 다 업데이트 됨"
-                    // (item: 랜덤 아이템 지급)
-                    if (nextState == MATCH_STATE.GAME_PERK_ITEM_RECEIVING) {
-                        context.updateMatchDataForItemReceiving(countdownMatchData);
-                    }
-
-                    // (perk: perkChoiceCurrent값에 해당하는 perk 지급 & perkChoiceList 빈 리스트로 갱신)
-                    for (PlayerData player : countdownMatchData.getPlayers()) {
-                        // 여기서 perk을 바꾸면 안됩니다!!!
-                        // 기본적으로 perk을 null로 설정하기 때문에
-                        // perk을 선택하지 않는 elemental에서 null이 list에 들어가버립니다!!!!!!!!!!!!
-                        // ACK 할 수 있도록 셋팅
-                        player.setAckState(ACK_TYPE.NO_ACK);
-                    }
-
-                    // "클라이언트는 perk, item 수령 애니메이션을 출력하고 ack를 보내면 됨"
-                    countdownMatchData.setState(nextState);
-
-                    context.commitMatchData(countdownMatchData);
-                    context.commitFrdbData(countdownMatchData);
-                });
-            });
-
             context.commitMatchData(matchData);
             context.commitFrdbData(matchData);
         }

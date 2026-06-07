@@ -37,7 +37,9 @@ public class MatchTurnCalcService {
         List<PlayerData> players = matchData.getPlayers();
 
         if (players.size() < 2) {
-            throw new ApiError(5005, "Insufficient players in the match!");
+            //throw new ApiError(5005, "Insufficient players in the match!");
+            System.err.printf("[MATCH_TURN_CALC] updateMatchDataForRoundBegin(MATCH: %s) | Insufficient players in the match! (%d players)\n", matchData.getId(), players.size());
+            return;
         }
 
         // Random player attacks
