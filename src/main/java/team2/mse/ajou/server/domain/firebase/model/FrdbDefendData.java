@@ -24,11 +24,14 @@ public class FrdbDefendData {
 
     public static FrdbDefendData from(DefendData defendData){
         FrdbDefendData data = new FrdbDefendData();
-        data.setRecoveredHp(defendData.getRecoveredHp());
-        data.setCoin(defendData.getCoin());
-        data.setUsedPerks(defendData.getUsedPerks());
-        data.setUsedItemCodes(defendData.getUsedItemCodes());
-        data.setUsedElemental(defendData.getUsedElemental());
+
+        if(defendData != null){
+            data.setRecoveredHp(defendData.getRecoveredHp());
+            data.setCoin(defendData.getCoin());
+            data.setUsedPerks(defendData.getUsedPerks());
+            data.setUsedItemCodes(defendData.getUsedItemCodes());
+            data.setUsedElemental(defendData.getUsedElemental());
+        }
 
         return data;
     }

@@ -186,6 +186,13 @@ public class MatchData {
         }
     }
 
+    public DefendData getDefendData() {
+        if(defendData == null) {
+            this.defendData = new DefendData();
+        }
+        return defendData;
+    }
+
     /**
      * `MatchData`를 Deep copy 합니다.
      *
