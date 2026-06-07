@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.events.MatchDataJpaListener;
 
@@ -170,6 +171,13 @@ public class MatchData {
     @Transient
     public void updateLastUpdated() {
         lastUpdated = ZonedDateTime.now();
+    }
+
+    @Transient
+    public void clearAck() {
+        for (var player: players) {
+            player.setAckState(ACK_TYPE.NO_ACK);
+        }
     }
 
     /**

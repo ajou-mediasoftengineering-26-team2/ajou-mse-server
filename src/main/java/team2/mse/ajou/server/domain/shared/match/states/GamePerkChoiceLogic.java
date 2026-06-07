@@ -21,15 +21,8 @@ public class GamePerkChoiceLogic implements MatchStateLogic {
                 // (item: 랜덤 아이템 지급)
                 context.updateMatchDataForItemReceiving(countdownMatchData);
 
-                // (perk: perkChoiceCurrent값에 해당하는 perk 지급 & perkChoiceList 빈 리스트로 갱신)
-                for (PlayerData player : countdownMatchData.getPlayers()) {
-                    // 여기서 perk을 바꾸면 안됩니다!!!
-                    // 기본적으로 perk을 null로 설정하기 때문에
-                    // perk을 선택하지 않는 elemental에서 null이 list에 들어가버립니다!!!!!!!!!!!!
-                    // ACK 할 수 있도록 셋팅
-                    player.setAckState(ACK_TYPE.NO_ACK);
-                }
-
+                // ACK 할 수 있도록 셋팅
+                countdownMatchData.clearAck();
                 // "클라이언트는 perk, item 수령 애니메이션을 출력하고 ack를 보내면 됨"
                 countdownMatchData.setState(MATCH_STATE.GAME_PERK_ITEM_RECEIVING);
 

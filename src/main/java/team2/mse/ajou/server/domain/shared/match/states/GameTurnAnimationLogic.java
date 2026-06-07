@@ -28,6 +28,7 @@ public class GameTurnAnimationLogic implements MatchStateLogic {
                 System.out.printf("\t[STATE] GameTurnAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL TURN_ANIMATION_END ACK RECEIVED (KO!!!)\n", context.getMatchId());
 
                 // 일단 스테이트만 넘겨봐
+                matchData.clearAck();
                 matchData.setState(MATCH_STATE.GAME_ROUND_END_PLAYER_KO);
             } else {
                 System.out.printf("\t[STATE] GameTurnAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL TURN_ANIMATION_END ACK RECEIVED (NEXT TURN)\n", context.getMatchId());
