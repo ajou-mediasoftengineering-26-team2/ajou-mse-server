@@ -7,7 +7,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
  * Perk - 도발
- * 라운드 시작시 상대 HP -5
+ * 방어에 성공 시 상대 HP -5
  * @author Junseo Hwang 202322128
  */
 public class PerkTaunt extends Perk {
@@ -29,7 +29,11 @@ public class PerkTaunt extends Perk {
 
     @Override
     public boolean isAvailable(MatchData matchData, int ownerPlayerIdx) {
-        return isRoundStart(matchData) && getOpponent(matchData, ownerPlayerIdx) != null;
+        if (!isInTurn(matchData)) return false;
+
+        return isDefenseSuccess(matchData)
+                && isOwnerDefender(matchData, ownerPlayerIdx)
+                && matchData.getDefendData() != null;
     }
 }
 

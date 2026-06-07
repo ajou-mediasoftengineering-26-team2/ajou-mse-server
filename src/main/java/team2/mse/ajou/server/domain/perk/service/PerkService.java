@@ -41,6 +41,11 @@ public class PerkService implements IPerkService {
 
         playerData.setPerkChoiceCurrent(perk);
         playerData.getPerkList().add(perk);
+
+        // 부자 perk 돈 지급 (일단 이렇게)
+        if(perk == PERK.RICH){
+            playerData.setCoin(playerData.getCoin() + 30);
+        }
         
         // matchData.updatePlayer(playerData);
         // gameDataRepository.saveMatch(matchData);
