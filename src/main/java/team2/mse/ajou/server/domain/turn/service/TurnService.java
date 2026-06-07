@@ -48,6 +48,8 @@ public class TurnService {
             throw new IllegalStateException("Player is already acknowledged!");
         }
 
+        System.out.printf("[PLR] putPlayerInput(PLR: %s, HAND_CHOICE: %s)\n", id, handChoice);
+
         playerData.setSelecting(false);
         playerData.setChoice(handChoice);
 
