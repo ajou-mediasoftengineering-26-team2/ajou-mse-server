@@ -10,8 +10,9 @@ import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-//202322158 이준상
-//This class is keeps track of the train number we first defined.
+
+// 202322158 이준상
+// This class is keeps track of the train number we first defined.
 @Service
 @RequiredArgsConstructor
 public class SubwayTrackingService {
@@ -23,7 +24,7 @@ public class SubwayTrackingService {
     private final StationRepository stationRepository;
 
 
-    //This function identifies a specific inbound train from real-time API data, resolves its current location into a representative station name, and uploads the result to the subway service.
+    // This function identifies a specific inbound train from real-time API data, resolves its current location into a representative station name, and uploads the result to the subway service.
     public void trackAndUploadRepresentativeStation() throws Exception {
         SubwayResponse subway = subwayApiClient.fetch();
 
@@ -31,7 +32,6 @@ public class SubwayTrackingService {
             trackedTrainNo = null;
             System.out.println("[subway] no train data");
             stationRepository.setStation(Util.UNKNOWN);
-            return;
         }
 
         List<RealtimePositionList> inboundTrains = filterInboundTrains(subway.realtimePositionList());
@@ -39,25 +39,31 @@ public class SubwayTrackingService {
             trackedTrainNo = null;
             System.out.println("[subway] no updnLine=0 train data");
             stationRepository.setStation(Util.UNKNOWN);
-            return;
         }
+
+        String representativeStation;
 
         RealtimePositionList trackedTrain = findTrainByTrainNo(inboundTrains, trackedTrainNo);
         if (trackedTrain == null) {
-            trackedTrain = inboundTrains.get(0);
-            trackedTrainNo = trackedTrain.trainNo();
+            if (inboundTrains.isEmpty()) {
+                trackedTrainNo = null;
+            } else {
+                trackedTrain = inboundTrains.getFirst();
+                trackedTrainNo = trackedTrain.trainNo();
+            }
             System.out.println("[subway] re-selected trainNo: " + trackedTrainNo);
         }
 
-        String representativeStation = stationZoneResolver.resolveRepresentativeStation(trackedTrain.statnId());
+        var stationId = (trackedTrain == null) ? null : trackedTrain.statnId();
+        representativeStation = stationZoneResolver.resolveRepresentativeStation(stationId);
         subwayService.putResult(representativeStation);
         stationRepository.setStation(representativeStation);
         System.out.println("[subway] trainNo: " + trackedTrainNo
-                + " / statnId: " + trackedTrain.statnId()
+                + " / statnId: " + stationId
                 + " / representative: " + representativeStation);
     }
 
-    //This function that checks if the train number We first defined is on that list.
+    // This function that checks if the train number We first defined is on that list.
     private RealtimePositionList findTrainByTrainNo(List<RealtimePositionList> trains, String targetTrainNo) {
         if (targetTrainNo == null || targetTrainNo.isBlank()) {
             return null;
@@ -71,7 +77,7 @@ public class SubwayTrackingService {
         return null;
     }
 
-    //only add 0(상행) train data to array data
+    // only add 0(상행) train data to array data
     private List<RealtimePositionList> filterInboundTrains(List<RealtimePositionList> trains) {
         List<RealtimePositionList> inboundTrains = new ArrayList<>();
         for (RealtimePositionList train : trains) {
