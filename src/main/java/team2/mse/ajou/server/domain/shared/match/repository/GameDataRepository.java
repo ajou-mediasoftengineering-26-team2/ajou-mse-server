@@ -1,7 +1,7 @@
 package team2.mse.ajou.server.domain.shared.match.repository;
 
 import org.springframework.stereotype.Repository;
-import team2.mse.ajou.server.domain.firebase.service.FrdbRepository;
+import team2.mse.ajou.server.domain.firebase.service.IFrdbRepository;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
@@ -21,12 +21,12 @@ public class GameDataRepository implements IGameDataRepository {
     // 리포지토리들
     private final MatchDataJpaRepository matchDataJpaRepository;
     private final PlayerDataJpaRepository playerDataJpaRepository;
-    private final FrdbRepository frdbRepository;
+    private final IFrdbRepository frdbRepository;
 
     public GameDataRepository(
             MatchDataJpaRepository matchDataJpaRepository,
             PlayerDataJpaRepository playerDataJpaRepository,
-            FrdbRepository frdbRepository
+            IFrdbRepository frdbRepository
     ) {
         this.matchDataJpaRepository = matchDataJpaRepository;
         this.playerDataJpaRepository = playerDataJpaRepository;
