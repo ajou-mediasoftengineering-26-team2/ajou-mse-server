@@ -1,7 +1,6 @@
 package team2.mse.ajou.server.domain.shared.match.states;
 
 import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
-import team2.mse.ajou.server.domain.shared.match.states.MatchStateLogic;
 
 import java.util.List;
 

@@ -2,7 +2,7 @@ package team2.mse.ajou.server.domain.shared.match;
 
 
 import jakarta.persistence.Transient;
-import team2.mse.ajou.server.domain.shared.states.GameChoiceFinishedLogic;
+import team2.mse.ajou.server.domain.shared.match.states.*;
 
 import java.util.List;
 
