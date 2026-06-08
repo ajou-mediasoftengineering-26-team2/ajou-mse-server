@@ -1,9 +1,6 @@
 package team2.mse.ajou.server.domain.debug;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.domain.debug.models.PutDebugStationOverrideReq;
 import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
@@ -51,6 +48,7 @@ public class DebugController {
      */
     @PutMapping("/station")
     public void putDebugStationOverride(
+            @RequestBody
             PutDebugStationOverrideReq req
     ) {
         if (req.station().equalsIgnoreCase("null")) {
