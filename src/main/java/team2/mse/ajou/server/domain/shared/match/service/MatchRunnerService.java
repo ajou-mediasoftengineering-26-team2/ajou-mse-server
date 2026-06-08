@@ -219,7 +219,7 @@ public class MatchRunnerService implements IMatchRunnerService {
 
         // 매치 데이터 설정
         // 데이터 가져오기 등 Delegate 함수 연결
-        data.setMatchDataDelegateMethod(new RunningMatch.MatchDataDelegateMethod() {
+        data.setMatchDataDelegate(new IMatchDataDelegate() {
             @Override
             public ScheduledFuture<?> setTimerAndRun(UUID matchId, int seconds, Runnable callback) {
                 var matchData = gameDataRepository.findMatchById(matchId).orElse(null);

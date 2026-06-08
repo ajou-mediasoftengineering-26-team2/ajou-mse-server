@@ -49,33 +49,9 @@ public class RunningMatch {
     private Map<UUID, Observable<MatchData>> matchDataObservableCurrent;
     private Map<UUID, Observer<MatchData>> matchDataObservers;
 
-    public interface MatchDataDelegateMethod {
-        void updateMatchDataForRoundBegin(MatchData matchData);
-
-        void updateMatchDataForTurnBegin(MatchData matchData);
-
-        void calculateTurn(MatchData matchData);
-
-        void receiveItemForAllPlayers(MatchData matchData);
-
-        void setPerkChoiceForAllPlayers(MatchData matchData);
-
-        ScheduledFuture<?> setTimerAndRun(UUID matchId, int seconds, Runnable callback);
-
-        Optional<MatchData> getMatchData(UUID id);
-
-        Optional<PlayerData> getPlayerData(UUID id);
-
-        void commitMatchData(MatchData data);
-
-        void commitPlayerData(PlayerData data);
-
-        void commitFrdbData(MatchData matchData);
-    }
-
     // `RunningMatch` -> 외부 (`MatchRunnerService`)로 나가는 콜백. 예를 들어 데이터 가져오기, 데이터 수정 후 확정(?), state 변경 등
     @Setter
-    private MatchDataDelegateMethod matchDataDelegateMethod;
+    private IMatchDataDelegate matchDataDelegate;
 
     public RunningMatch() {
         this.stateSwitchObservableCurrent = null;
@@ -101,7 +77,7 @@ public class RunningMatch {
         this.matchId = null;
         this.timerHandle = null;
 
-        this.matchDataDelegateMethod = null;
+        this.matchDataDelegate = null;
     }
 
     /**
@@ -146,23 +122,23 @@ public class RunningMatch {
     // State에서 불러지는 데이터 조회/설정 콜백 함수들
     // `RunningMatch` 내에서 리포지토리를 바로 DI 및 참조하기보단 외부에서 값을 받아서 넣어주는 방식으로 작동합니다. 안그럼 너무 많은 곳에서 리포지토리를 직접적으로 참조하는 문제가 발생하겠지요...
     public Optional<MatchData> getMatchData(UUID matchId) {
-        return matchDataDelegateMethod.getMatchData(matchId);
+        return matchDataDelegate.getMatchData(matchId);
     }
 
     public Optional<PlayerData> getPlayerData(UUID playerId) {
-        return matchDataDelegateMethod.getPlayerData(playerId);
+        return matchDataDelegate.getPlayerData(playerId);
     }
 
     public void commitPlayerData(PlayerData playerData) {
-        matchDataDelegateMethod.commitPlayerData(playerData);
+        matchDataDelegate.commitPlayerData(playerData);
     }
 
     public void commitMatchData(MatchData matchData) {
-        matchDataDelegateMethod.commitMatchData(matchData);
+        matchDataDelegate.commitMatchData(matchData);
     }
 
     public void commitFrdbData(MatchData matchData) {
-        matchDataDelegateMethod.commitFrdbData(matchData);
+        matchDataDelegate.commitFrdbData(matchData);
     }
 
     public boolean setTimerAndRun(int seconds, Runnable callback) {
@@ -171,7 +147,7 @@ public class RunningMatch {
             return false;
         }
 
-        timerHandle = matchDataDelegateMethod.setTimerAndRun(matchId, seconds, callback);
+        timerHandle = matchDataDelegate.setTimerAndRun(matchId, seconds, callback);
 
         if (timerHandle == null) {
             System.err.printf("[MATCH] RunningMatch::setTimerAndRun(MATCH: %s) | TIMER SET FAILED!\n", matchId);
@@ -193,23 +169,23 @@ public class RunningMatch {
     }
 
     public void updateMatchDataForRoundBegin(MatchData matchData) {
-        matchDataDelegateMethod.updateMatchDataForRoundBegin(matchData);
+        matchDataDelegate.updateMatchDataForRoundBegin(matchData);
     }
 
     public void updateMatchDataForTurnBegin(MatchData matchData) {
-        matchDataDelegateMethod.updateMatchDataForTurnBegin(matchData);
+        matchDataDelegate.updateMatchDataForTurnBegin(matchData);
     }
 
     public void updateMatchDataForCalculateTurn(MatchData matchData) {
-        matchDataDelegateMethod.calculateTurn(matchData);
+        matchDataDelegate.calculateTurn(matchData);
     }
 
     public void updateMatchDataForItemReceiving(MatchData matchData) {
-        matchDataDelegateMethod.receiveItemForAllPlayers(matchData);
+        matchDataDelegate.receiveItemForAllPlayers(matchData);
     }
 
     public void updateMatchDataForSetPerkChoice(MatchData matchData) {
-        matchDataDelegateMethod.setPerkChoiceForAllPlayers(matchData);
+        matchDataDelegate.setPerkChoiceForAllPlayers(matchData);
     }
 
     // Observer 설정 함수들
