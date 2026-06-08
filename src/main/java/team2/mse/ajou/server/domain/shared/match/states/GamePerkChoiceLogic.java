@@ -1,8 +1,6 @@
 package team2.mse.ajou.server.domain.shared.match.states;
 
-import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
 
 /**
@@ -10,7 +8,7 @@ import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
  *
  * @author Ahn Yubin / 202021088
  */
-public class GamePerkChoiceLogic implements MatchStateLogic {
+public class GamePerkChoiceLogic implements IMatchStateLogic {
     @Override
     public void onEnter(RunningMatch context) {
         context.setTimerAndRun(10, () -> {

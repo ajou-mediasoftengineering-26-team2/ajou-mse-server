@@ -4,10 +4,9 @@ import lombok.Getter;
 import lombok.Setter;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.states.MatchStateLogic;
+import team2.mse.ajou.server.domain.shared.match.states.IMatchStateLogic;
 import team2.mse.ajou.server.domain.shared.observer.FlowMappedObservable;
 import team2.mse.ajou.server.domain.shared.observer.Observable;
 import team2.mse.ajou.server.domain.shared.observer.Observer;
@@ -31,7 +30,7 @@ public class RunningMatch {
     private ScheduledFuture<?> timerHandle;
 
     private MATCH_STATE currentState;
-    private MatchStateLogic currentStateLogic;
+    private IMatchStateLogic currentStateLogic;
 
     private Observable<MATCH_STATE> stateSwitchObservableCurrent;
     private Observer<MATCH_STATE> stateSwitchObserver;

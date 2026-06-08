@@ -7,10 +7,10 @@ import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
  *
  * @author Ahn Yubin / 202021088
  */
-public class GamePlayerChoiceLogic implements MatchStateLogic {
+public class GamePlayerChoiceLogic implements IMatchStateLogic {
     @Override
     public void onEnter(RunningMatch context) {
-        MatchStateLogic.super.onEnter(context);
+        IMatchStateLogic.super.onEnter(context);
 
         // 플레이어 입력 (5초 제한)
         context.setTimerAndRun(5, () -> {

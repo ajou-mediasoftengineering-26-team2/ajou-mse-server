@@ -8,10 +8,10 @@ import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
  *
  * @author Ahn Yubin / 202021088
  */
-public class EndResultLogic implements MatchStateLogic {
+public class EndResultLogic implements IMatchStateLogic {
     @Override
     public void onEnter(RunningMatch context) {
-        MatchStateLogic.super.onEnter(context);
+        IMatchStateLogic.super.onEnter(context);
 
         context.getMatchData(context.getMatchId()).ifPresentOrElse(matchData -> {
             PlayerData winningPlayer = null;

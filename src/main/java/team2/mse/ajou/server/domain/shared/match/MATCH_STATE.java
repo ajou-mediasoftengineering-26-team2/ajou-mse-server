@@ -83,7 +83,7 @@ public enum MATCH_STATE {
      * 게임 끝: 플레이어 빡종
      */
     // TODO: 추가 로직 구현
-    END_PLAYER_DISCONNECTED(new MatchStateLogic() {
+    END_PLAYER_DISCONNECTED(new IMatchStateLogic() {
 
     });
 
@@ -122,13 +122,13 @@ public enum MATCH_STATE {
     }
 
     @Transient
-    private final MatchStateLogic logic;
+    private final IMatchStateLogic logic;
 
-    private MATCH_STATE(MatchStateLogic logic) {
+    private MATCH_STATE(IMatchStateLogic logic) {
         this.logic = logic;
     }
 
-    public MatchStateLogic getLogic() {
+    public IMatchStateLogic getLogic() {
         return logic;
     }
 }
