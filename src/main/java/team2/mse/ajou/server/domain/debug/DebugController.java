@@ -56,5 +56,11 @@ public class DebugController {
         } else {
             subwayTrackingService.setDebugStationOverride(req.station());
         }
+        
+        try {
+            subwayTrackingService.trackAndUploadRepresentativeStation();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
