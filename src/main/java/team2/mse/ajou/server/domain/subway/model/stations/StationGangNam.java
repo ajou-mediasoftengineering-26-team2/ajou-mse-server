@@ -12,13 +12,15 @@ import java.util.List;
  * @author Junseo Hwang 202322128
  */
 public class StationGangNam implements IStation {
+    // max hp 바꾸면 이거 바꿔야함
+    private final int playerBaseMaxHp = 10;
     private final int reducedMaxHpValue = 5;
     @Override
     public void applyIfPossible(MatchData matchData) {
         if(isAvailable(matchData)) {
             List<PlayerData> players = matchData.getPlayers();
             for(PlayerData player : players) {
-                player.setMaxHp(player.getMaxHp() - reducedMaxHpValue);
+                player.setMaxHp(playerBaseMaxHp - reducedMaxHpValue);
             }
         }
     }
