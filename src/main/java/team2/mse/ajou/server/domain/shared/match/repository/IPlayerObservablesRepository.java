@@ -6,7 +6,7 @@ import team2.mse.ajou.server.domain.shared.observer.Observable;
 
 import java.util.UUID;
 
-public interface PlayerObservablesRepository {
+public interface IPlayerObservablesRepository {
     Observable<PlayerData> getPlayerDataObservable(UUID playerId);
 
     Observable<ACK_TYPE> getPlayerAckEventsObservable(UUID playerId);

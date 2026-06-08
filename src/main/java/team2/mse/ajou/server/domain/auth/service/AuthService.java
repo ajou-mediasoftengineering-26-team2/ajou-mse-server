@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.service.IMatchRunnerService;
 
 import java.util.UUID;
@@ -19,11 +19,11 @@ import java.util.UUID;
  */
 @Service
 public class AuthService implements IAuthService {
-    private final GameDataRepository gameDataRepository;
+    private final IGameDataRepository gameDataRepository;
     private final IMatchRunnerService matchRunnerService;
 
     public AuthService(
-            GameDataRepository gameDataRepository,
+            IGameDataRepository gameDataRepository,
             IMatchRunnerService matchRunnerService
     ) {
         this.gameDataRepository = gameDataRepository;

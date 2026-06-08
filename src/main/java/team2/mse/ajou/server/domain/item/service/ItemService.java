@@ -5,7 +5,7 @@ import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.ITEM_CODE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 
 import java.util.*;
 
@@ -14,9 +14,9 @@ import java.util.*;
  */
 @Service
 public class ItemService implements IItemService {
-    private final GameDataRepository gameDataRepository;
+    private final IGameDataRepository gameDataRepository;
 
-    public ItemService(GameDataRepository gameDataRepository) {
+    public ItemService(IGameDataRepository gameDataRepository) {
         this.gameDataRepository = gameDataRepository;
     }
 

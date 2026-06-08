@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 
 import java.util.UUID;
 
@@ -16,9 +16,9 @@ import java.util.UUID;
  */
 @Service
 public class TurnService {
-    private final GameDataRepository gameDataRepository;
+    private final IGameDataRepository gameDataRepository;
 
-    public TurnService(GameDataRepository gameDataRepository) {
+    public TurnService(IGameDataRepository gameDataRepository) {
         this.gameDataRepository = gameDataRepository;
     }
 

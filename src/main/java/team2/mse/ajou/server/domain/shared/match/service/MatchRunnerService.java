@@ -10,8 +10,8 @@ import team2.mse.ajou.server.domain.perk.service.PerkService;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameObservablesRepository;
 import team2.mse.ajou.server.domain.subway.repository.StationRepository;
 
 import java.time.ZonedDateTime;
@@ -39,8 +39,8 @@ public class MatchRunnerService implements IMatchRunnerService {
     Map<UUID, RunningMatch> allRunningMatches;
 
     // 리포지토리들
-    private final GameObservablesRepository gameEventsRepository;
-    private final GameDataRepository gameDataRepository;
+    private final IGameObservablesRepository gameEventsRepository;
+    private final IGameDataRepository gameDataRepository;
     private final StationRepository stationRepository;
 
     // 매치별 타이머 실행용 TaskScheduler
@@ -52,8 +52,8 @@ public class MatchRunnerService implements IMatchRunnerService {
     public MatchRunnerService(
             MatchTurnCalcService matchTurnCalcService,
             ItemService itemService,
-            GameObservablesRepository gameEventsRepository,
-            GameDataRepository gameDataRepository,
+            IGameObservablesRepository gameEventsRepository,
+            IGameDataRepository gameDataRepository,
             StationRepository stationRepository,
             PerkService perkService) {
         this.matchTurnCalcService = matchTurnCalcService;

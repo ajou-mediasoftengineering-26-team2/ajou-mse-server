@@ -3,7 +3,7 @@ package team2.mse.ajou.server.domain.round.service;
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 
 import java.util.UUID;
 
@@ -12,9 +12,9 @@ import java.util.UUID;
  */
 @Service
 public class RoundService implements IRoundService {
-    private final GameDataRepository gameDataRepository;
+    private final IGameDataRepository gameDataRepository;
 
-    public RoundService(GameDataRepository gameDataRepository) {
+    public RoundService(IGameDataRepository gameDataRepository) {
         this.gameDataRepository = gameDataRepository;
     }
 
