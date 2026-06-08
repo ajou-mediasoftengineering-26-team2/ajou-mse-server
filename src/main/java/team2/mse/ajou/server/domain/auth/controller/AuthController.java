@@ -2,7 +2,7 @@ package team2.mse.ajou.server.domain.auth.controller;
 
 import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.domain.auth.model.*;
-import team2.mse.ajou.server.domain.auth.service.AuthService;
+import team2.mse.ajou.server.domain.auth.service.IAuthService;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
 
@@ -17,10 +17,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private final AuthService authService;
+    private final IAuthService authService;
     private final PlayerDataJpaRepository playerDataJpaRepository;
 
-    public AuthController(AuthService authService, PlayerDataJpaRepository playerDataJpaRepository) {
+    public AuthController(IAuthService authService, PlayerDataJpaRepository playerDataJpaRepository) {
         this.authService = authService;
         this.playerDataJpaRepository = playerDataJpaRepository;
     }

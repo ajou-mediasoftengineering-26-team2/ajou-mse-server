@@ -18,7 +18,7 @@ import java.util.UUID;
  * @author Ahn Yubin / 202021088
  */
 @Service
-public class AuthService {
+public class AuthService implements IAuthService {
     private final GameDataRepository gameDataRepository;
     private final IMatchRunnerService matchRunnerService;
 
@@ -38,6 +38,7 @@ public class AuthService {
      * @return Result data.
      */
     @Transactional
+    @Override
     public LoginAndJoinResult loginAndJoin(String playerName) {
         if (playerName == null || playerName.isBlank()) { // Invalid parameter
             throw ApiError.INVALID_PARAMETER; // Use constant/pre-made ApiError for common errors
@@ -102,6 +103,7 @@ public class AuthService {
      * @param playerId Player UUID.
      */
     @Transactional
+    @Override
     public void logout(UUID playerId) {
         if (playerId == null) {
             throw ApiError.INVALID_PARAMETER;
@@ -128,6 +130,7 @@ public class AuthService {
      * @param playerName Username.
      * @return Whether given username is available.
      */
+    @Override
     public boolean checkPlayerNameAvailable(String playerName) {
         if (playerName == null) {
             throw ApiError.INVALID_PARAMETER;
