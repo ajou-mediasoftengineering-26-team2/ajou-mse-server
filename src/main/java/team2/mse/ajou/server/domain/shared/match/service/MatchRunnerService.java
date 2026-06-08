@@ -8,7 +8,6 @@ import team2.mse.ajou.server.domain.firebase.FrdbConstants;
 import team2.mse.ajou.server.domain.item.service.ItemService;
 import team2.mse.ajou.server.domain.perk.service.PerkService;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
@@ -30,7 +29,7 @@ import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_ZONE_ID;
  * @author Ahn Yubin / 202021088
  */
 @Service
-public class MatchRunnerService {
+public class MatchRunnerService implements IMatchRunnerService {
     private final PerkService perkService;
     // 매치 로직 (데이터 리셋, 턴 계산 등) Delegate
     MatchTurnCalcService matchTurnCalcService;
@@ -71,6 +70,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public UUID createNewMatch() {
         // DB에 저장
         var matchData = new MatchData();
@@ -88,6 +88,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public void deleteMatch(UUID matchId) {
         System.out.printf("[MATCH] MatchRunnerService::deleteMatch | TRY DELETING MATCH! (%s)\n", matchId);
 
@@ -96,6 +97,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public void deleteAllMatches() {
         for (var matchId : allRunningMatches.keySet()) {
             deleteMatch(matchId);
@@ -105,6 +107,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public UUID findOpenMatch() {
         return gameDataRepository.findAllMatches()
                 .stream()
@@ -115,6 +118,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public boolean joinPlayerToMatch(UUID playerId, UUID matchId) {
         var matchData = gameDataRepository.findMatchById(matchId).orElse(null);
         var playerData = gameDataRepository.findPlayerById(playerId).orElse(null);
@@ -167,6 +171,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public boolean leavePlayerFromMatch(UUID playerId, UUID matchId) {
         if (playerId == null || matchId == null) {
             System.out.printf("[MATCH] MatchRunnerService::leavePlayerFromMatch | NULL PARAMETER\n");
@@ -334,11 +339,5 @@ public class MatchRunnerService {
         }
 
         allRunningMatches.remove(matchId);
-    }
-
-    private List<PERK> getUnownedPerks(List<PERK> ownedPerks) {
-        return Arrays.stream(PERK.values())
-                .filter(perk -> !ownedPerks.contains(perk))
-                .toList();
     }
 }

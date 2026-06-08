@@ -8,7 +8,7 @@ import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
+import team2.mse.ajou.server.domain.shared.match.service.IMatchRunnerService;
 
 import java.util.UUID;
 
@@ -20,11 +20,11 @@ import java.util.UUID;
 @Service
 public class AuthService {
     private final GameDataRepository gameDataRepository;
-    private final MatchRunnerService matchRunnerService;
+    private final IMatchRunnerService matchRunnerService;
 
     public AuthService(
             GameDataRepository gameDataRepository,
-            MatchRunnerService matchRunnerService
+            IMatchRunnerService matchRunnerService
     ) {
         this.gameDataRepository = gameDataRepository;
         this.matchRunnerService = matchRunnerService;

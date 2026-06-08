@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.*;
 import team2.mse.ajou.server.domain.debug.models.PutDebugStationOverrideReq;
 import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
+import team2.mse.ajou.server.domain.shared.match.service.IMatchRunnerService;
 import team2.mse.ajou.server.domain.subway.service.SubwayTrackingService;
 
 /**
@@ -17,13 +17,13 @@ import team2.mse.ajou.server.domain.subway.service.SubwayTrackingService;
 @RequestMapping("/debug")
 public class DebugController {
     private final SubwayTrackingService subwayTrackingService;
-    private final MatchRunnerService matchRunnerService;
+    private final IMatchRunnerService matchRunnerService;
     private final PlayerDataJpaRepository playerInfoRepository;
     private final MatchDataJpaRepository matchDataJpaRepository;
 
     public DebugController(
             SubwayTrackingService subwayTrackingService,
-            MatchRunnerService matchRunnerService,
+            IMatchRunnerService matchRunnerService,
             PlayerDataJpaRepository playerInfoRepository,
             MatchDataJpaRepository matchDataJpaRepository
     ) {
