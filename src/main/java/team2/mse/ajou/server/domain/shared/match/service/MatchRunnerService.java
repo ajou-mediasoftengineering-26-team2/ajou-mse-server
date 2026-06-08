@@ -5,6 +5,7 @@ import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.firebase.FrdbConstants;
+import team2.mse.ajou.server.domain.item.service.IItemService;
 import team2.mse.ajou.server.domain.item.service.ItemService;
 import team2.mse.ajou.server.domain.perk.service.PerkService;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
@@ -12,10 +13,13 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.IGameObservablesRepository;
-import team2.mse.ajou.server.domain.subway.repository.StationRepository;
+import team2.mse.ajou.server.domain.subway.repository.IStationRepository;
 
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -32,16 +36,16 @@ import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_ZONE_ID;
 public class MatchRunnerService implements IMatchRunnerService {
     private final PerkService perkService;
     // 매치 로직 (데이터 리셋, 턴 계산 등) Delegate
-    MatchTurnCalcService matchTurnCalcService;
-    ItemService itemService;
+    private final IMatchTurnCalcService matchTurnCalcService;
+    private final IItemService itemService;
 
     // 현재 관리중인 (i.e. 옵저버가 돌아가는) 매치들
-    Map<UUID, RunningMatch> allRunningMatches;
+    private final Map<UUID, RunningMatch> allRunningMatches;
 
     // 리포지토리들
     private final IGameObservablesRepository gameEventsRepository;
     private final IGameDataRepository gameDataRepository;
-    private final StationRepository stationRepository;
+    private final IStationRepository stationRepository;
 
     // 매치별 타이머 실행용 TaskScheduler
     private final TaskScheduler scheduler;
@@ -50,12 +54,13 @@ public class MatchRunnerService implements IMatchRunnerService {
     private final ReentrantLock mutex;
 
     public MatchRunnerService(
-            MatchTurnCalcService matchTurnCalcService,
+            IMatchTurnCalcService matchTurnCalcService,
             ItemService itemService,
             IGameObservablesRepository gameEventsRepository,
             IGameDataRepository gameDataRepository,
-            StationRepository stationRepository,
-            PerkService perkService) {
+            IStationRepository stationRepository,
+            PerkService perkService
+    ) {
         this.matchTurnCalcService = matchTurnCalcService;
         this.itemService = itemService;
 

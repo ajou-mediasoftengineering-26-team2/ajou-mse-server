@@ -24,7 +24,7 @@ import java.util.Random;
  * @author Junseo Hwang 202322128
  */
 @Service
-public class MatchTurnCalcService {
+public class MatchTurnCalcService implements IMatchTurnCalcService {
     private final Random attackerRandom;
     private final IDamageCalcService damageCalcService;
 
@@ -38,6 +38,7 @@ public class MatchTurnCalcService {
      *
      * @param matchData Match data to be modified.
      */
+    @Override
     public void updateMatchDataForRoundBegin(MatchData matchData) {
         List<PlayerData> players = matchData.getPlayers();
 
@@ -81,6 +82,7 @@ public class MatchTurnCalcService {
      *
      * @param matchData Match data to be modified.
      */
+    @Override
     public void updateMatchDataForTurnBegin(MatchData matchData) {
         // 이전 턴의 공격이 실패한 경우 공수 교대...
         if (!matchData.isAttackSuccess()) {
@@ -115,6 +117,7 @@ public class MatchTurnCalcService {
      *
      * @param matchData Match data to be modified.
      */
+    @Override
     public void calculateTurn(MatchData matchData) {
 
         MATCH_STATE state = matchData.getState();
