@@ -151,6 +151,7 @@ public class DamageCalcService implements IDamageCalcService {
 
     @Override
     public void calcDefendEffect(MatchData matchData) {
+        PlayerData attacker = matchData.getPlayers().get(matchData.getAttackerPlayerIdx());
         PlayerData defender = matchData.getPlayers().get(matchData.getAttackerPlayerIdx()^1);
         int defenderIndex = matchData.getAttackerPlayerIdx()^1;
 
@@ -168,7 +169,8 @@ public class DamageCalcService implements IDamageCalcService {
         for(IConsumableItem item : defenderItemLIst){
             item.useItemIfPossible(matchData, defenderIndex);
         }
-        
+
+        attacker.setHp(Math.max(0,attacker.getHp()-defendData.getCounterDamage()));
         defender.setHp(Math.min(defender.getMaxHp(), defender.getHp()+ defendData.getRecoveredHp()));
         defender.setCoin(defender.getCoin() + defendData.getCoin());
     }

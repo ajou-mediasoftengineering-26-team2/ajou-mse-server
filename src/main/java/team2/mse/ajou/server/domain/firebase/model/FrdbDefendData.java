@@ -15,6 +15,7 @@ import java.util.List;
 
 @Data
 public class FrdbDefendData {
+    int counterDamage;
     int recoveredHp;
     int coin;
 
@@ -26,6 +27,7 @@ public class FrdbDefendData {
         FrdbDefendData data = new FrdbDefendData();
 
         if(defendData != null){
+            data.counterDamage = defendData.getCounterDamage();
             data.setRecoveredHp(defendData.getRecoveredHp());
             data.setCoin(defendData.getCoin());
             data.setUsedPerks(defendData.getUsedPerks());

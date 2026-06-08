@@ -24,6 +24,7 @@ public class DefendData {
     @GeneratedValue
     private Long id;
 
+    int counterDamage = 0;
     int recoveredHp = 0;
     int coin = 5;
 
@@ -50,6 +51,7 @@ public class DefendData {
     }
 
     public void initDefendData() {
+        counterDamage = 0;
         recoveredHp = 0;
         coin = 5;
 

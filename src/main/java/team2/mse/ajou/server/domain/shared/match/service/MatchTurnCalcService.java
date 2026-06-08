@@ -171,7 +171,6 @@ public class MatchTurnCalcService {
 //            defencePlayer.setHp(Math.max(0, defencePlayer.getHp() - damageAmount));
             damageCalcService.calcDamageList(matchData);
 
-            isPlayerKO = (defencePlayer.getHp() <= 0);
         } else {
             // Defending success! Switch the roles around.
             // switch attackerIdx and defenceIdx
@@ -180,9 +179,8 @@ public class MatchTurnCalcService {
 
             System.out.printf("\t[calculateTurn @ %s] AFTER SWITCH ATTACKER IDX: %d, DEFENDER IDX: %d\n", matchData.getId(), attackerIdx, defenceIdx);
 
-
-            isPlayerKO = false;
         }
+        isPlayerKO = (defencePlayer.getHp() <= 0 || attackerPlayer.getHp() <= 0 );
         // END DAMAGE CALCULATION LOGIC --------------------------
 
         // 다시 turn을 시작할 준비를 합니다.
@@ -202,7 +200,12 @@ public class MatchTurnCalcService {
 
         // (FIXME) End game as soon as player downs another.
         if (isPlayerKO) {
-            attackerPlayer.setWins(attackerPlayer.getWins() + 1);
+            if(defencePlayer.getHp() <= 0) {
+                attackerPlayer.setWins(attackerPlayer.getWins() + 1);
+            }
+            else{
+                defencePlayer.setWins(defencePlayer.getWins() + 1);
+            }
             matchData.setKo(true);
 
             int winnerPlayerIdx = -1;

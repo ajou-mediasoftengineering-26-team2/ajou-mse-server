@@ -25,8 +25,8 @@ public class PerkTaunt extends Perk {
         }
 
         DefendData defendData = matchData.getDefendData();
-        PlayerData opponent = getOpponent(matchData, ownerPlayerIdx);
-        opponent.setHp(Math.max(0, opponent.getHp() - damageValue));
+//        PlayerData opponent = getOpponent(matchData, ownerPlayerIdx);
+        defendData.setCounterDamage(damageValue);
         defendData.addUsedPerk(perk);
     }
 
