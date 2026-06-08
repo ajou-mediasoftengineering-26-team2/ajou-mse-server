@@ -1,11 +1,14 @@
 package team2.mse.ajou.server.domain.debug;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import team2.mse.ajou.server.domain.debug.models.PutDebugStationOverrideReq;
 import team2.mse.ajou.server.domain.shared.match.repository.MatchDataJpaRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.PlayerDataJpaRepository;
 import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
+import team2.mse.ajou.server.domain.subway.service.SubwayTrackingService;
 
 /**
  * DEBUG ONLY!!!
@@ -16,15 +19,18 @@ import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
 @RestController
 @RequestMapping("/debug")
 public class DebugController {
+    private final SubwayTrackingService subwayTrackingService;
     private final MatchRunnerService matchRunnerService;
     private final PlayerDataJpaRepository playerInfoRepository;
     private final MatchDataJpaRepository matchDataJpaRepository;
 
     public DebugController(
+            SubwayTrackingService subwayTrackingService,
             MatchRunnerService matchRunnerService,
             PlayerDataJpaRepository playerInfoRepository,
             MatchDataJpaRepository matchDataJpaRepository
     ) {
+        this.subwayTrackingService = subwayTrackingService;
         this.matchRunnerService = matchRunnerService;
         this.playerInfoRepository = playerInfoRepository;
         this.matchDataJpaRepository = matchDataJpaRepository;
@@ -38,5 +44,19 @@ public class DebugController {
         matchRunnerService.deleteAllMatches();
         matchDataJpaRepository.deleteAll();
         playerInfoRepository.deleteAll();
+    }
+
+    /**
+     * Try to set station override.
+     */
+    @PutMapping("/station")
+    public void putDebugStationOverride(
+            PutDebugStationOverrideReq req
+    ) {
+        if (req.station().equalsIgnoreCase("null")) {
+            subwayTrackingService.setDebugStationOverride(null);
+        } else {
+            subwayTrackingService.setDebugStationOverride(req.station());
+        }
     }
 }

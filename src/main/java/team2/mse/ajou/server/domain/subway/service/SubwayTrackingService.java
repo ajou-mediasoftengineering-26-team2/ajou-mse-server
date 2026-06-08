@@ -1,6 +1,7 @@
 package team2.mse.ajou.server.domain.subway.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.subway.Util;
 import team2.mse.ajou.server.domain.subway.api.SubwayApiClient;
@@ -23,9 +24,18 @@ public class SubwayTrackingService {
 
     private final StationRepository stationRepository;
 
+    @Setter
+    private String debugStationOverride = null;
 
     // This function identifies a specific inbound train from real-time API data, resolves its current location into a representative station name, and uploads the result to the subway service.
     public void trackAndUploadRepresentativeStation() throws Exception {
+        if (debugStationOverride != null) {
+            subwayService.putResult(debugStationOverride);
+            stationRepository.setStation(debugStationOverride);
+            System.out.println("[subway] DEBUG OVERRIDE! - representative: " + debugStationOverride);
+            return;
+        }
+
         SubwayResponse subway = subwayApiClient.fetch();
 
         if (subway == null || subway.realtimePositionList() == null || subway.realtimePositionList().isEmpty()) {
