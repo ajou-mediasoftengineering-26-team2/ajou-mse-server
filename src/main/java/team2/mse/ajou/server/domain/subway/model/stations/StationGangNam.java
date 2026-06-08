@@ -28,6 +28,7 @@ public class StationGangNam implements IStation {
     public boolean isAvailable(MatchData matchData) {
         MATCH_STATE state = matchData.getState();
         return state == MATCH_STATE.LOBBY_START_COUNTDOWN
+                || state == MATCH_STATE.GAME_ROUND_START_ANIMATION
                 || state == MATCH_STATE.GAME_ELEMENTAL_RECEIVING
                 || state == MATCH_STATE.GAME_PERK_ITEM_RECEIVING;
     }
