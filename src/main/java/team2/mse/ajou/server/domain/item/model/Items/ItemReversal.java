@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Item - 역전
  * HP 3 이하 시 즉시 상대 HP를 1로 설정
+ * set enemy hp == 1 when HP is 3 or lower.
  * @author Junseo Hwang 202322128
  */
 public class ItemReversal extends ConsumableItem {

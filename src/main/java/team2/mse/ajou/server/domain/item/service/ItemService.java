@@ -10,6 +10,7 @@ import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
 import java.util.*;
 
 /**
+ * Item Service
  * @author Junseo Hwang 202322128
  */
 @Service
@@ -101,6 +102,12 @@ public class ItemService implements IItemService {
          */
     }
 
+    /**
+     * 플레이어가 갖고있지 않은 모든 아이템을 리스트로 반환함
+     * This returns a list of all items that the player does not have.
+     * @param playerData player
+     * @return Item list
+     */
     private List<ITEM_CODE> getUnownedItem(PlayerData playerData) {
         List<ITEM_CODE> itemList = playerData.getItemList();
         Set<ITEM_CODE> existingItems = new HashSet<>(itemList);

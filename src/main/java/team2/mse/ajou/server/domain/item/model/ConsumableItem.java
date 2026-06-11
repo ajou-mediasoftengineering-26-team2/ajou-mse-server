@@ -10,7 +10,10 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import java.util.List;
 
 /**
- * 모든 아이템은 ConsumableItem으로 관리됩니다.
+ * IConsumalbeItem의 구현체
+ * Item 로직 계산을 위한 유틸 함수들을 제공합니다.
+ * Class for item logic calculation
+ * This provides utility functions for Item logic calculation.
  * @author Junseo Hwang 202322128
  */
 @Getter

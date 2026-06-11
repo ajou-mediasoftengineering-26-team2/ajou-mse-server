@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Item - 최후의 일격
  * HP 5 이하 시 다음 첫번째 공격 데미지 2배
+ * attack damage x2 when HP is 5 or lower
  * @author Junseo Hwang 202322128
  */
 public class ItemFinalBlow extends ConsumableItem {

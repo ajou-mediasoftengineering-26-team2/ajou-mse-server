@@ -11,8 +11,9 @@ import java.util.List;
 
 /**
  * 로직 계산을 위한 Elemental 클래스
+ * Elemental 로직계산을 위한 유틸함수를 제공합니다.
  * Class for elemental logic calculation
- *
+ * This provides utility functions for Elemental logic calculation.
  * @author Junseo Hwang 202322128
  */
 @Getter

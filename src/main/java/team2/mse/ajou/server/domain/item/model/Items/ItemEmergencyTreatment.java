@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Item - 응급치료
  * HP 15 이하 시 즉시 HP +20 회복
+ * heal +20 HP when HP is 15 or lower.
  * @author Junseo Hwang 202322128
  */
 public class ItemEmergencyTreatment extends ConsumableItem {
