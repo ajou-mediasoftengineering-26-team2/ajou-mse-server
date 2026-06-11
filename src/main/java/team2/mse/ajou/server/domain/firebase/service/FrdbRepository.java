@@ -15,7 +15,7 @@ import java.util.UUID;
  * @author Ahn Yubin / 202021088
  */
 @Repository
-public class FrdbRepository {
+public class FrdbRepository implements IFrdbRepository {
     private final DatabaseReference matchRootRef;
     private final FirebaseDatabase firebaseDatabase;
 
@@ -26,15 +26,18 @@ public class FrdbRepository {
                 .getReference("matches");
     }
 
+    @Override
     public DatabaseReference getMatchRef(UUID id) {
         return matchRootRef
                 .child(id.toString());
     }
 
+    @Override
     public void setMatch(UUID id, MatchData matchData) {
         getMatchRef(id).setValueAsync(FrdbMatchData.from(matchData));
     }
 
+    @Override
     public void clearAllMatch() {
         matchRootRef.removeValueAsync();
     }

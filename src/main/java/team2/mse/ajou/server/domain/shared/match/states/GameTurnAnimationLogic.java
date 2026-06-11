@@ -11,7 +11,7 @@ import java.util.List;
  *
  * @author Ahn Yubin / 202021088
  */
-public class GameTurnAnimationLogic implements MatchStateLogic {
+public class GameTurnAnimationLogic implements IMatchStateLogic {
     @Override
     public void onMatchPlayerAckStateUpdate(RunningMatch context, List<ACK_TYPE> ackState) {
         var condition = ackState.size() >= 2 && ackState.stream().allMatch(ack -> ack == ACK_TYPE.TURN_ANIMATION_END);

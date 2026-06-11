@@ -7,7 +7,7 @@ import team2.mse.ajou.server.domain.shared.observer.Observable;
 
 import java.util.UUID;
 
-public interface MatchObservablesRepository {
+public interface IMatchObservablesRepository {
     FlowMappedObservable<MatchData, MatchData> getMatchDataObservable(UUID matchId);
 
     Observable<UUID> getMatchPlayerJoinEventsObservable(UUID matchId);

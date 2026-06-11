@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @author Ahn Yubin / 202021088
  */
-public class GameChoiceFinishedLogic implements MatchStateLogic {
+public class GameChoiceFinishedLogic implements IMatchStateLogic {
     @Override
     public void onMatchPlayerSelectingStateUpdate(RunningMatch context, List<Boolean> selectingState) {
         var condition = (selectingState.size() >= 2) && selectingState.stream().noneMatch(value -> value);

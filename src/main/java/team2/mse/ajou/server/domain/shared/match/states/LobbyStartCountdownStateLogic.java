@@ -10,10 +10,10 @@ import java.util.UUID;
  *
  * @author Ahn Yubin / 202021088
  */
-public class LobbyStartCountdownStateLogic implements MatchStateLogic {
+public class LobbyStartCountdownStateLogic implements IMatchStateLogic {
     @Override
     public void onEnter(RunningMatch context) {
-        MatchStateLogic.super.onEnter(context);
+        IMatchStateLogic.super.onEnter(context);
 
         context.setTimerAndRun(5, () -> {
             var matchData = context.getMatchData(context.getMatchId()).orElse(null);

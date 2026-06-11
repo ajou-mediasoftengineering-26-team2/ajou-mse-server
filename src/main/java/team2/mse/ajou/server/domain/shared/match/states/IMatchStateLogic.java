@@ -2,7 +2,6 @@ package team2.mse.ajou.server.domain.shared.match.states;
 
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
-import team2.mse.ajou.server.domain.shared.match.HAND_CHOICE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
@@ -16,7 +15,7 @@ import java.util.UUID;
  *
  * @author Ahn Yubin / 202021088
  */
-public interface MatchStateLogic {
+public interface IMatchStateLogic {
     // State별 플레이어 입력 등 콜백
     @Transactional
     default void onPlayerJoin(RunningMatch context, UUID playerId) {

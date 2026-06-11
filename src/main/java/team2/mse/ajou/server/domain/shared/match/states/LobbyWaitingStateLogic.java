@@ -1,11 +1,9 @@
 package team2.mse.ajou.server.domain.shared.match.states;
 
-import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,10 +14,10 @@ import java.util.stream.Collectors;
  *
  * @author Ahn Yubin / 202021088
  */
-public class LobbyWaitingStateLogic implements MatchStateLogic {
+public class LobbyWaitingStateLogic implements IMatchStateLogic {
     @Override
     public void onPlayerJoin(RunningMatch context, UUID playerId) {
-        MatchStateLogic.super.onPlayerJoin(context, playerId);
+        IMatchStateLogic.super.onPlayerJoin(context, playerId);
 
         context.getPlayerData(playerId).ifPresent(playerData -> {
             System.out.printf("\t\t* Player name: %s\n", playerData.getUsername());
@@ -28,7 +26,7 @@ public class LobbyWaitingStateLogic implements MatchStateLogic {
 
     @Override
     public void onPlayerLeave(RunningMatch context, UUID playerId) {
-        MatchStateLogic.super.onPlayerLeave(context, playerId);
+        IMatchStateLogic.super.onPlayerLeave(context, playerId);
 
         context.getPlayerData(playerId).ifPresent(playerData -> {
             System.out.printf("\t\t* Player name: %s\n", playerData.getUsername());

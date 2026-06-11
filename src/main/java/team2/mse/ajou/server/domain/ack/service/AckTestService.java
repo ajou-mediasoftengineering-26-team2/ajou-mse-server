@@ -3,7 +3,7 @@ package team2.mse.ajou.server.domain.ack.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 
 import java.util.UUID;
 
@@ -12,9 +12,9 @@ import java.util.UUID;
  */
 @Service
 public class AckTestService {
-    private final GameDataRepository gameDataRepository;
+    private final IGameDataRepository gameDataRepository;
 
-    public AckTestService(GameDataRepository gameDataRepository) {
+    public AckTestService(IGameDataRepository gameDataRepository) {
         this.gameDataRepository = gameDataRepository;
     }
 

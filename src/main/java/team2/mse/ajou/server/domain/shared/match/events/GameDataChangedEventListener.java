@@ -6,17 +6,17 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameObservablesRepository;
 
 @Service
 public class GameDataChangedEventListener {
-    private final GameDataRepository gameDataRepository;
-    private final GameObservablesRepository gameObservablesRepository;
+    private final IGameDataRepository gameDataRepository;
+    private final IGameObservablesRepository gameObservablesRepository;
 
     public GameDataChangedEventListener(
-            GameDataRepository gameDataRepository,
-            GameObservablesRepository gameObservablesRepository
+            IGameDataRepository gameDataRepository,
+            IGameObservablesRepository gameObservablesRepository
     ) {
         this.gameDataRepository = gameDataRepository;
         this.gameObservablesRepository = gameObservablesRepository;
