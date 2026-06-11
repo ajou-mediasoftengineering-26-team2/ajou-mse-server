@@ -57,7 +57,7 @@ public class ElementalController {
     }
 
     /**
-     * 플레이어의 perk 선택을 받음
+     * 플레이어의 ack를 받음
      * This receives elemental animation ack
      * ack means client finish elemental receiving animation
      * end point: <SERVER URL>/elemental/ack

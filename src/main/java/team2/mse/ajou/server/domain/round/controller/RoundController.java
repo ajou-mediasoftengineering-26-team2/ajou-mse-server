@@ -24,12 +24,26 @@ public class RoundController {
         this.roundService = roundService;
     }
 
+    /**
+     * 플레이어의 round start ack를 받음
+     * This receives round start animation ack.
+     * ack means client finish round start animation
+     * end point: <SERVER URL>/round/start-ack
+     * @param req request body
+     */
     @PutMapping("/start-ack")
     public void roundStartAnimation(@RequestBody PutAckRequest req) {
         UUID id = UUID.fromString(req.playerId());
         roundService.receiveRoundStart(id);
     }
 
+    /**
+     * 플레이어의 round end ack를 받음
+     * This receives round end animation ack.
+     * ack means client finish round end animation
+     * end point: <SERVER URL>/round/end-ack
+     * @param req request body
+     */
     @PutMapping("/end-ack")
     public void roundEndAnimation(@RequestBody PutAckRequest req) {
         UUID id = UUID.fromString(req.playerId());
