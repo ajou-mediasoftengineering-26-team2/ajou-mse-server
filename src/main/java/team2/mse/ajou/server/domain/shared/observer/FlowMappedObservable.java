@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Kotlin의 Flow 비슷한, 하위 Observable을 가지며 값을 맵핑해 보낼 수 있는 Observable
+ * Kotlin의 Flow 비슷한, 하위 Observable을 가지며 값을 맵핑해 보낼 수 있는 Observable.
+ * "Nested" Observable that can be chained with other Observable. Similar to Kotlin's Coroutines Flow.
  *
  * @author Ahn Yubin / 202021088
  */

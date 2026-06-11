@@ -8,6 +8,7 @@ import java.util.List;
 
 /**
  * 인게임: 클라이언트가 공격/방어 애니메이션 재생 중
+ * Ingame: play results animation (i.e. attack/defence animation).
  *
  * @author Ahn Yubin / 202021088
  */
@@ -34,6 +35,7 @@ public class GameTurnAnimationLogic implements IMatchStateLogic {
                 System.out.printf("\t[STATE] GameTurnAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL TURN_ANIMATION_END ACK RECEIVED (NEXT TURN)\n", context.getMatchId());
 
                 // 턴 시작 시점으로 데이터 초기화
+                // Reset match to turn begin
                 context.updateMatchDataForTurnBegin(matchData);
             }
 

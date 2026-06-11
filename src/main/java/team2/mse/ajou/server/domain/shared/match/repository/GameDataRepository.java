@@ -10,9 +10,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * 게임 데이터 총괄하는 리포지토리.
- * 기존의 MatchData, PlayerData, FRDB를 따로 관리하니 생기는 이슈인 동시성 문제 등을 어느정도 완화시키기 위해 하나의 통일된 데이터 창구에서 관리하게 만들었습니다.
- * 내부적으로 (MySQL) DB에 접근하는 JPA 리포지토리, FRDB를 접근하는 리포지토리를 모두 사용합니다.
+ * 'Composite' Repository that aggregates all the repository, including Firebase DB and JPA repositories.
+ * This is because `PlayerData` and `MatchData` depends on each other.
+ * So updating with separate repositories makes it hard to do inter-DB(?) operations, such as sending update events for associated `MatchData` whenever `PlayerData` is modified.
  *
  * @author Ahn Yubin / 202021088
  */
@@ -33,11 +33,17 @@ public class GameDataRepository implements IGameDataRepository {
         this.frdbRepository = frdbRepository;
     }
 
+    /**
+     * Match: find by ID.
+     */
     @Override
     public Optional<MatchData> findMatchById(UUID matchId) {
         return matchDataJpaRepository.findById(matchId);
     }
 
+    /**
+     * Match: find by player ID, by searching for players first, then checking their joined match.
+     */
     @Override
     public Optional<MatchData> findMatchByJoinedPlayerId(UUID playerId) {
         PlayerData playerData = playerDataJpaRepository.findById(playerId).orElse(null);
@@ -48,26 +54,41 @@ public class GameDataRepository implements IGameDataRepository {
         return matchDataJpaRepository.findById(playerData.getJoinedMatchId());
     }
 
+    /**
+     * Match: get list of all matches.
+     */
     @Override
     public List<MatchData> findAllMatches() {
         return matchDataJpaRepository.findAll();
     }
 
+    /**
+     * Player: find by ID.
+     */
     @Override
     public Optional<PlayerData> findPlayerById(UUID playerId) {
         return playerDataJpaRepository.findById(playerId);
     }
 
+    /**
+     * Player: check any player exists with given username.
+     */
     @Override
     public boolean isPlayerExistsByUsername(String name) {
         return playerDataJpaRepository.existsByUsername(name);
     }
 
+    /**
+     * Player: check any player exists with given ID.
+     */
     @Override
     public boolean isPlayerExistsById(UUID playerId) {
         return playerDataJpaRepository.existsById(playerId);
     }
 
+    /**
+     * Match: save to DB.
+     */
     @Override
     public MatchData saveMatch(MatchData data) {
         data.updateLastUpdated();
@@ -80,6 +101,9 @@ public class GameDataRepository implements IGameDataRepository {
         return matchDataJpaRepository.save(data);
     }
 
+    /**
+     * Player: save to DB.
+     */
     @Override
     public PlayerData savePlayer(PlayerData data) {
         data.updateLastUpdated();
@@ -98,16 +122,25 @@ public class GameDataRepository implements IGameDataRepository {
         return playerData;
     }
 
+    /**
+     * Match: delete by ID.
+     */
     @Override
     public void deleteMatchById(UUID matchId) {
         matchDataJpaRepository.deleteById(matchId);
     }
 
+    /**
+     * Player: delete by ID.
+     */
     @Override
     public void deletePlayerById(UUID playerId) {
         playerDataJpaRepository.deleteById(playerId);
     }
 
+    /**
+     * Match: Update FRDB.
+     */
     @Override
     public void updateFrdbMatchData(MatchData data) {
         frdbRepository.setMatch(data.getId(), data);

@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Observer: Default observable
- *
- * @param <T>
+ * Observer: Default observable implementation.
  */
 public class DefaultObservable<T> implements Observable<T> {
     private final List<Observer<T>> observers;

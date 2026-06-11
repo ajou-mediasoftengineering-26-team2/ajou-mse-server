@@ -8,7 +8,8 @@ import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 
 /**
- * `RunningMatch` -> 외부 (`MatchRunnerService`)로 나가는 콜백. 예를 들어 데이터 가져오기, 데이터 수정 후 확정(?), state 변경 등
+ * Delegate 'holder' for logics that accesses repositories
+ * (i.e. way for `RunningMatch` to access `MatchRunnerService`'s repository via exposed functions to switch state, save data etc)
  *
  * @author Ahn Yubin / 202021088
  */

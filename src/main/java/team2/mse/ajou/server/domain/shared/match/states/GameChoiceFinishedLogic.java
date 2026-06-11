@@ -6,6 +6,7 @@ import java.util.List;
 
 /**
  * 인게임: 두 플레이어 손 선택완료 후 결과 출력중
+ * Ingame: send results after each turn timer.
  *
  * @author Ahn Yubin / 202021088
  */

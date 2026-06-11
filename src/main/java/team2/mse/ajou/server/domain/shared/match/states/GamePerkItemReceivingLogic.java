@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * 클라이언트가 perk, 아이템 받는 애니메이션 재생 중
+ * Shop: play hand perk receiving animation.
  *
  * @author Ahn Yubin / 202021088
  */
@@ -18,6 +19,7 @@ public class GamePerkItemReceivingLogic implements IMatchStateLogic {
 
         // 다음 라운드 이동
         // (라운드 리셋 + state 설정)
+        // Go to next round
         if (condition) {
             var matchData = context.getMatchData(context.getMatchId()).orElse(null);
 

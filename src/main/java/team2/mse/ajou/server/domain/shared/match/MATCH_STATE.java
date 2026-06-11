@@ -13,76 +13,67 @@ import java.util.List;
  * @author Ahn yubin / 202021088
  */
 public enum MATCH_STATE {
-    // Lobby: before match
+    // INTRO
     /**
-     * 대기 화면: 게임 시작 전
+     * Lobby: before match.
      */
     LOBBY_WAITING(new LobbyWaitingStateLogic()),
-    // Lobby: game start countdown
     /**
-     * 대기 화면: 게임 시작 카운트다운
+     * Lobby: game start countdown.
      */
     LOBBY_START_COUNTDOWN(new LobbyStartCountdownStateLogic()),
-
-    // round
     /**
-     * 라운드 시작
-     * 동전 던지기 등의 애니메이션
+     * Ingame: Round begin intro animation.
      */
     GAME_ROUND_START_ANIMATION(new GameRoundStartAnimationLogic()),
 
-    // turn
-    // Ingame: player move selection
+    // TURN
     /**
-     * 인게임: 두 플레이어 손 선택
+     * Ingame: player action selection.
      */
     GAME_PLAYER_CHOICE(new GamePlayerChoiceLogic()),
-    // Ingame:
     /**
-     * 인게임: 두 플레이어 손 선택완료 후 결과 출력중
+     * Ingame: send results after each turn timer.
      */
     GAME_CHOICE_FINISHED(new GameChoiceFinishedLogic()),
-    // Ingame:
     /**
-     * 인게임: 클라이언트가 공격/방어 애니메이션 재생 중
+     * Ingame: play results animation (i.e. attack/defence animation).
      */
     GAME_TURN_ANIMATION(new GameTurnAnimationLogic()),
-    // Ingame: end of a single round (caused by player KO)
     /**
-     * 인게임: 한 라운드 끝. 플레이어 사망
+     * Ingame: end of a single round (caused by player KO)
      */
     GAME_ROUND_END_PLAYER_KO(new GameRoundEndPlayerKoLogic()),
 
-    // round
+    // SHOP
     /**
-     * 플레이어가 hand elemental 선택중
+     * Shop: hand elemental.
      */
     GAME_ELEMENTAL_CHOICE(new GameElementalChoiceLogic()),
     /**
-     * 플레이어가 elemental 받는 애니메이션 재생중
+     * Shop: play hand elemental receiving animation.
      */
     GAME_ELEMENTAL_RECEIVING(new GameElementalReceivingLogic()),
 
     /**
-     * 플레이어가 perk 선택 중
+     * Shop: perk.
      */
     GAME_PERK_CHOICE(new GamePerkChoiceLogic()),
     /**
-     * 클라이언트가 perk, 아이템 받는 애니메이션 재생 중
+     * Shop: play hand perk receiving animation.
      */
     GAME_PERK_ITEM_RECEIVING(new GamePerkItemReceivingLogic()),
 
 
-    // Game over: show results
+    // GAME OVER
     /**
-     * 게임 끝: 정상. 결과화면
+     * GAME OVER: Normal best of five player win.
      */
     END_RESULT(new EndResultLogic()),
-    // Game over: player disconnected mid-match etc.
     /**
-     * 게임 끝: 플레이어 빡종
+     * GAME OVER: player disconnected mid-match etc.
      */
-    // TODO: 추가 로직 구현
+    // TODO: Maybe add auto-deletion to matches that are no longer used?
     END_PLAYER_DISCONNECTED(new IMatchStateLogic() {
 
     });
@@ -121,6 +112,9 @@ public enum MATCH_STATE {
                 .contains(this);
     }
 
+    /**
+     * Match state logic implementation that implements appropriate callbacks.
+     */
     @Transient
     private final IMatchStateLogic logic;
 

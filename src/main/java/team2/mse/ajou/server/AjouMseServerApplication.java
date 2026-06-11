@@ -13,6 +13,7 @@ import javax.annotation.PostConstruct;
 import java.util.TimeZone;
 
 @SpringBootApplication
+// `GameDataChangedEventListener` needs this to asynchronously run observer callbacks.
 @EnableAsync
 @EnableScheduling
 public class AjouMseServerApplication {

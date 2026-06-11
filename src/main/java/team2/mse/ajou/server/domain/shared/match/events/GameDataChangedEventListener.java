@@ -9,6 +9,13 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 import team2.mse.ajou.server.domain.shared.match.repository.IGameObservablesRepository;
 
+/**
+ * Listener that handles `MatchDataChangedEvent` and `PlayerDataChangedEvent` sent from Spring Boot's `ApplicationEventPublisher`.
+ * We do not directly send updates to `IGameDataRepository` in the JPA, and instead detour like this to make sure that the observers are running in the different thread than the one that has triggered the database changes.
+ * Hopefully this make things run in parallel to make reactions to updates faster.
+ *
+ * @author Ahn Yubin / 202021088
+ */
 @Service
 public class GameDataChangedEventListener {
     private final IGameDataRepository gameDataRepository;
@@ -22,6 +29,10 @@ public class GameDataChangedEventListener {
         this.gameObservablesRepository = gameObservablesRepository;
     }
 
+    /**
+     * Handle `MatchDataChangedEvent` (MatchData DB update) for given ID
+     */
+    // Use `@TransactionalEventListener` to make sure that the event runs AFTER all DB operations. So the query would yield the actual changed data.
     // @EventListener 대신 @TransactionalEventListener을 써서 DB에 결과가 실제로 적용된 이후에 실행되도록 해봅시다...
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
@@ -38,6 +49,9 @@ public class GameDataChangedEventListener {
         });
     }
 
+    /**
+     * Handle `PlayerDataChangedEvent` (PlayerData DB update) for given ID
+     */
     @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMPLETION)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
