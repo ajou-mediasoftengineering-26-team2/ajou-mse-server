@@ -161,13 +161,23 @@ public class MatchData {
         return false;
     }
 
+    /**
+     * add damage data to the end of damage list of match
+     * @param damageData damage date to be added to the damage list
+     * @author Junseo Hwang 202322128
+     */
     @Transient
     public void addDamageData(DamageData damageData) {
         damageDataList.add(damageData);
     }
 
+    /**
+     * clear damage list of match
+     * @author Junseo Hwang 202322128
+     */
     @Transient
     public void clearDamageDataList() {
+        // need null check
         if (damageDataList == null) {
             damageDataList = new ArrayList<>();
         }

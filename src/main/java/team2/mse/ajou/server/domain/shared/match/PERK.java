@@ -1,7 +1,7 @@
 package team2.mse.ajou.server.domain.shared.match;
 
 /**
- * Perk.
+ * Perk enum
  *
  * @author Junseo Hwang 202322128
  */

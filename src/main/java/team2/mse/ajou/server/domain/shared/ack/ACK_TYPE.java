@@ -4,6 +4,8 @@ package team2.mse.ajou.server.domain.shared.ack;
  * Ack Type
  * 각 클라이언트가 애니메이션이나 선택이 완료 되었음을 알리는 신호입니다.
  * 서버는 두 클라이언트 모두에게 Ack를 받으면 흐름에 맞는 다음 로직을 실행하면 됩니다.
+ * A signal indicating that each client has completed an animation or selection.
+ * The server should execute the next logic according to the flow once it receives an ACK from both clients.
  *
  * @author Junseo Hwang 202322128
  */

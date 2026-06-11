@@ -14,6 +14,9 @@ import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Junseo Hwang 202322128
+ */
 @Entity
 @Getter
 @Setter
