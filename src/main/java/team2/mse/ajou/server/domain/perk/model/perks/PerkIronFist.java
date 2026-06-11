@@ -8,6 +8,7 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 /**
  * Perk - 강철 주먹
  * 첫 번째 공격 데미지 +2
+ * First attack Damage +2
  * @author Junseo Hwang 202322128
  */
 public class PerkIronFist extends Perk {

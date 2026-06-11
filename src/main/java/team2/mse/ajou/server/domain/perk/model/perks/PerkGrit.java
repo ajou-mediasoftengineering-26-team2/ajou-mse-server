@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 근성
  * 체력이 15 이하일때 받는 데미지 절반(올림)
+ * receiving damage is half(ceiling) when HP is 15 or lower.
  * @author Junseo Hwang 202322128
  */
 public class PerkGrit extends Perk {

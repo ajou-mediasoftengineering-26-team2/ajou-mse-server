@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 부자
  * 즉시 코인 +30 획득
+ * immediately get coin +30
  * @author Junseo Hwang 202322128
  */
 public class PerkRich extends Perk {
@@ -18,6 +19,7 @@ public class PerkRich extends Perk {
         super(PERK.RICH);
     }
 
+    // Not implemented here
     @Override
     public void usePerkIfPossible(MatchData matchData, int ownerPlayerIdx) {
         if (!isAvailable(matchData, ownerPlayerIdx)) {

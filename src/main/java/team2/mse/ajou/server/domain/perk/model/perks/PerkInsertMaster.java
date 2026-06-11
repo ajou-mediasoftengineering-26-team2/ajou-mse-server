@@ -10,6 +10,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 찌르기 달인
  * 찌르기로 공격 성공시 첫번째 데미지 +2
+ * first attack damage +2 when attack succeeds with INSERT_BETWEEN_HANDS
  * @author Junseo Hwang 202322128
  */
 public class PerkInsertMaster extends Perk {

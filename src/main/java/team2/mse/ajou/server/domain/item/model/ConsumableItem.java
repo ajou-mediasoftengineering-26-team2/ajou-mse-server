@@ -96,8 +96,9 @@ public abstract class ConsumableItem implements IConsumableItem {
 
     /**
      * 혹시 아이템이 중간에 사용되어 순회도중 사라지는 상황을 방지함
-     * @param owner
-     * @return
+     * This prevents situations where an item is used and disappears during iteration
+     * @param owner item owner
+     * @return if player has item, return true
      */
     protected boolean hasItem(PlayerData owner) {
         return owner != null && owner.getItemList() != null && owner.getItemList().contains(itemCode);
@@ -107,8 +108,11 @@ public abstract class ConsumableItem implements IConsumableItem {
      * 아이템을 사용하는 함수
      * 이 함수를 호출하면 자동으로 damageData에 사용된 아이템으로 등록되고,
      * 플레이어의 아이템 리스트에서 제외됨.
-     * @param owner
-     * @param damageData
+     * Function to use an item.
+     * When this function is called, the item is automatically registered in damageData as a used item
+     * and removed from the player's item list.
+     * @param owner item owner
+     * @param damageData damage data of attack in which an item was used
      */
     protected void consumeItem(PlayerData owner, DamageData damageData) {
         if (owner == null || owner.getItemList() == null) {
@@ -116,6 +120,8 @@ public abstract class ConsumableItem implements IConsumableItem {
         }
 
         // 플레이어 리스트와 현재 순회하는 리스트는 별개의 리스트라서 remove해도 됨
+        // The player list and the list currently being iterated over are separate lists,
+        // so it is safe to remove from it.
         owner.getItemList().remove(itemCode);
         if(damageData != null){
             damageData.addUsedItem(itemCode);
@@ -124,8 +130,8 @@ public abstract class ConsumableItem implements IConsumableItem {
 
     /**
      * 아이템으로 플레이어 hp 회복
-     * @param player
-     * @param healValue
+     * @param player healing player
+     * @param healValue amount of healing
      */
     protected void heal(PlayerData player, int healValue) {
         if(player == null){

@@ -12,6 +12,7 @@ import java.util.List;
 /**
  * Perk - 현명한 투자가
  * 보유 코인 10당 첫번째 공격 데미지 +1
+ * first attack damage +1 per 10 coins
  * @author Junseo Hwang 202322128
  */
 public class PerkWiseInvestor extends Perk {

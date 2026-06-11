@@ -42,7 +42,10 @@ public class PerkService implements IPerkService {
         playerData.setPerkChoiceCurrent(perk);
         playerData.getPerkList().add(perk);
 
-        // 부자 perk 돈 지급 (일단 이렇게)
+        // 부자 perk 돈 지급 (일단 이렇게... 어쩔수 없다)
+        // exceptional rich perk implementation
+        // I don't like this implementation.
+        // but I don't like more the idea of storing information in PlayerData that the Rich perk was used even less.
         if(perk == PERK.RICH){
             playerData.setCoin(playerData.getCoin() + 30);
         }
