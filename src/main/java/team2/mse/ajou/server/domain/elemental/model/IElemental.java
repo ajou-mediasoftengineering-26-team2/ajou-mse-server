@@ -8,7 +8,8 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
  * If you want to implement a new elemental, implement this interface.
  * The implementation method is as follows:
  * 1. Write the condition under which the elemental effect is activated.
- * 1. Write if(condition){
+ * 2. Write logic like this:
+ *          if(condition){
  *              the elemental effect logic
  *          }
  * Tip: If you extend the Elemental(abstract class) that implements this interface, you can use many utility functions.

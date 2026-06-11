@@ -9,6 +9,7 @@ import java.util.List;
 /**
  * Station - 강남
  * 최대 체력이 -5 낮음
+ * max hp -5
  * @author Junseo Hwang 202322128
  */
 public class StationGangNam implements IStation {

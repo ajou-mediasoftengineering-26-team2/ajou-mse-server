@@ -8,8 +8,9 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
  * If you want to implement a new item, implement this interface.
  * The implementation method is as follows:
  * 1. Write the condition under which the item effect is activated.
- * 1. Write if(condition){
- *              the item effect logic
+ * 2. Write logic like this:
+ *          if(condition){
+ *              the Item effect logic
  *          }
  * Tip: If you extend the Item(abstract class) that implements this interface, you can use many utility functions.
  * @author Junseo Hwang 202322128

@@ -13,6 +13,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * Station - 시청
+ * 매 라운드마다 특정 행동이 금지됨
+ * A specific hand behavior is forbidden every round.
  * @author Junseo Hwang 202322128
  */
 public class StationCityHall implements IStation {
@@ -22,6 +25,7 @@ public class StationCityHall implements IStation {
             MATCH_STATE state = matchData.getState();
 
             // 손 선택 후, 금지된 행동을 고른 사람의 행동을 forbidden behavior로 변경
+            // After hand selection, change the action of the player who selected the forbidden action to FORBIDDEN_BEHAVIOR.
             if(state == MATCH_STATE.GAME_CHOICE_FINISHED) {
                 List<PlayerData> players = matchData.getPlayers();
                 for(PlayerData player : players) {
@@ -32,6 +36,7 @@ public class StationCityHall implements IStation {
             }
 
             // 랜덤한 행동을 금지 행동으로 정함
+            // Randomly selects an action as the forbidden behavior.
             else{
                 List<HAND_CHOICE> handChoices = new ArrayList<>(
                         Arrays.stream(HAND_CHOICE.values())
