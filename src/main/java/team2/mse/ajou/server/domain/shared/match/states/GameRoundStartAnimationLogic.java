@@ -10,10 +10,10 @@ import java.util.List;
  *
  * @author Ahn Yubin / 202021088
  */
-public class GameRoundStartAnimationLogic implements MatchStateLogic {
+public class GameRoundStartAnimationLogic implements IMatchStateLogic {
     @Override
     public void onEnter(RunningMatch context) {
-        MatchStateLogic.super.onEnter(context);
+        IMatchStateLogic.super.onEnter(context);
 
         context.getMatchData(context.getMatchId()).ifPresent(matchData -> {
             context.updateMatchDataForRoundBegin(matchData);

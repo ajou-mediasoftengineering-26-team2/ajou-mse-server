@@ -5,18 +5,21 @@ import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.firebase.FrdbConstants;
+import team2.mse.ajou.server.domain.item.service.IItemService;
 import team2.mse.ajou.server.domain.item.service.ItemService;
 import team2.mse.ajou.server.domain.perk.service.PerkService;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
-import team2.mse.ajou.server.domain.shared.match.repository.GameObservablesRepository;
-import team2.mse.ajou.server.domain.subway.repository.StationRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameObservablesRepository;
+import team2.mse.ajou.server.domain.subway.repository.IStationRepository;
 
 import java.time.ZonedDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -30,19 +33,19 @@ import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_ZONE_ID;
  * @author Ahn Yubin / 202021088
  */
 @Service
-public class MatchRunnerService {
+public class MatchRunnerService implements IMatchRunnerService {
     private final PerkService perkService;
     // 매치 로직 (데이터 리셋, 턴 계산 등) Delegate
-    MatchTurnCalcService matchTurnCalcService;
-    ItemService itemService;
+    private final IMatchTurnCalcService matchTurnCalcService;
+    private final IItemService itemService;
 
     // 현재 관리중인 (i.e. 옵저버가 돌아가는) 매치들
-    Map<UUID, RunningMatch> allRunningMatches;
+    private final Map<UUID, RunningMatch> allRunningMatches;
 
     // 리포지토리들
-    private final GameObservablesRepository gameEventsRepository;
-    private final GameDataRepository gameDataRepository;
-    private final StationRepository stationRepository;
+    private final IGameObservablesRepository gameEventsRepository;
+    private final IGameDataRepository gameDataRepository;
+    private final IStationRepository stationRepository;
 
     // 매치별 타이머 실행용 TaskScheduler
     private final TaskScheduler scheduler;
@@ -51,12 +54,13 @@ public class MatchRunnerService {
     private final ReentrantLock mutex;
 
     public MatchRunnerService(
-            MatchTurnCalcService matchTurnCalcService,
+            IMatchTurnCalcService matchTurnCalcService,
             ItemService itemService,
-            GameObservablesRepository gameEventsRepository,
-            GameDataRepository gameDataRepository,
-            StationRepository stationRepository,
-            PerkService perkService) {
+            IGameObservablesRepository gameEventsRepository,
+            IGameDataRepository gameDataRepository,
+            IStationRepository stationRepository,
+            PerkService perkService
+    ) {
         this.matchTurnCalcService = matchTurnCalcService;
         this.itemService = itemService;
 
@@ -71,6 +75,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public UUID createNewMatch() {
         // DB에 저장
         var matchData = new MatchData();
@@ -88,6 +93,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public void deleteMatch(UUID matchId) {
         System.out.printf("[MATCH] MatchRunnerService::deleteMatch | TRY DELETING MATCH! (%s)\n", matchId);
 
@@ -96,6 +102,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public void deleteAllMatches() {
         for (var matchId : allRunningMatches.keySet()) {
             deleteMatch(matchId);
@@ -105,6 +112,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public UUID findOpenMatch() {
         return gameDataRepository.findAllMatches()
                 .stream()
@@ -115,6 +123,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public boolean joinPlayerToMatch(UUID playerId, UUID matchId) {
         var matchData = gameDataRepository.findMatchById(matchId).orElse(null);
         var playerData = gameDataRepository.findPlayerById(playerId).orElse(null);
@@ -167,6 +176,7 @@ public class MatchRunnerService {
     }
 
     @Transactional
+    @Override
     public boolean leavePlayerFromMatch(UUID playerId, UUID matchId) {
         if (playerId == null || matchId == null) {
             System.out.printf("[MATCH] MatchRunnerService::leavePlayerFromMatch | NULL PARAMETER\n");
@@ -214,7 +224,7 @@ public class MatchRunnerService {
 
         // 매치 데이터 설정
         // 데이터 가져오기 등 Delegate 함수 연결
-        data.setMatchDataDelegateMethod(new RunningMatch.MatchDataDelegateMethod() {
+        data.setMatchDataDelegate(new IMatchDataDelegate() {
             @Override
             public ScheduledFuture<?> setTimerAndRun(UUID matchId, int seconds, Runnable callback) {
                 var matchData = gameDataRepository.findMatchById(matchId).orElse(null);
@@ -334,11 +344,5 @@ public class MatchRunnerService {
         }
 
         allRunningMatches.remove(matchId);
-    }
-
-    private List<PERK> getUnownedPerks(List<PERK> ownedPerks) {
-        return Arrays.stream(PERK.values())
-                .filter(perk -> !ownedPerks.contains(perk))
-                .toList();
     }
 }

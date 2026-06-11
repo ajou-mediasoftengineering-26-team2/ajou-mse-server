@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import team2.mse.ajou.server.domain.shared.ack.ACK_TYPE;
 import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 
 import java.util.UUID;
 
@@ -18,9 +18,9 @@ import java.util.UUID;
 public class ElementalService implements IElementalService {
     private final int[] costOfUpgrade = {0, 10, 25, 45, 75, 9999};
 
-    private final GameDataRepository gameDataRepository;
+    private final IGameDataRepository gameDataRepository;
 
-    public ElementalService(GameDataRepository gameDataRepository) {
+    public ElementalService(IGameDataRepository gameDataRepository) {
         this.gameDataRepository = gameDataRepository;
     }
 

@@ -7,8 +7,8 @@ import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.apiresponse.model.ApiError;
 import team2.mse.ajou.server.domain.auth.model.LoginAndJoinResult;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
-import team2.mse.ajou.server.domain.shared.match.service.MatchRunnerService;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.service.IMatchRunnerService;
 
 import java.util.UUID;
 
@@ -18,13 +18,13 @@ import java.util.UUID;
  * @author Ahn Yubin / 202021088
  */
 @Service
-public class AuthService {
-    private final GameDataRepository gameDataRepository;
-    private final MatchRunnerService matchRunnerService;
+public class AuthService implements IAuthService {
+    private final IGameDataRepository gameDataRepository;
+    private final IMatchRunnerService matchRunnerService;
 
     public AuthService(
-            GameDataRepository gameDataRepository,
-            MatchRunnerService matchRunnerService
+            IGameDataRepository gameDataRepository,
+            IMatchRunnerService matchRunnerService
     ) {
         this.gameDataRepository = gameDataRepository;
         this.matchRunnerService = matchRunnerService;
@@ -38,6 +38,7 @@ public class AuthService {
      * @return Result data.
      */
     @Transactional
+    @Override
     public LoginAndJoinResult loginAndJoin(String playerName) {
         if (playerName == null || playerName.isBlank()) { // Invalid parameter
             throw ApiError.INVALID_PARAMETER; // Use constant/pre-made ApiError for common errors
@@ -102,6 +103,7 @@ public class AuthService {
      * @param playerId Player UUID.
      */
     @Transactional
+    @Override
     public void logout(UUID playerId) {
         if (playerId == null) {
             throw ApiError.INVALID_PARAMETER;
@@ -128,6 +130,7 @@ public class AuthService {
      * @param playerName Username.
      * @return Whether given username is available.
      */
+    @Override
     public boolean checkPlayerNameAvailable(String playerName) {
         if (playerName == null) {
             throw ApiError.INVALID_PARAMETER;

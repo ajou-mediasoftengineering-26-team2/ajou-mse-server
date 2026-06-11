@@ -20,7 +20,7 @@ public class PlayerDataJpaListener {
     }
 
     @PostUpdate
-    public void onMatchDataUpdate(PlayerData playerData) {
+    public void onPlayerDataUpdate(PlayerData playerData) {
         applicationEventPublisher.publishEvent(new PlayerDataChangedEvent(playerData.getId()));
     }
 }

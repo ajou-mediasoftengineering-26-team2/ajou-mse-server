@@ -6,7 +6,7 @@ import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.PERK;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
-import team2.mse.ajou.server.domain.shared.match.repository.GameDataRepository;
+import team2.mse.ajou.server.domain.shared.match.repository.IGameDataRepository;
 
 import java.util.*;
 
@@ -17,9 +17,9 @@ import java.util.*;
  */
 @Service
 public class PerkService implements IPerkService {
-    private final GameDataRepository gameDataRepository;
+    private final IGameDataRepository gameDataRepository;
 
-    public PerkService(GameDataRepository gameDataRepository) {
+    public PerkService(IGameDataRepository gameDataRepository) {
         this.gameDataRepository = gameDataRepository;
     }
 
