@@ -24,6 +24,12 @@ public class ElementalService implements IElementalService {
         this.gameDataRepository = gameDataRepository;
     }
 
+    /**
+     * player의 elemental 선택을 저장함
+     * This save player's elemental choice
+     * @param id uuid of player that has chosen elemental
+     * @param handElemental hand elemental enum that chosen by player
+     */
     @Override
     public void putElementalChoice(UUID id, HAND_ELEMENTAL handElemental) {
         var playerData = gameDataRepository.findPlayerById(id)
@@ -79,6 +85,12 @@ public class ElementalService implements IElementalService {
          */
     }
 
+    /**
+     * player의 elemental upgrade 요청을 처리함
+     * This operates player's elemental upgrade request
+     * @param id uuid of player that has sent upgrade request
+     * @param handElemental player's hand elemental
+     */
     @Override
     public void upgradeElemental(UUID id, HAND_ELEMENTAL handElemental) {
         gameDataRepository.findPlayerById(id).ifPresentOrElse(playerData -> {
@@ -129,6 +141,11 @@ public class ElementalService implements IElementalService {
          */
     }
 
+    /**
+     * ELEMENTAL_RECEIVE_ANIMATION_END ack를 저장함
+     * This save ELEMENTAL_RECEIVE_ANIMATION_END ACK
+     * @param playerId player that has sent ELEMENTAL_RECEIVE_ANIMATION_END ACK
+     */
     @Override
     public void receiveElementalAnimationEndAck(UUID playerId) {
         var playerData = gameDataRepository.findPlayerById(playerId)

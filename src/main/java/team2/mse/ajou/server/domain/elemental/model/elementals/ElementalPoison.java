@@ -7,6 +7,15 @@ import team2.mse.ajou.server.domain.shared.match.model.DamageData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * 독 속성 - 공격시 독 상태이상을 부여
+ * 독 상태이상: 독 상태에서 공격시 데미지 일정량 감소
+ * Poison elemental
+ * Applies the Poison status effect on attack.
+ * Poison status effect: While poisoned, attack damage is reduced by a certain amount.
+ *
+ * @author Junseo Hwang 202322128
+ */
 public class ElementalPoison extends Elemental {
     private final int[] damageReduceByLevel = {0, 1, 2, 3, 4, 5};
 
@@ -14,7 +23,7 @@ public class ElementalPoison extends Elemental {
         super(HAND_ELEMENTAL.POISON);
     }
 
-    // 이 친구 구현하는게 좀 애매하네요
+    // 공격, 수비가 나눠져 있습니다.
     @Override
     public void useElementalIfPossible(MatchData matchData, int ownerPlayerIdx) {
         PlayerData owner = getOwner(matchData, ownerPlayerIdx);

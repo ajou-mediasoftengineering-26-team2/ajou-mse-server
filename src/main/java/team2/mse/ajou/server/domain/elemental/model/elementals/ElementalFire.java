@@ -10,6 +10,9 @@ import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
 
 /**
  * 불 속성 - 공격시 Burning 상태이상. 턴이 종료될 때 Burning상태라면 데미지를 입음
+ * fire
+ * Applies the Burning status effect on attack.
+ * If the player has the Burning status at the end of the turn, they take damage.
  * @author Junseo Hwang 202322128
  */
 public class ElementalFire extends Elemental {
