@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 /**
  * Perk - 절약가
  * 모든 코인 획득 +2
+ * all coin gains +2
  * @author Junseo Hwang 202322128
  */
 public class PerkThrifty extends Perk {

@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Item - 도주
  * HP 5 이하 시 즉시 HP +10, 코인 +5
+ * heal +10 HP and get +5 coin when HP is 5 or lower.
  * @author Junseo Hwang 202322128
  */
 public class ItemEscape extends ConsumableItem {

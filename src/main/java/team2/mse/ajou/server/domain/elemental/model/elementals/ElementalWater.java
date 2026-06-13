@@ -7,6 +7,12 @@ import team2.mse.ajou.server.domain.shared.match.model.DefendData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * 물 속성 - 방어 성공시 HP 일정량 회복
+ * Water
+ * if defence success, defender heal certain hp
+ * @author Junseo Hwang 202322128
+ */
 public class ElementalWater extends Elemental {
     private final int[] healByLevel = {0, 5, 7, 9, 12, 15};
 

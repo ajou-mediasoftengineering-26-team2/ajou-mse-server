@@ -25,7 +25,9 @@ public class ItemController {
 
     /**
      * perk을 적용받고 item을 받는 애니메이션 출력이 완료됨을 알리는 ack를 받음
-     * @param req
+     * This receives PERK_ITEM_RECEIVING_ANIMATION_END ACK
+     * end point: <SERVER URL>/item/ack
+     * @param req request body
      */
     @PutMapping("/ack")
     public void itemReceiveAnimationEnd(@RequestBody PutAckRequest req){

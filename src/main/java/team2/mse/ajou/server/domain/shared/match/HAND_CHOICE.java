@@ -1,7 +1,7 @@
 package team2.mse.ajou.server.domain.shared.match;
 
 /**
- * Hand Choice
+ * Hand behavior Choice
  *
  * @author Junseo Hwang 202322128
  */

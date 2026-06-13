@@ -14,6 +14,9 @@ import team2.mse.ajou.server.domain.shared.match.PERK;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Junseo Hwang 202322128
+ */
 @Entity
 @Getter
 @Setter

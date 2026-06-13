@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 도발
  * 방어에 성공 시 상대 HP -5
+ * enemy hp -5 when defence succeeds
  * @author Junseo Hwang 202322128
  */
 public class PerkTaunt extends Perk {

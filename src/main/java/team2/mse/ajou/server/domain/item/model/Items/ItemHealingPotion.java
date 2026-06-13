@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Item - 회복제
  * HP 25 이하 시 즉시 HP +10 회복
+ * heal +10 HP when HP is 25 or lower.
  * @author Junseo Hwang 202322128
  */
 public class ItemHealingPotion extends ConsumableItem {

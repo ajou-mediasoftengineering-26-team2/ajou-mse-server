@@ -9,6 +9,8 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 유연한 손
  * 찌르기로 가만히, 가만히로 찌르기 방어 가능
+ * Can defend the INSERT_BETWEEN_HANDS with the SHAKE_OVER_HANDS,
+ * and the SHAKE_OVER_HANDS with the INSERT_BETWEEN_HANDS.
  * @author Junseo Hwang 202322128
  */
 public class PerkFlexibleMind extends Perk {

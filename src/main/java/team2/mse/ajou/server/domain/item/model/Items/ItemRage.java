@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Item - 분노
  * HP 10 이하 시 다음 첫번째 공격 데미지 +5
+ * attack damage +5 when HP is 10 or lower.
  * @author Junseo Hwang 202322128
  */
 public class ItemRage extends ConsumableItem {

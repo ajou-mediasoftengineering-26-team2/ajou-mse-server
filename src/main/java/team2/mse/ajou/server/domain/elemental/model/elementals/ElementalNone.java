@@ -5,6 +5,11 @@ import team2.mse.ajou.server.domain.shared.match.HAND_ELEMENTAL;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * Normal hand
+ * Nothing any logic
+ * @author Junseo Hwang 202322128
+ */
 public class ElementalNone extends Elemental {
     public ElementalNone() {
         super(HAND_ELEMENTAL.PLANT);

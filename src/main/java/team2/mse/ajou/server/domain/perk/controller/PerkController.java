@@ -11,7 +11,7 @@ import java.util.UUID;
 
 /**
  * PerkController receives Perk selected by each player.
- * Base URL: `<SERVER URL>/turn`
+ * Base URL: `<SERVER URL>/perk`
  *
  * @author Junseo Hwang 202322128
  */
@@ -25,6 +25,12 @@ public class PerkController {
         this.perkService = perkService;
     }
 
+    /**
+     * 플레이어의 perk 선택을 받음
+     * This receives perk that player has choice.
+     * end point: <SERVER URL>/perk/choice
+     * @param req request body
+     */
     @PutMapping("choice")
     public void putPerkChoice(@RequestBody PutPerkChoiceRequest req){
         UUID id = UUID.fromString(req.playerId());
@@ -33,6 +39,10 @@ public class PerkController {
         perkService.putPerkChoice(id, perk);
     }
 
+    /**
+     * Not used (due to a change in the design)
+     * @param req request body
+     */
     @PutMapping("ack")
     public void perkAnimationEnd(@RequestBody PutAckRequest req){
         UUID id = UUID.fromString(req.playerId());

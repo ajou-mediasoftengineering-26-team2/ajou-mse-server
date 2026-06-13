@@ -7,6 +7,11 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 import team2.mse.ajou.server.domain.turn.ATTACK_TYPE;
 
+/**
+ * 바람 속성 - 라운드마다 일정 횟수 회피(첫 번째 공격만)
+ * Wind
+ * Evades a certain number of times per round, only on the first attack.
+ */
 public class ElementalWind extends Elemental {
     private final int[] dodgeCountByLevel = {0, 1, 2, 2, 3, 4};
     private final int dodgeCoinBonus = 5;

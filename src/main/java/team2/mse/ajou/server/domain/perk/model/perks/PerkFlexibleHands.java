@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 유연한 손
  * 왼손으로 오른손, 오른손으로 왼손 방어 가능
+ * Can defend the right hand with the left hand, and the left hand with the right hand.
  * @author Junseo Hwang 202322128
  */
 public class PerkFlexibleHands extends Perk {

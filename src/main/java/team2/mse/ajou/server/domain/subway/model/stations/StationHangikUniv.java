@@ -9,6 +9,7 @@ import java.util.List;
 /**
  * Station - 홍대 입구
  * elemental의 레벨이 처음부터 최대레벨
+ * elemental level start at max level
  * @author Junseo Hwang 202322128
  */
 public class StationHangikUniv implements IStation {

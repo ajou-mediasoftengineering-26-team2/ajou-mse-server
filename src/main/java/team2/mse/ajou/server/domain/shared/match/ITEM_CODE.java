@@ -1,7 +1,7 @@
 package team2.mse.ajou.server.domain.shared.match;
 
 /**
- * Item.
+ * Item enum
  *
  * @author Junseo Hwang 202322128
  */

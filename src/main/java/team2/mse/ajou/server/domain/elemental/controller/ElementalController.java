@@ -12,6 +12,7 @@ import team2.mse.ajou.server.domain.shared.match.PERK;
 import java.util.UUID;
 
 /**
+ * Controller related to elemental.
  * Base URL: `<SERVER URL>/elemental`
  *
  * @author Junseo Hwang 202322128
@@ -26,8 +27,10 @@ public class ElementalController {
     }
 
     /**
-     * 플레이어의 perk 선택을 받음
-     * @param req
+     * 플레이어의 elemental 선택을 받음
+     * This receives elemental that player has choice.
+     * end point: <SERVER URL>/elemental/choice
+     * @param req request body
      */
     @PutMapping("/choice")
     public void putElementalChoice(@RequestBody PutElementalChoiceRequest req){
@@ -39,6 +42,12 @@ public class ElementalController {
         elementalService.putElementalChoice(id, handElemental);
     }
 
+    /**
+     * 플레이어의 elemental 업그레이드 요청을 받음
+     * This receives elemental upgrade request
+     * end point: <SERVER URL>/elemental/upgrade
+     * @param req request body
+     */
     @PutMapping("/upgrade")
     public void putElementalUpgrade(@RequestBody PutElementalChoiceRequest req){
         UUID id = UUID.fromString(req.playerId());
@@ -48,8 +57,11 @@ public class ElementalController {
     }
 
     /**
-     * 플레이어손에 elemental이 깃드는 애니메이션 출력이 완료됨을 알리는 ack를 받음
-     * @param req
+     * 플레이어의 ack를 받음
+     * This receives elemental animation ack
+     * ack means client finish elemental receiving animation
+     * end point: <SERVER URL>/elemental/ack
+     * @param req request body
      */
     @PutMapping("/ack")
     public void elementalAnimationEndAck(@RequestBody PutAckRequest req){

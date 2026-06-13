@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 흡혈귀
  * 첫번째 공격 성공시 HP +3 회복
+ * Restores 3 HP when the first attack succeeds.
  * @author Junseo Hwang 202322128
  */
 public class PerkVampirism extends Perk {

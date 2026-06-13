@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 행운
  * 방어 성공 시 추가 코인 +3
+ * get coin +3 when defence succeeds
  * @author Junseo Hwang 202322128
  */
 public class PerkLuck extends Perk {

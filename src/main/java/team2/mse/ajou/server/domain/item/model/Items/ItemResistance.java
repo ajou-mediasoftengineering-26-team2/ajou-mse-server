@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Item - 저항
  * HP 20 이하 시 이번 턴 받는 데미지 -2
+ * reduce all damage -2 in this turn when HP is 20 or lower.
  * @author Junseo Hwang 202322128
  */
 public class ItemResistance extends ConsumableItem {

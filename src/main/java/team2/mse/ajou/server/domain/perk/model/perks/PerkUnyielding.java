@@ -8,6 +8,7 @@ import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 /**
  * Perk - 불굴
  * 한 번에 받는 최대 데미지 5로 제한
+ * Limits the maximum damage received at once to 5.
  * @author Junseo Hwang 202322128
  */
 public class PerkUnyielding extends Perk {

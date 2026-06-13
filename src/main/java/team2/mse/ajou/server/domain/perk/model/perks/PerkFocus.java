@@ -10,6 +10,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Perk - 집중
  * 가만히로 공격 성공 시 첫번째 공격 데미지 +3
+ * first attack damage +3 when attack success with SHAKE_OVER_HANDS
  */
 public class PerkFocus extends Perk {
     private final int bonusValue = 3;

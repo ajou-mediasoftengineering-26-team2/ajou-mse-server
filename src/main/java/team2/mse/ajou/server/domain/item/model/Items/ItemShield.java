@@ -9,6 +9,7 @@ import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 /**
  * Item - 보호막
  * 보호막: HP 20 이하 시 받는 데미지 0
+ * set received damage == 0 HP when HP is 20 or lower.
  * @author Junseo Hwang 202322128
  */
 public class ItemShield extends ConsumableItem {

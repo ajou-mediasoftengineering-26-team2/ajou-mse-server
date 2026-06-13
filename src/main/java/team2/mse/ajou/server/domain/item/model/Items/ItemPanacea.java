@@ -10,6 +10,7 @@ import team2.mse.ajou.server.domain.shared.match.STATUS_EFFECT;
 /**
  * Item - 만병통치
  * 상태이상 있을 시 모든 상태이상 해제
+ * clears all status effects when player has status effect
  * @author Junseo Hwang 202322128
  */
 public class ItemPanacea extends ConsumableItem {

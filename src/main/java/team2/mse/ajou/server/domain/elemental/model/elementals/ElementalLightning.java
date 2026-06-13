@@ -6,6 +6,12 @@ import team2.mse.ajou.server.domain.shared.match.model.DamageData;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
+/**
+ * 번개 속성 - 공격시 첫번째 공격에 추가 데미지를 입힘
+ * Lightning
+ * Deals additional damage on the first attack.
+ * @author Junseo Hwang 202322128
+ */
 public class ElementalLightning extends Elemental {
     private final int[] bonusDamageByLevel = {0, 2, 3, 4, 5, 6};
 
