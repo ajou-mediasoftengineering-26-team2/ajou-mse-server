@@ -76,22 +76,31 @@ public class MatchData {
     private boolean ko = false;
 
     /**
-     * 시청역에서 금지된 행동
+     * Forbidden behaviour for `CITY_HALL` station.
      */
     private HAND_CHOICE forbiddenBehavior;
 
+    /**
+     * List of joined players.
+     */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<PlayerData> players = new ArrayList<>();
 
+    /**
+     * List of damage dealt for this turn.
+     */
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("damageIndex ASC")
     private List<DamageData> damageDataList = new ArrayList<>();
 
+    /**
+     * List of damage defended.
+     */
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private DefendData defendData = new DefendData();
 
     /**
-     * Last updated time
+     * Last updated time.
      */
     private ZonedDateTime lastUpdated = ZonedDateTime.now();
 
@@ -194,7 +203,7 @@ public class MatchData {
     }
 
     /**
-     * `MatchData`를 Deep copy 합니다.
+     * Deep copy.
      *
      * @param from
      */

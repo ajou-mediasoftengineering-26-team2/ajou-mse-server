@@ -5,6 +5,7 @@ import team2.mse.ajou.server.domain.shared.match.service.RunningMatch;
 
 /**
  * 게임 끝: 정상. 결과화면
+ * GAME OVER: Normal best of five player win.
  *
  * @author Ahn Yubin / 202021088
  */

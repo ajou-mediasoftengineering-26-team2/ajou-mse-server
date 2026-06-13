@@ -35,6 +35,7 @@ public class MatchTurnCalcService implements IMatchTurnCalcService {
 
     /**
      * 주어진 `MatchData`를 라운드 시작 상태로 수정시킵니다.
+     * Resets given `MatchData` to round start state.
      *
      * @param matchData Match data to be modified.
      */
@@ -79,6 +80,7 @@ public class MatchTurnCalcService implements IMatchTurnCalcService {
 
     /**
      * 주어진 `MatchData`를 턴 시작 상태로 수정시킵니다.
+     * Resets given `MatchData` to turn start state.
      *
      * @param matchData Match data to be modified.
      */
@@ -112,8 +114,6 @@ public class MatchTurnCalcService implements IMatchTurnCalcService {
 
     /**
      * Calculates a single turn from given `MatchData`.
-     * choice 상태에서 5초가 끝나면 finished 상태로 전환합니다.
-     * 데미지 계산은 두 클라이언트의 /turn/choice 요청이 모두 들어온 뒤 실행합니다.
      *
      * @param matchData Match data to be modified.
      */
@@ -235,6 +235,9 @@ public class MatchTurnCalcService implements IMatchTurnCalcService {
         }
     }
 
+    /**
+     * Helper: Perk
+     */
     private void applyPerksInAttackSuccessDecision(MatchData matchData, int defenderIdx) {
         PlayerData defender = matchData.getPlayers().get(defenderIdx);
         if (defender.getPerkList() == null) {

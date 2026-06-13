@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * 게임: 라운드 시작 애니메이션
+ * Ingame: Round begin intro animation.
  *
  * @author Ahn Yubin / 202021088
  */
@@ -37,11 +38,13 @@ public class GameRoundStartAnimationLogic implements IMatchStateLogic {
             System.out.printf("\t[STATE] GameRoundStartAnimationLogic::onMatchPlayerAckStateUpdate(MATCH: %s) | ALL ROUND_START_ANIMATION_END ACK RECEIVED\n", context.getMatchId());
 
             // 턴 시작 시점으로 데이터 초기화
+            // Reset match data to turn begin
             context.updateMatchDataForTurnBegin(matchData);
             context.commitMatchData(matchData);
             context.commitFrdbData(matchData);
 
             // (시간 제한은 `GamePlayerChoiceLogic` 상태 진입에서 설정합니다.)
+            // (See `GamePlayerChoiceLogic` for timer / time limit.)
         }
     }
 }

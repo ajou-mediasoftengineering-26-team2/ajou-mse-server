@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * 플레이어가 elemental 받는 애니메이션 재생중
+ * Shop: play hand elemental receiving animation.
  *
  * @author Ahn Yubin / 202021088
  */

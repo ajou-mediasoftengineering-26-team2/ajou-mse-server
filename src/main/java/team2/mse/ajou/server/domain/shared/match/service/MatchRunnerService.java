@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import team2.mse.ajou.server.domain.firebase.FrdbConstants;
 import team2.mse.ajou.server.domain.item.service.IItemService;
 import team2.mse.ajou.server.domain.item.service.ItemService;
-import team2.mse.ajou.server.domain.perk.service.PerkService;
+import team2.mse.ajou.server.domain.perk.service.IPerkService;
 import team2.mse.ajou.server.domain.shared.match.MATCH_STATE;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
@@ -28,29 +28,35 @@ import static team2.mse.ajou.server.domain.firebase.FrdbConstants.TIME_ZONE_ID;
 
 /**
  * 매치를 관리하며, 매치에서 사용하는 Observer 연결, 타이머 관리 등 로직을 실행하는 서비스.
- * Service for running logics for match.
+ * Service for running logics for match using `RunningMatch`.
+ * Also handles connecting observer, providing scheduler and repositories to `RunningMatch` via `IMatchDataDelegate` etc.
  *
  * @author Ahn Yubin / 202021088
  */
 @Service
 public class MatchRunnerService implements IMatchRunnerService {
-    private final PerkService perkService;
     // 매치 로직 (데이터 리셋, 턴 계산 등) Delegate
+    // Match data handling delegates.
+    private final IPerkService perkService;
     private final IMatchTurnCalcService matchTurnCalcService;
     private final IItemService itemService;
 
     // 현재 관리중인 (i.e. 옵저버가 돌아가는) 매치들
+    // All managed `RunningMatch` instances.
     private final Map<UUID, RunningMatch> allRunningMatches;
 
     // 리포지토리들
+    // Repositories
     private final IGameObservablesRepository gameEventsRepository;
     private final IGameDataRepository gameDataRepository;
     private final IStationRepository stationRepository;
 
     // 매치별 타이머 실행용 TaskScheduler
+    // Timer TaskScheduler
     private final TaskScheduler scheduler;
 
     // 뮤텍스
+    // Mutex used for preventing race conditions in case of `IMatchDataDelegate` must use multi-stage(?) DB access.
     private final ReentrantLock mutex;
 
     public MatchRunnerService(
@@ -59,7 +65,7 @@ public class MatchRunnerService implements IMatchRunnerService {
             IGameObservablesRepository gameEventsRepository,
             IGameDataRepository gameDataRepository,
             IStationRepository stationRepository,
-            PerkService perkService
+            IPerkService perkService
     ) {
         this.matchTurnCalcService = matchTurnCalcService;
         this.itemService = itemService;
@@ -74,10 +80,16 @@ public class MatchRunnerService implements IMatchRunnerService {
         this.perkService = perkService;
     }
 
+    /**
+     * Creates new match, instantiate new `RunningMatch` instances, etc.
+     *
+     * @return New match ID.
+     */
     @Transactional
     @Override
     public UUID createNewMatch() {
         // DB에 저장
+        // Add to DB
         var matchData = new MatchData();
 
         String station = stationRepository.getStation();
@@ -92,6 +104,11 @@ public class MatchRunnerService implements IMatchRunnerService {
         return newMatchId;
     }
 
+    /**
+     * Delete match with given ID.
+     *
+     * @param matchId ID.
+     */
     @Transactional
     @Override
     public void deleteMatch(UUID matchId) {
@@ -101,6 +118,9 @@ public class MatchRunnerService implements IMatchRunnerService {
         gameDataRepository.deleteMatchById(matchId);
     }
 
+    /**
+     * Delete all matches.
+     */
     @Transactional
     @Override
     public void deleteAllMatches() {
@@ -111,6 +131,9 @@ public class MatchRunnerService implements IMatchRunnerService {
         allRunningMatches.clear();
     }
 
+    /**
+     * @return Match available for joining.
+     */
     @Transactional
     @Override
     public UUID findOpenMatch() {
@@ -122,6 +145,13 @@ public class MatchRunnerService implements IMatchRunnerService {
                 .orElse(null);
     }
 
+    /**
+     * Join player to given match.
+     *
+     * @param playerId Player ID.
+     * @param matchId  Match ID.
+     * @return success
+     */
     @Transactional
     @Override
     public boolean joinPlayerToMatch(UUID playerId, UUID matchId) {
@@ -152,6 +182,8 @@ public class MatchRunnerService implements IMatchRunnerService {
         playerData.setJoinedMatchId(matchId);
         matchData.updatePlayer(playerData);
         // (뭔가 바뀌는 값이 있어야 콜백이 도므로 나중에 리셋해줄 attackingPlayer 인덱스값을 임의로 설정합니다. 이거 지우면 큰일나요!!)
+        // Since Entity needs to be changed in any way to receive JPA's listener, we for now update the `attackerPlayerIdx` whenever a new player joins.
+        // This is because simply adding elements to list does not trigger the JPA's listener. Therefore we use this 'hack'.
         matchData.setAttackerPlayerIdx(matchData.getPlayers().size());
 
         System.out.printf("[MATCH] MatchRunnerService::joinPlayerToMatch | PLAYER (%s) JOINED! (%s) -> NEW PLAYERS = [%s]\n",
@@ -175,6 +207,13 @@ public class MatchRunnerService implements IMatchRunnerService {
         return true;
     }
 
+    /**
+     * Leaves player from given match.
+     *
+     * @param playerId Player ID.
+     * @param matchId  Match ID.
+     * @return success
+     */
     @Transactional
     @Override
     public boolean leavePlayerFromMatch(UUID playerId, UUID matchId) {
@@ -218,12 +257,19 @@ public class MatchRunnerService implements IMatchRunnerService {
         return true;
     }
 
+    /**
+     * Setup `RunningMatch`. Handles connecting observable from repositories to `RunningMatch`, etc.
+     *
+     * @param matchId Match ID.
+     */
     private void setupRunningMatch(UUID matchId) {
         System.out.printf("[MATCH] MatchRunnerService::setupMatch | (%s)\n", matchId);
         var data = new RunningMatch();
 
         // 매치 데이터 설정
+        // Setup match data
         // 데이터 가져오기 등 Delegate 함수 연결
+        // Create & connect Delegate
         data.setMatchDataDelegate(new IMatchDataDelegate() {
             @Override
             public ScheduledFuture<?> setTimerAndRun(UUID matchId, int seconds, Runnable callback) {
@@ -333,6 +379,10 @@ public class MatchRunnerService implements IMatchRunnerService {
         allRunningMatches.put(matchId, data);
     }
 
+    /**
+     * Disconnects & frees `RunningMatch`.
+     * @param matchId Match ID.
+     */
     private void freeRunningMatch(UUID matchId) {
         System.out.printf("[MATCH] MatchRunnerService::freeMatch | (%s)\n", matchId);
         var data = allRunningMatches.getOrDefault(matchId, null);

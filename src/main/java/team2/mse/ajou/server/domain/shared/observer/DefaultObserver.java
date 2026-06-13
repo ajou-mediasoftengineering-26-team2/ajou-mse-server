@@ -1,5 +1,8 @@
 package team2.mse.ajou.server.domain.shared.observer;
 
+/**
+ * Observer: Default observer implementation.
+ */
 public class DefaultObserver<T> implements Observer<T> {
     private final NotifyCallback<T> callback;
 

@@ -77,44 +77,57 @@ public class PlayerData {
 
     //=========Elemental======
     /**
-     * 적용중인 hand elemental
+     * Hand elemental.
      */
     private HAND_ELEMENTAL handElemental = HAND_ELEMENTAL.NONE;
 
     //=========Perk==========
     /**
-     * 적용중인 Perks
+     * Perks.
      */
     private List<PERK> perkList = new ArrayList<>();
     /**
-     * 클라이언트 화면에 띄워진 perk list
+     * Perk list available for choosing (in the store screen).
      */
     private List<PERK> perkChoiceList = new ArrayList<>();
     /**
-     * 클라이언트가 현재 선택중인 perk (이후 `MATCH_STATE.GAME_PERK_ITEM_RECEIVING` 상태로 넘어가는 시점에서 실제로 `perkList` 적용)
+     * Selecting perk 'candidate'.
      */
     private PERK perkChoiceCurrent = null;
 
     //==========Item==========
     /**
-     * 랜덤으로 받은 아이템
+     * Randomly received items for this round.
      */
     private List<ITEM_CODE> receivedItemList = new ArrayList<>();
     /**
-     * 보유한 아이템
+     * Current items.
      */
     private List<ITEM_CODE> itemList = new ArrayList<>();
 //    private List<ITEM_CODE> usedItemList = new ArrayList<>();
 
+    /**
+     * Money!
+     */
     private int coin;
 
+    /**
+     * Level of Hand elemental.
+     */
     private int elementalLevel;
+
+    /**
+     * Cost required for upgrading elemental.
+     */
     private int upgradeCost;
 
+    /**
+     * List of activie status effect.
+     */
     private List<STATUS_EFFECT> statusEffectList = new ArrayList<>();
 
     /**
-     * Last updated time
+     * Last updated time.
      */
     private ZonedDateTime lastUpdated = ZonedDateTime.now();
 
@@ -153,7 +166,7 @@ public class PlayerData {
     }
 
     /**
-     * `PlayerData`를 Deep copy 합니다.
+     * Deep copy.
      *
      * @param from
      */

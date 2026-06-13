@@ -7,6 +7,7 @@ import java.util.UUID;
 
 /**
  * 로비: 시작 대기 카운트다운 상태.
+ * Lobby: game start countdown.
  *
  * @author Ahn Yubin / 202021088
  */

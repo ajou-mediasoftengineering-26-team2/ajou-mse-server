@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import team2.mse.ajou.server.domain.shared.match.model.MatchData;
 
 /**
- * 내부 DB에서 매치 Entity의 값이 바뀌면 (= DB상 값이 바뀌어 save까지 되는 시점) 호출되는 콜백을 처리합니다.
- * JPA의 리스너를 활용합니다.
+ * Listens to database changes for `MatchData`, using JPA's listener support.
+ * Usually happens when data is `save()`d.
  *
  * @author Ahn Yubin / 202021088
  */
@@ -19,8 +19,14 @@ public class MatchDataJpaListener {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
+    /**
+     * Callback for `MatchData` changes.
+     *
+     * @param matchData New `MatchData`.
+     */
     @PostUpdate
     public void onMatchDataUpdate(MatchData matchData) {
+        // Let the `GameDataChangedEventListener` handle it asynchronously!
         applicationEventPublisher.publishEvent(new MatchDataChangedEvent(matchData.getId()));
     }
 }

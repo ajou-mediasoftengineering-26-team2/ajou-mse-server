@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 import team2.mse.ajou.server.domain.shared.match.model.PlayerData;
 
 /**
- * 내부 DB에서 플레이어 Entity의 값이 바뀌면 (= DB상 값이 바뀌어 save까지 되는 시점) 호출되는 콜백을 처리합니다.
- * JPA의 리스너를 활용합니다.
+ * Listens to database changes for `PlayerData`, using JPA's listener support.
+ * Usually happens when data is `save()`d.
  *
  * @author Ahn Yubin / 202021088
  */
@@ -19,8 +19,14 @@ public class PlayerDataJpaListener {
         this.applicationEventPublisher = applicationEventPublisher;
     }
 
+    /**
+     * Callback for `PlayerData` changes.
+     *
+     * @param playerData New `MatchData`.
+     */
     @PostUpdate
     public void onPlayerDataUpdate(PlayerData playerData) {
+        // Let the `GameDataChangedEventListener` handle it asynchronously!
         applicationEventPublisher.publishEvent(new PlayerDataChangedEvent(playerData.getId()));
     }
 }
